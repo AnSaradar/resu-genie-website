@@ -2,7 +2,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
-export function Hero() {
+interface HeroProps {
+  onLoginClick?: () => void;
+  onRegisterClick?: () => void;
+}
+
+export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
   const [typedText, setTypedText] = useState("");
   const fullText = "Build an ATS-optimized resume in minutes";
   const typingSpeed = 80;
@@ -112,11 +117,20 @@ export function Hero() {
             className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
             variants={itemVariants}
           >
-            <Button size="lg" className="text-base">
+            <Button 
+              size="lg" 
+              className="text-base"
+              onClick={onRegisterClick}
+            >
               Get Started for Free
             </Button>
-            <Button size="lg" variant="outline" className="text-base">
-              View Templates
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-base"
+              onClick={onLoginClick}
+            >
+              Sign In
             </Button>
           </motion.div>
 

@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
-export function CTA() {
+interface CTAProps {
+  onRegisterClick?: () => void;
+}
+
+export function CTA({ onRegisterClick }: CTAProps) {
   return (
     <section className="py-20 relative overflow-hidden">
       {/* Background gradient */}
@@ -75,10 +79,18 @@ export function CTA() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <Button size="lg" className="text-base">
+              <Button 
+                size="lg" 
+                className="text-base"
+                onClick={onRegisterClick}
+              >
                 Get Started for Free
               </Button>
-              <Button size="lg" variant="outline" className="text-base">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-base"
+              >
                 View Templates
               </Button>
             </motion.div>

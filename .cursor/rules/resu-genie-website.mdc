@@ -16,3 +16,8 @@ Holds TypeScript definitions such as interfaces, type aliases, and enums. This f
 
 service File:
 Includes functions or classes responsible for handling external interactions—typically API calls or business logic. It centralizes the logic for data fetching, processing, and error handling, so that components remain decoupled from direct data access and can focus solely on rendering UI.
+
+
+
+
+I am building an Resume Builder Platform, so I want the end user to be impressed, so the webiste should be user friendly and have animation and motiona and eyecatching transation.

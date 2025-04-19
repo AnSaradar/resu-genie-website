@@ -1,15 +1,21 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { motion } from "framer-motion";
-import { Button } from "src/components/ui/button";
-import { Input } from "src/components/ui/input";
-import { Label } from "src/components/ui/label";
-import { Checkbox } from "src/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/services/auth/hook";
+import { LoginRequest } from "@/services/auth/types";
+import { toast } from "react-hot-toast";
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { login, error } = useAuth();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -34,10 +40,35 @@ export function Login() {
     },
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log({ email, password, rememberMe });
+    
+    if (!email || !password) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      
+      const loginData: LoginRequest = {
+        email,
+        password
+      };
+      
+      await login(loginData);
+      
+      // If remember me is checked, we could set a longer expiration for the token
+      // This would typically be handled on the backend
+      
+      toast.success("Login successful!");
+      
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error(error || "Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -100,6 +131,15 @@ export function Login() {
                 </p>
               </motion.div>
 
+              {error && (
+                <motion.div 
+                  className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm"
+                  variants={itemVariants}
+                >
+                  {error}
+                </motion.div>
+              )}
+
               <motion.form
                 className="space-y-4"
                 onSubmit={handleSubmit}
@@ -153,8 +193,12 @@ export function Login() {
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Sign In
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Signing in..." : "Sign In"}
                 </Button>
               </motion.form>
 
@@ -180,49 +224,14 @@ export function Login() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
+                
               </motion.div>
 
               <motion.div
                 className="grid grid-cols-2 gap-3"
                 variants={itemVariants}
               >
-                <Button variant="outline" type="button" className="flex items-center justify-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                  </svg>
-                  GitHub
-                </Button>
-                <Button variant="outline" type="button" className="flex items-center justify-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                  </svg>
-                  LinkedIn
-                </Button>
+
               </motion.div>
             </motion.div>
           </motion.div>

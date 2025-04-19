@@ -1,17 +1,117 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button } from "src/components/ui/button";
-import { Input } from "src/components/ui/input";
-import { Label } from "src/components/ui/label";
-import { Checkbox } from "src/components/ui/checkbox";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/services/auth/hook";
+import { RegisterRequest } from "@/services/auth/types";
+import { toast } from "react-hot-toast";
 
 export function Register() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Validation states
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+  
+  const { register, error, clearError } = useAuth();
+  const navigate = useNavigate();
+
+  // Clear API error when form changes
+  useEffect(() => {
+    if (error) {
+      clearError();
+    }
+  }, [firstName, lastName, email, phone, password, confirmPassword, agreeTerms, clearError, error]);
+
+  // Email validation
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = emailRegex.test(email);
+    
+    if (!isValid && email.length > 0) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError(null);
+    }
+    
+    return isValid;
+  };
+
+  // Phone validation
+  const validatePhone = (phone: string): boolean => {
+    // If phone is empty, it's optional
+    if (!phone) return true;
+    
+    // Basic international phone regex
+    const phoneRegex = /^\+[1-9]\d{1,14}$/;
+    const isValid = phoneRegex.test(phone);
+    
+    if (!isValid && phone.length > 0) {
+      setPhoneError("Please enter a valid phone number (e.g., +1234567890)");
+    } else {
+      setPhoneError(null);
+    }
+    
+    return isValid;
+  };
+
+  // Password validation
+  const validatePassword = (password: string): boolean => {
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
+      return false;
+    }
+    
+    if (!/\d/.test(password)) {
+      setPasswordError("Password must contain at least one number");
+      return false;
+    }
+    
+    setPasswordError(null);
+    return true;
+  };
+
+  // Confirm password validation
+  const validateConfirmPassword = (password: string, confirmPassword: string): boolean => {
+    const isValid = password === confirmPassword;
+    
+    if (!isValid && confirmPassword.length > 0) {
+      setConfirmPasswordError("Passwords do not match");
+    } else {
+      setConfirmPasswordError(null);
+    }
+    
+    return isValid;
+  };
+
+  // Validate fields on change
+  useEffect(() => {
+    if (email) validateEmail(email);
+  }, [email]);
+
+  useEffect(() => {
+    if (phone) validatePhone(phone);
+  }, [phone]);
+
+  useEffect(() => {
+    if (password) validatePassword(password);
+  }, [password]);
+
+  useEffect(() => {
+    if (confirmPassword) validateConfirmPassword(password, confirmPassword);
+  }, [confirmPassword, password]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -36,10 +136,61 @@ export function Register() {
     },
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log({ fullName, email, password, confirmPassword, agreeTerms });
+    
+    // Run all validations
+    const isEmailValid = validateEmail(email);
+    const isPhoneValid = validatePhone(phone);
+    const isPasswordValid = validatePassword(password);
+    const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword);
+    
+    // Check required fields
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    // Check validations
+    if (!isEmailValid || !isPhoneValid || !isPasswordValid || !isConfirmPasswordValid) {
+      toast.error("Please fix the validation errors");
+      return;
+    }
+    
+    if (!agreeTerms) {
+      toast.error("You must agree to the Terms of Service and Privacy Policy");
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      
+      const registerData: RegisterRequest = {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        password,
+        phone: phone || "+1234567890" // Provide a default if empty
+      };
+      
+      await register(registerData);
+      toast.success("Registration successful! Please log in.");
+      navigate('/login');
+      
+    } catch (err) {
+      console.error("Registration error:", err);
+      
+      // Extract error message from the error object
+      let errorMessage = "Registration failed. Please try again.";
+      if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = err.message as string;
+      }
+      
+      // Display error message using toast
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -102,21 +253,44 @@ export function Register() {
                 </p>
               </motion.div>
 
+              {error && (
+                <motion.div 
+                  className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm"
+                  variants={itemVariants}
+                >
+                  {error}
+                </motion.div>
+              )}
+
               <motion.form
                 className="space-y-4"
                 onSubmit={handleSubmit}
                 variants={itemVariants}
               >
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="John Doe"
-                    value={fullName}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="John"
+                      value={firstName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Doe"
+                      value={lastName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -127,8 +301,27 @@ export function Register() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                    className={emailError ? "border-red-500" : ""}
                     required
                   />
+                  {emailError && (
+                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone (optional)</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1234567890"
+                    value={phone}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                    className={phoneError ? "border-red-500" : ""}
+                  />
+                  {phoneError && (
+                    <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -139,8 +332,15 @@ export function Register() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    className={passwordError ? "border-red-500" : ""}
                     required
                   />
+                  {passwordError && (
+                    <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Password must be at least 8 characters and contain at least one number
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -151,8 +351,12 @@ export function Register() {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                    className={confirmPasswordError ? "border-red-500" : ""}
                     required
                   />
+                  {confirmPasswordError && (
+                    <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
+                  )}
                 </div>
 
                 <div className="flex items-start space-x-2">
@@ -185,8 +389,12 @@ export function Register() {
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Create Account
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Creating Account..." : "Create Account"}
                 </Button>
               </motion.form>
 
@@ -212,50 +420,14 @@ export function Register() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
+          
               </motion.div>
 
               <motion.div
                 className="grid grid-cols-2 gap-3"
                 variants={itemVariants}
               >
-                <Button variant="outline" type="button" className="flex items-center justify-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                  </svg>
-                  GitHub
-                </Button>
-                <Button variant="outline" type="button" className="flex items-center justify-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                  </svg>
-                  LinkedIn
-                </Button>
-              </motion.div>
+             </motion.div>
             </motion.div>
           </motion.div>
         </div>

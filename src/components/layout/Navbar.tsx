@@ -3,16 +3,25 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/services/auth/hook";
 
 export function Navbar() {
   const { setTheme, theme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <motion.header
@@ -27,9 +36,11 @@ export function Navbar() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-            ResuGenie
-          </span>
+          <Link to="/">
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+              ResuGenie
+            </span>
+          </Link>
         </motion.div>
 
         {/* Desktop Navigation */}
@@ -51,14 +62,6 @@ export function Navbar() {
             Templates
           </motion.a>
           <motion.a
-            href="#pricing"
-            className="text-sm font-medium hover:text-primary"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Pricing
-          </motion.a>
-          <motion.a
             href="#testimonials"
             className="text-sm font-medium hover:text-primary"
             whileHover={{ scale: 1.05 }}
@@ -66,6 +69,16 @@ export function Navbar() {
           >
             Testimonials
           </motion.a>
+          {isAuthenticated && (
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link to="/dashboard" className="text-sm font-medium hover:text-primary">
+                Dashboard
+              </Link>
+            </motion.div>
+          )}
         </nav>
 
         <div className="flex items-center gap-4">
@@ -91,8 +104,20 @@ export function Navbar() {
           </DropdownMenu>
 
           <div className="hidden md:flex items-center gap-2">
-            <Button variant="outline">Log in</Button>
-            <Button>Sign up</Button>
+            {isAuthenticated ? (
+              <Button variant="outline" onClick={handleLogout}>
+                Log out
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => navigate('/login')}>
+                  Log in
+                </Button>
+                <Button onClick={() => navigate('/register')}>
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -154,15 +179,29 @@ export function Navbar() {
           <a href="#templates" className="block text-sm font-medium">
             Templates
           </a>
-          <a href="#pricing" className="block text-sm font-medium">
-            Pricing
-          </a>
           <a href="#testimonials" className="block text-sm font-medium">
             Testimonials
           </a>
+          {isAuthenticated && (
+            <Link to="/dashboard" className="block text-sm font-medium">
+              Dashboard
+            </Link>
+          )}
           <div className="flex flex-col gap-2 pt-4 border-t">
-            <Button variant="outline">Log in</Button>
-            <Button>Sign up</Button>
+            {isAuthenticated ? (
+              <Button variant="outline" onClick={handleLogout}>
+                Log out
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => navigate('/login')}>
+                  Log in
+                </Button>
+                <Button onClick={() => navigate('/register')}>
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </motion.div>
