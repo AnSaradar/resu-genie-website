@@ -173,9 +173,22 @@ export function Register() {
         phone: phone || "+1234567890" // Provide a default if empty
       };
       
-      await register(registerData);
+      const response = await register(registerData);
+      
+      // Check if registration requires email verification
+      if (response && response.requires_verification) {
+        toast.success("Registration successful! Please check your email for verification code.");
+        navigate('/verify-otp', { 
+          state: { 
+            email: email,
+            fromRegistration: true,
+            redirectTo: '/dashboard'
+          } 
+        });
+      } else {
       toast.success("Registration successful! Please log in.");
       navigate('/login');
+      }
       
     } catch (err) {
       console.error("Registration error:", err);

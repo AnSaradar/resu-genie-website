@@ -31,7 +31,7 @@ apiClient.interceptors.request.use(
   (config): InternalAxiosRequestConfig => {
     const token = getAuthToken();
     // Do not add token for auth endpoints like login, register, refresh
-    const noAuthRequired = ['/auth/login/', '/auth/register/', '/auth/token/refresh/'].some(path => config.url?.includes(path));
+    const noAuthRequired = ['/api/v1/auth/login/', '/api/v1/auth/register/', '/api/v1/auth/token/refresh/'].some(path => config.url?.includes(path));
 
     if (token && !noAuthRequired) {
         // Ensure config.headers exists
@@ -56,7 +56,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // Check if it's a 401 error and not a retry request and not a refresh token request itself
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== `${API_BASE_URL}/auth/token/refresh/`) {
+    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== `${API_BASE_URL}/api/v1/auth/token/refresh/`) {
 
       if (isRefreshing) {
         // If token is already refreshing, queue the original request

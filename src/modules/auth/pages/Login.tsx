@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/services/auth/hook";
 import { LoginRequest } from "@/services/auth/types";
 import { toast } from "react-hot-toast";
@@ -16,6 +16,7 @@ export function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { login, error } = useAuth();
+  const navigate = useNavigate();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -63,9 +64,23 @@ export function Login() {
       
       toast.success("Login successful!");
       
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
-      toast.error(error || "Login failed. Please try again.");
+      
+      // Check if the error is due to unverified email
+      if (err.message && err.message.includes("Please verify your email")) {
+        toast.error("Please verify your email before logging in.");
+        navigate('/verify-otp', { 
+          state: { 
+            email: email,
+            fromLogin: true,
+            redirectTo: '/dashboard'
+          } 
+        });
+        return;
+      }
+      
+      toast.error(error || err.message || "Login failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

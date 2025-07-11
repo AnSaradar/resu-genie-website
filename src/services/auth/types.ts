@@ -15,18 +15,28 @@ export interface RegisterRequest {
 // Authentication Response Types
 export interface AuthResponse {
   access_token: string;
-  refresh_token: string;
-  user: User;
+  refresh_token?: string; // Made optional since backend doesn't return it yet
+  user?: User; // Made optional since backend doesn't return it in login
+  token_type?: string; // Added token_type from backend
+  status?: string; // Added status from backend  
+  // Registration-specific fields
+  requires_verification?: boolean;
+  is_verified?: boolean;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  message?: string;
 }
 
 export interface User {
-  id: number;
+  id: string; // Changed from number to string (MongoDB ObjectId)
   email: string;
   first_name: string;
   last_name: string;
   phone?: string;
-  created_at: string;
-  updated_at: string;
+  is_verified?: boolean; // Added verification status
+  created_at?: string; // Made optional since backend might not always include it
+  updated_at?: string; // Made optional since backend might not always include it
 }
 
 // Auth Context Types

@@ -1,7 +1,8 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from './service';
-import { AuthContextType, LoginRequest, RegisterRequest, User } from './types';
+import { AuthContextType, LoginRequest, RegisterRequest, User, AuthResponse } from './types';
+import { checkProfileExists } from '@/services/user_profile/service';
 
 // Create Auth Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,18 +24,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const checkAuth = async () => {
       try {
         setIsLoading(true);
-        // In a real app, you would validate the token with the server here
-        // For now, we'll just check if the token exists
+        
+        // Check if we have a token and validate it
         const isAuthenticated = AuthService.isAuthenticated();
         
         if (isAuthenticated) {
-          // In a real app, you would fetch the user profile here
-          // For now, we'll just set a flag
-          // setUser(userData);
+          // Validate the token by fetching user data
+          const isValid = await AuthService.validateToken();
+          
+          if (isValid) {
+            // Get current user data
+            const userData = await AuthService.getCurrentUser();
+            setUser(userData);
+          } else {
+            // Token is invalid, clear auth state
+            setUser(null);
+          }
         }
       } catch (err) {
         console.error('Auth check error:', err);
+        // Clear invalid auth state
         AuthService.logout();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -80,12 +91,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       setError(null);
       const response = await AuthService.login(data);
-      setUser(response.user);
-      navigate('/onboarding/welcome'); // Redirect to welcome page after login
+      
+      // Get user data after successful login
+      const userData = await AuthService.getCurrentUser();
+      setUser(userData);
+      
+      // Check if user has completed profile after successful login
+      try {
+        const profileCheck = await checkProfileExists();
+        
+        if (profileCheck.profile_exists) {
+          // Profile exists, can navigate to dashboard
+          navigate('/dashboard');
+        } else {
+          // Profile doesn't exist, navigate to onboarding
+          navigate('/onboarding/welcome');
+        }
+      } catch (profileError) {
+        console.error('Error checking profile existence:', profileError);
+        // If profile check fails, default to onboarding for safety
+        navigate('/onboarding/welcome');
+      }
+      
     } catch (err) {
       const errorMessage = parseApiError(err);
       setError(errorMessage);
-      throw err;
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
