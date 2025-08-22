@@ -371,8 +371,8 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
                 </div>
               </div>
 
-              {/* Second Row - Location & Dates */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Second Row - Location */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <Label htmlFor="city" className="text-sm font-semibold">City</Label>
                   <Input
@@ -394,7 +394,10 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
                     className="h-12 text-base"
                   />
                 </div>
+              </div>
 
+              {/* Third Row - Dates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <Label htmlFor="start_date" className="text-sm font-semibold">Start Date *</Label>
                   <Input
@@ -411,40 +414,59 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
                   <Input
                     id="end_date"
                     type="month"
-                    value={editingItem.end_date}
-                    onChange={(e) => updateEditingItem('end_date', e.target.value)}
-                    disabled={editingItem.currently_working}
-                    placeholder={editingItem.currently_working ? "Present" : ""}
+                    value={editingItem?.end_date || ''}
+                    onChange={(e) => {
+                      if (editingItem) {
+                        setEditingItem({
+                          ...editingItem,
+                          end_date: e.target.value
+                        });
+                      }
+                    }}
+                    disabled={editingItem?.currently_working || false}
+                    placeholder={editingItem?.currently_working ? "Present" : ""}
                     className="h-12 text-base"
                   />
                 </div>
               </div>
 
-              {/* Third Row - Employment Type */}
+              {/* Fourth Row - Employment Type */}
               <div className="space-y-6">
                 <Label className="text-sm font-semibold">Employment Type</Label>
                 <div className="flex flex-wrap gap-8">
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="currently_working"
-                      checked={editingItem.currently_working}
+                      checked={Boolean(editingItem?.currently_working)}
                       onCheckedChange={(checked) => {
-                        updateEditingItem('currently_working', checked);
-                        if (checked) {
-                          updateEditingItem('end_date', '');
+                        const isChecked = checked === true;
+                        if (editingItem) {
+                          setEditingItem({
+                            ...editingItem,
+                            currently_working: isChecked,
+                            end_date: isChecked ? '' : editingItem.end_date
+                          });
                         }
                       }}
                     />
-                    <Label htmlFor="currently_working" className="text-base">I currently work here</Label>
+                    <Label htmlFor="currently_working" className="text-base cursor-pointer">I currently work here</Label>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="is_volunteer"
-                      checked={editingItem.is_volunteer}
-                      onCheckedChange={(checked) => updateEditingItem('is_volunteer', checked)}
+                      checked={Boolean(editingItem?.is_volunteer)}
+                      onCheckedChange={(checked) => {
+                        const isChecked = checked === true;
+                        if (editingItem) {
+                          setEditingItem({
+                            ...editingItem,
+                            is_volunteer: isChecked
+                          });
+                        }
+                      }}
                     />
-                    <Label htmlFor="is_volunteer" className="text-base">This is volunteer work</Label>
+                    <Label htmlFor="is_volunteer" className="text-base cursor-pointer">This is volunteer work</Label>
                   </div>
                 </div>
               </div>
@@ -494,19 +516,7 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
         </DialogContent>
       </Dialog>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button onClick={onNext}>
-          Next: Education
-        </Button>
-      </div>
+      {/* Navigation handled by StepNavigation component */}
     </motion.div>
   );
 } 

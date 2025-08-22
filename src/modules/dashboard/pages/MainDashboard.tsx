@@ -67,26 +67,6 @@ export function MainDashboard() {
       route: '/dashboard/templates'
     },
     {
-      id: 'enhancer',
-      title: 'AI Resume Enhancer',
-      description: 'Improve your existing resume with AI-powered suggestions and optimizations',
-      icon: Wand2,
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      iconColor: 'text-purple-600',
-      action: 'Enhance Resume',
-      route: '/dashboard/enhancer'
-    },
-    {
-      id: 'evaluator',
-      title: 'Resume Evaluator',
-      description: 'Get detailed feedback and scoring on your resume\'s effectiveness',
-      icon: Star,
-      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-      iconColor: 'text-orange-600',
-      action: 'Evaluate Resume',
-      route: '/dashboard/evaluator'
-    },
-    {
       id: 'builder',
       title: 'Build a Resume',
       description: 'Create a completely new resume step-by-step with guided assistance',

@@ -425,19 +425,7 @@ export function EducationStep({ data, onUpdate, onNext, onPrevious, isFirstStep,
         </DialogContent>
       </Dialog>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button onClick={onNext}>
-          Next: Skills
-        </Button>
-      </div>
+      {/* Navigation handled by StepNavigation component */}
     </motion.div>
   );
 } 

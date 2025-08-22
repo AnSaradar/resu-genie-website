@@ -37,6 +37,7 @@ interface PersonalInfo {
   seniorityLevel: SeniorityLevel | '';
   workField: WorkField | '';
   yearsOfExperience: number | '';
+  birthDate: string; // ISO YYYY-MM-DD
 }
 
 interface PersonalInfoStepProps {
@@ -86,9 +87,12 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
     websiteUrl: data.personalInfo?.websiteUrl || '',
     currentPosition: data.personalInfo?.currentPosition || '',
     profileSummary: data.personalInfo?.profileSummary || '',
-    seniorityLevel: data.personalInfo?.seniorityLevel || '',
-    workField: data.personalInfo?.workField || '',
-    yearsOfExperience: data.personalInfo?.yearsOfExperience || '',
+    seniorityLevel: (data.personalInfo?.seniorityLevel as any) || '',
+    workField: (data.personalInfo?.workField as any) || '',
+    yearsOfExperience: typeof data.personalInfo?.yearsOfExperience === 'number'
+      ? data.personalInfo.yearsOfExperience
+      : (data.personalInfo?.yearsOfExperience ? parseInt(data.personalInfo.yearsOfExperience as string, 10) || '' : ''),
+    birthDate: data.personalInfo?.birthDate || '',
   });
 
   const [isAutoFilled, setIsAutoFilled] = useState(false);
@@ -110,6 +114,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
         seniorityLevel: userProfile?.current_seniority_level || personalInfo.seniorityLevel,
         workField: userProfile?.work_field || personalInfo.workField,
         yearsOfExperience: userProfile?.years_of_experience || personalInfo.yearsOfExperience,
+        birthDate: userProfile?.birth_date || personalInfo.birthDate,
       };
       
       setPersonalInfo(autoFilledData);
@@ -128,7 +133,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
   };
 
   // Check if form has enough data to proceed
-  const isFormValid = personalInfo.firstName && personalInfo.lastName && personalInfo.email;
+  const isFormValid = personalInfo.firstName && personalInfo.lastName && personalInfo.email && personalInfo.birthDate;
 
   return (
     <motion.div
@@ -250,6 +255,19 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
                     className="pl-10"
                   />
                 </div>
+              </div>
+
+              {/* Birth Date */}
+              <div>
+                <Label htmlFor="birthDate">Birth Date *</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={personalInfo.birthDate}
+                  onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                  placeholder="YYYY-MM-DD"
+                  required
+                />
               </div>
             </CardContent>
           </Card>
@@ -411,27 +429,12 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
         >
           <AlertCircle className="h-5 w-5 text-amber-600" />
           <p className="text-amber-800 dark:text-amber-300 text-sm">
-            Please fill in the required fields (First Name, Last Name, and Email) to continue.
+            Please fill in the required fields (First Name, Last Name, Email, and Birth Date) to continue.
           </p>
         </motion.div>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button 
-          onClick={onNext}
-          disabled={!isFormValid}
-        >
-          Next: Work Experience
-        </Button>
-      </div>
+      {/* Navigation handled by StepNavigation component */}
     </motion.div>
   );
 } 

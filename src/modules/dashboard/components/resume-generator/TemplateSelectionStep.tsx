@@ -233,22 +233,7 @@ export function TemplateSelectionStep({ data, onUpdate, onNext, onPrevious, isFi
         </motion.div>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button 
-          onClick={onNext}
-          disabled={!selectedTemplate}
-        >
-          Next: Preview & Generate
-        </Button>
-      </div>
+      {/* Navigation handled by StepNavigation component */}
     </motion.div>
   );
 } 

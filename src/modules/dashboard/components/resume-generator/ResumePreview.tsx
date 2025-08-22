@@ -1,11 +1,19 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Sparkles, 
-  Download, 
-  Eye, 
+import {
+  Sparkles,
+  Eye,
   Edit,
   CheckCircle,
   AlertCircle,
@@ -14,7 +22,7 @@ import {
   Lightbulb,
   Languages,
   Award,
-  Code
+  Code,
 } from 'lucide-react';
 import { ResumeData } from '../../pages/ResumeGenerator';
 
@@ -27,8 +35,15 @@ interface ResumePreviewProps {
   isLastStep: boolean;
 }
 
-export function ResumePreview({ data, onUpdate, onNext, onPrevious, isFirstStep, isLastStep }: ResumePreviewProps) {
-  const [isGenerating, setIsGenerating] = useState(false);
+export function ResumePreview({
+  data,
+  onUpdate,
+  onNext,
+  onPrevious,
+  isFirstStep,
+  isLastStep,
+}: ResumePreviewProps) {
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   const sections = [
     {
@@ -79,18 +94,10 @@ export function ResumePreview({ data, onUpdate, onNext, onPrevious, isFirstStep,
   const completedSections = sections.filter(section => section.count > 0).length;
   const completionPercentage = (completedSections / sections.length) * 100;
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    // TODO: Implement actual resume generation
-    await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate generation
-    setIsGenerating(false);
-    // TODO: Navigate to generated resume or download
-  };
+  // Generation logic is now handled by the parent (ResumeGenerator) via StepNavigation
 
-  const handlePreview = () => {
-    // TODO: Implement preview functionality
-    console.log('Preview resume with data:', data);
-  };
+  const handleReviewOpen = () => setIsReviewOpen(true);
+  const handleReviewClose = () => setIsReviewOpen(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -243,11 +250,11 @@ export function ResumePreview({ data, onUpdate, onNext, onPrevious, isFirstStep,
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={handlePreview}
+                  onClick={handleReviewOpen}
                   className="w-full gap-2"
                 >
                   <Eye className="h-4 w-4" />
-                  Preview Resume
+                  Review Resume Content
                 </Button>
                 <p className="text-xs text-muted-foreground mt-2">
                   See how your resume will look before generating
@@ -256,37 +263,7 @@ export function ResumePreview({ data, onUpdate, onNext, onPrevious, isFirstStep,
             </CardContent>
           </Card>
 
-          {/* Generate Button */}
-          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Button
-                  size="lg"
-                  onClick={handleGenerate}
-                  disabled={isGenerating || totalItems === 0}
-                  className="w-full gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  {isGenerating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                      Generating Resume...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4" />
-                      Build My Resume
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {totalItems === 0 
-                    ? 'Add some content to build your resume'
-                    : 'Your resume will be built and ready for download'
-                  }
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Removed duplicated generate button card */}
         </div>
       </motion.div>
 
@@ -312,33 +289,74 @@ export function ResumePreview({ data, onUpdate, onNext, onPrevious, isFirstStep,
         </Card>
       </motion.div>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button 
-          onClick={handleGenerate}
-          disabled={isGenerating || totalItems === 0}
-          className="gap-2"
-        >
-          {isGenerating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              Build Resume
-            </>
+      {/* Navigation footer is handled globally via StepNavigation */}
+
+      {/* Review Content Dialog */}
+      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Resume Content Review</DialogTitle>
+            <DialogDescription>
+              Please review the information below. You will not be able to edit data in this view.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Personal Info */}
+          {data.personalInfo && (
+            <section className="mb-6">
+              <h4 className="font-semibold text-lg mb-2">Personal Information</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                {Object.entries(data.personalInfo).map(([key, value]) => (
+                  <div key={key} className="flex flex-col">
+                    <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                    <span className="text-muted-foreground break-words">
+                      {String(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
-        </Button>
-      </div>
+
+          {/* Dynamic Sections */}
+          {sections.map((section) => (
+            <section key={section.id} className="mb-6">
+              <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <section.icon className="h-4 w-4" /> {section.title}
+              </h4>
+              {section.count === 0 ? (
+                <p className="text-sm text-muted-foreground">No data provided.</p>
+              ) : (
+                <div className="space-y-4">
+                  {section.items.map((item: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="rounded-md border p-4 text-sm flex flex-col gap-1 bg-muted/50"
+                    >
+                      {Object.entries(item).map(([key, value]) => (
+                        <div key={key} className="flex gap-2">
+                          <span className="font-medium capitalize">
+                            {key.replace(/([A-Z])/g, ' $1')}:&nbsp;
+                          </span>
+                          <span className="text-muted-foreground break-words">
+                            {String(value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          ))}
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 } 

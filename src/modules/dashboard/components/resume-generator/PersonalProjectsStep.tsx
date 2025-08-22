@@ -22,8 +22,6 @@ import {
   Code, 
   Calendar,
   Target,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
   X
 } from "lucide-react";
@@ -363,26 +361,7 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
         </motion.div>
       )}
 
-      {/* Navigation */}
-      <motion.div 
-        className="flex justify-between pt-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Button 
-          onClick={onPrevious} 
-          variant="outline"
-          disabled={isFirstStep}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous
-        </Button>
-        <Button onClick={onNext}>
-          Next
-          <ChevronRight className="ml-2 h-4 w-4" />
-        </Button>
-      </motion.div>
+      {/* Navigation handled by StepNavigation component */}
 
       {/* Edit/Add Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

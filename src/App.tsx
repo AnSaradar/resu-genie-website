@@ -14,6 +14,8 @@ import { Profile } from './modules/onboarding/pages/Profile';
 import DashboardLayout from './modules/dashboard/layout';
 import { MainDashboard } from './modules/dashboard/pages/MainDashboard';
 import { ResumeGenerator } from './modules/dashboard/pages/ResumeGenerator';
+import MyResumes from './modules/dashboard/pages/MyResumes';
+import Account from './modules/dashboard/pages/Account';
 
 // Protected route component that uses auth context
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -147,6 +149,9 @@ function AppContent() {
           </ProtectedRoute>
         }>
           <Route index element={<MainDashboard />} />
+          <Route path="resumes" element={<MyResumes />} />
+          <Route path="account" element={<Account />} />
+          <Route path="generate/:resumeId" element={<ResumeGenerator />} />
           <Route path="templates" element={<div>Templates coming soon</div>} />
           <Route path="enhancer" element={<div>AI Enhancer coming soon</div>} />
           <Route path="evaluator" element={<div>Resume Evaluator coming soon</div>} />

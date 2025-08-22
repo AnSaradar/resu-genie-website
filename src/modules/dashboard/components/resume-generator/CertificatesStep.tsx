@@ -20,7 +20,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { ResumeData } from '../../pages/ResumeGenerator';
-import { useGetAllCertifications } from '@/services/certification/hook';
+import { useGetAllCertifications } from '../../../../services/certification/hook';
 
 export interface Certificate {
   id: string;
@@ -372,19 +372,7 @@ export function CertificatesStep({ data, onUpdate, onNext, onPrevious, isFirstSt
         </DialogContent>
       </Dialog>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button onClick={onNext}>
-          Next: Personal Projects
-        </Button>
-      </div>
+      {/* Navigation handled by StepNavigation component */}
     </motion.div>
   );
 } 

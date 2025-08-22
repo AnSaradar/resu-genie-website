@@ -14,9 +14,13 @@ import {
   Award,
   Code,
   FileText,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useGetResumeDetails } from '@/services/resume/hook';
+import { useEffect } from 'react';
+import { updateResume } from '@/services/resume/service';
 
 // Step components (we'll create these)
 import { PersonalInfoStep } from '../components/resume-generator/PersonalInfoStep';
@@ -29,6 +33,10 @@ import { PersonalProjectsStep } from '../components/resume-generator/PersonalPro
 import { TemplateSelectionStep } from '../components/resume-generator/TemplateSelectionStep';
 import { ResumePreview } from '../components/resume-generator/ResumePreview';
 import { Experience } from '@/services/experience/types';
+import { StepNavigation } from '../components/resume-generator/StepNavigation';
+import { useGenerateAndDownloadResume } from '@/services/resume/hook';
+import { mapResumeDataToCreateRequest } from '@/utils/resume-mapper';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export interface PersonalInfo {
   firstName: string;
@@ -44,6 +52,7 @@ export interface PersonalInfo {
   seniorityLevel: string;
   workField: string;
   yearsOfExperience: number | string;
+  birthDate: string;
 }
 
 export interface ResumeData {
@@ -124,6 +133,14 @@ const STEPS = [
 ];
 
 export function ResumeGenerator() {
+  const { resumeId } = useParams<{ resumeId?: string }>();
+  const isEditMode = !!resumeId;
+  const {
+    data: fetchedResume,
+    isLoading: loadingResume,
+    error: fetchError,
+  } = useGetResumeDetails(resumeId ?? '', isEditMode);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData>({
     experience: [],
@@ -135,6 +152,23 @@ export function ResumeGenerator() {
   });
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const generateResumeMutation = useGenerateAndDownloadResume();
+  const [updateError, setUpdateError] = useState<string | null>(null);
+
+  // Prefill for edit mode
+  useEffect(() => {
+    if (isEditMode && fetchedResume && fetchedResume.resume) {
+      // Map backend resume to ResumeData shape if needed
+      setResumeData({
+        ...resumeData,
+        ...fetchedResume.resume,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, fetchedResume]);
+
+  // Mapping logic is now centralized in utils/resume-mapper
 
   const currentStepData = STEPS[currentStep];
   const StepComponent = currentStepData.component;
@@ -149,6 +183,56 @@ export function ResumeGenerator() {
     }
   };
 
+  // Final step action – save and download resume
+  const handleSaveAndDownload = async () => {
+    if (isGenerating) return;
+    setUpdateError(null);
+
+    // Ensure a template is selected – default to moey if not
+    const templateMap: Record<string, string> = {
+      moey: 'moey_template.html',
+      imagine: 'imagine_template.html',
+      jobscan: 'jobscan_template.html',
+    };
+
+    const templateId = resumeData.selectedTemplate ?? 'moey';
+    const templateName = templateMap[templateId] ?? 'moey_template.html';
+
+    setIsGenerating(true);
+    try {
+      if (isEditMode && resumeId) {
+        // Update existing resume
+        await updateResume(resumeId, resumeData); // You may need to map data shape
+        // After update, trigger download
+        generateResumeMutation.mutate(
+          { createPayload: mapResumeDataToCreateRequest(resumeData), templateName },
+          {
+            onSettled: () => setIsGenerating(false),
+            onSuccess: () => {
+              // Navigate to resume section after successful generation
+              navigate('/dashboard/resumes');
+            },
+          }
+        );
+      } else {
+        // Create new resume
+        generateResumeMutation.mutate(
+          { createPayload: mapResumeDataToCreateRequest(resumeData), templateName },
+          {
+            onSettled: () => setIsGenerating(false),
+            onSuccess: () => {
+              // Navigate to resume section after successful generation
+              navigate('/dashboard/resumes');
+            },
+          }
+        );
+      }
+    } catch (err: any) {
+      setIsGenerating(false);
+      setUpdateError(err?.message || 'Failed to update resume.');
+    }
+  };
+
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
@@ -156,7 +240,6 @@ export function ResumeGenerator() {
   };
 
   const handleStepClick = (stepIndex: number) => {
-    // Allow jumping to any step
     setCurrentStep(stepIndex);
   };
 
@@ -186,6 +269,24 @@ export function ResumeGenerator() {
       },
     },
   };
+
+  if (loadingResume) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-destructive">
+        <div className="text-2xl font-bold mb-4">Failed to load resume for editing</div>
+        <div>{fetchError.message}</div>
+        <Button className="mt-6" onClick={() => navigate('/dashboard/resumes')}>Back to My Resumes</Button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -231,26 +332,21 @@ export function ResumeGenerator() {
                 const IconComponent = step.icon;
                 const isActive = index === currentStep;
                 const isCompleted = completedSteps.has(index);
-                const isAccessible = index <= currentStep || completedSteps.has(index);
-
                 return (
                   <motion.button
                     key={step.id}
-                    onClick={() => isAccessible && handleStepClick(index)}
-                    disabled={!isAccessible}
+                    onClick={() => handleStepClick(index)}
                     className={`
                       flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium
                       ${isActive 
                         ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500' 
                         : isCompleted 
                           ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
-                          : isAccessible
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                            : 'bg-gray-50 dark:bg-gray-900 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }
                     `}
-                    whileHover={isAccessible ? { scale: 1.05 } : {}}
-                    whileTap={isAccessible ? { scale: 0.95 } : {}}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     {isCompleted ? (
                       <CheckCircle className="h-4 w-4" />
@@ -268,7 +364,7 @@ export function ResumeGenerator() {
 
       {/* Step Content */}
       <motion.div variants={itemVariants}>
-        <Card className="min-h-[600px]">
+        <Card className="min-h-[600px] relative">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-2xl">
               <currentStepData.icon className="h-6 w-6 text-blue-600" />
@@ -276,7 +372,10 @@ export function ResumeGenerator() {
             </CardTitle>
             <p className="text-muted-foreground">{currentStepData.description}</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-24">
+            {updateError && (
+              <div className="mb-4 text-destructive text-center font-medium">{updateError}</div>
+            )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
@@ -296,9 +395,32 @@ export function ResumeGenerator() {
               </motion.div>
             </AnimatePresence>
           </CardContent>
+          {/* Unified Navigation */}
+          <StepNavigation
+            onPrevious={handlePrevious}
+            onNext={currentStep === STEPS.length - 1 ? handleSaveAndDownload : handleNext}
+            isFirstStep={currentStep === 0}
+            isLastStep={currentStep === STEPS.length - 1}
+            nextLabel={currentStep === STEPS.length - 1 ? 'Save & Download Resume' : `Next: ${STEPS[currentStep + 1].title}`}
+            nextDisabled={currentStep === 0 && !(resumeData.personalInfo?.firstName && resumeData.personalInfo?.lastName && resumeData.personalInfo?.email && resumeData.personalInfo?.birthDate)}
+          />
         </Card>
       </motion.div>
 
+      {/* Loader Dialog */}
+      <Dialog open={isGenerating}>
+        <DialogContent className="flex flex-col items-center justify-center gap-4 w-80 py-10">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+            className="p-4 rounded-full bg-blue-100 dark:bg-blue-900/40"
+          >
+            <FileText className="h-8 w-8 text-blue-600" />
+          </motion.div>
+          <p className="text-center text-sm">Hang tight! We are crafting your awesome resume...</p>
+          <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+        </DialogContent>
+      </Dialog>
 
     </motion.div>
   );

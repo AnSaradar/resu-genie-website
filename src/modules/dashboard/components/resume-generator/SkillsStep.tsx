@@ -456,19 +456,7 @@ export function SkillsStep({ data, onUpdate, onNext, onPrevious, isFirstStep, is
         </DialogContent>
       </Dialog>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6">
-        <Button
-          variant="outline"
-          onClick={onPrevious}
-          disabled={isFirstStep}
-        >
-          Previous
-        </Button>
-        <Button onClick={onNext}>
-          Next: Languages
-        </Button>
-      </div>
+      {/* Navigation handled by StepNavigation component */}
     </motion.div>
   );
 } 
