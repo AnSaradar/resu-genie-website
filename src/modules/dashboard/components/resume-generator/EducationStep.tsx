@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,6 +73,14 @@ export function EducationStep({ data, onUpdate, onNext, onPrevious, isFirstStep,
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
   const educations = data.education || [];
+
+  // Sync with updated data prop (for edit mode)
+  useEffect(() => {
+    if (data.education && data.education.length > 0) {
+      // Data is already synced via the educations variable
+      // This effect ensures we're aware of data changes
+    }
+  }, [data.education]);
 
   const defaultEducation: Omit<Education, 'id'> = {
     institution: '',

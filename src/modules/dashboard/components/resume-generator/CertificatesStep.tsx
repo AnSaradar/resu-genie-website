@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -48,6 +48,14 @@ export function CertificatesStep({ data, onUpdate, onNext, onPrevious, isFirstSt
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
   const certificates = data.certificates || [];
+
+  // Sync with updated data prop (for edit mode)
+  useEffect(() => {
+    if (data.certificates && data.certificates.length > 0) {
+      // Data is already synced via the certificates variable
+      // This effect ensures we're aware of data changes
+    }
+  }, [data.certificates]);
 
   const defaultCertificate: Omit<Certificate, 'id'> = {
     name: '',

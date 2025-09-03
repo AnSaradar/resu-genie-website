@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"; // Use react-router-dom
+import { Link, useLocation } from "react-router-dom"; // Use react-router-dom
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,22 @@ import { useAuth } from "@/services/auth/hook";
 
 export function DashboardNavbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const initials = `${user?.first_name?.[0] ?? "U"}${user?.last_name?.[0] ?? ""}`;
+
+  // Helper function to determine if a navigation item is active
+  const isActive = (path: string) => {
+    // For exact match (like /dashboard)
+    if (path === location.pathname) return true;
+    
+    // For nested routes (like /dashboard/resumes should be active when on /dashboard/resumes/123)
+    if (location.pathname.startsWith(path) && path !== '/dashboard') return true;
+    
+    // Special case: /dashboard should only be active when exactly on /dashboard
+    if (path === '/dashboard' && location.pathname === '/dashboard') return true;
+    
+    return false;
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,19 +54,31 @@ export function DashboardNavbar() {
         <nav className="hidden md:flex flex-1 justify-center items-center space-x-8 text-sm font-medium">
             <Link
             to="/dashboard"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className={`transition-colors hover:text-foreground/80 ${
+                isActive('/dashboard') 
+                  ? 'text-foreground font-semibold' 
+                  : 'text-foreground/60'
+              }`}
             >
             Dashboard
             </Link>
             <Link
             to="/dashboard/resumes"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className={`transition-colors hover:text-foreground/80 ${
+                isActive('/dashboard/resumes') 
+                  ? 'text-foreground font-semibold' 
+                  : 'text-foreground/60'
+              }`}
             >
             My Resumes
             </Link>
             <Link
             to="/dashboard/account"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className={`transition-colors hover:text-foreground/80 ${
+                isActive('/dashboard/account') 
+                  ? 'text-foreground font-semibold' 
+                  : 'text-foreground/60'
+              }`}
             >
             My Account Data
             </Link>

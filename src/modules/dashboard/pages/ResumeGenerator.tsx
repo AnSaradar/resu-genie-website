@@ -21,6 +21,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetResumeDetails } from '@/services/resume/hook';
 import { useEffect } from 'react';
 import { updateResume } from '@/services/resume/service';
+import { toast } from 'react-hot-toast';
 
 // Step components (we'll create these)
 import { PersonalInfoStep } from '../components/resume-generator/PersonalInfoStep';
@@ -36,6 +37,7 @@ import { Experience } from '@/services/experience/types';
 import { StepNavigation } from '../components/resume-generator/StepNavigation';
 import { useGenerateAndDownloadResume } from '@/services/resume/hook';
 import { mapResumeDataToCreateRequest } from '@/utils/resume-mapper';
+import { mapBackendResumeToFrontend } from '@/utils/resume-mapper';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export interface PersonalInfo {
@@ -57,12 +59,12 @@ export interface PersonalInfo {
 
 export interface ResumeData {
   personalInfo?: PersonalInfo;
-  experience: Experience[];
-  education: any[];
-  skills: any[];
-  languages: any[];
-  certificates: any[];
-  personalProjects: any[];
+  experience?: Experience[];
+  education?: any[];
+  skills?: any[];
+  languages?: any[];
+  certificates?: any[];
+  personalProjects?: any[];
   selectedTemplate?: string;
 }
 
@@ -159,13 +161,12 @@ export function ResumeGenerator() {
   // Prefill for edit mode
   useEffect(() => {
     if (isEditMode && fetchedResume && fetchedResume.resume) {
-      // Map backend resume to ResumeData shape if needed
-      setResumeData({
-        ...resumeData,
-        ...fetchedResume.resume,
-      });
+      console.log('Loading existing resume data:', fetchedResume.resume);
+      // Map backend resume to ResumeData shape using the mapper utility
+      const transformedData = mapBackendResumeToFrontend(fetchedResume.resume);
+      console.log('Transformed data for frontend:', transformedData);
+      setResumeData(transformedData);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode, fetchedResume]);
 
   // Mapping logic is now centralized in utils/resume-mapper
@@ -198,29 +199,34 @@ export function ResumeGenerator() {
     const templateId = resumeData.selectedTemplate ?? 'moey';
     const templateName = templateMap[templateId] ?? 'moey_template.html';
 
+    // Always map the data to ensure proper formatting (dates, language levels, etc.)
+    const mappedPayload = mapResumeDataToCreateRequest(resumeData);
+
     setIsGenerating(true);
     try {
       if (isEditMode && resumeId) {
-        // Update existing resume
-        await updateResume(resumeId, resumeData); // You may need to map data shape
+        // Update existing resume with mapped data
+        await updateResume(resumeId, mappedPayload);
         // After update, trigger download
         generateResumeMutation.mutate(
-          { createPayload: mapResumeDataToCreateRequest(resumeData), templateName },
+          { createPayload: mappedPayload, templateName },
           {
             onSettled: () => setIsGenerating(false),
             onSuccess: () => {
+              toast.success('Resume updated successfully!');
               // Navigate to resume section after successful generation
               navigate('/dashboard/resumes');
             },
           }
         );
       } else {
-        // Create new resume
+        // Create new resume with mapped data
         generateResumeMutation.mutate(
-          { createPayload: mapResumeDataToCreateRequest(resumeData), templateName },
+          { createPayload: mappedPayload, templateName },
           {
             onSettled: () => setIsGenerating(false),
             onSuccess: () => {
+              toast.success('Resume created successfully!');
               // Navigate to resume section after successful generation
               navigate('/dashboard/resumes');
             },
@@ -229,7 +235,28 @@ export function ResumeGenerator() {
       }
     } catch (err: any) {
       setIsGenerating(false);
-      setUpdateError(err?.message || 'Failed to update resume.');
+      
+      // Parse validation errors from the API response
+      if (err?.response?.data?.detail) {
+        const validationErrors = err.response.data.detail;
+        if (Array.isArray(validationErrors)) {
+          // Format validation errors for display
+          const errorMessages = validationErrors.map((error: any) => {
+            const field = error.loc?.join('.') || 'unknown';
+            return `${field}: ${error.msg}`;
+          });
+          const errorText = `Validation errors:\n${errorMessages.join('\n')}`;
+          setUpdateError(errorText);
+          toast.error('Please fix the validation errors below');
+        } else {
+          setUpdateError(err.response.data.detail);
+          toast.error(err.response.data.detail);
+        }
+      } else {
+        const errorMessage = err?.message || 'Failed to update resume.';
+        setUpdateError(errorMessage);
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -341,7 +368,7 @@ export function ResumeGenerator() {
                       ${isActive 
                         ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500' 
                         : isCompleted 
-                          ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
+                          ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-blue-300'
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }
                     `}
@@ -374,7 +401,7 @@ export function ResumeGenerator() {
           </CardHeader>
           <CardContent className="pb-24">
             {updateError && (
-              <div className="mb-4 text-destructive text-center font-medium">{updateError}</div>
+              <div className="mb-4 text-destructive text-center font-medium whitespace-pre-line">{updateError}</div>
             )}
             <AnimatePresence mode="wait">
               <motion.div
@@ -424,4 +451,4 @@ export function ResumeGenerator() {
 
     </motion.div>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +45,14 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
   const experiences = data.experience || [];
+
+  // Sync with updated data prop (for edit mode)
+  useEffect(() => {
+    if (data.experience && data.experience.length > 0) {
+      // Data is already synced via the experiences variable
+      // This effect ensures we're aware of data changes
+    }
+  }, [data.experience]);
 
   const defaultExperience: Omit<Experience, 'id'> = {
     title: '',

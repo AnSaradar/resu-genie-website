@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ export function Navbar() {
   const { setTheme, theme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, logout } = useAuth();
 
   const handleLogout = () => {
@@ -74,7 +75,14 @@ export function Navbar() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Link to="/dashboard" className="text-sm font-medium hover:text-primary">
+              <Link 
+                to="/dashboard" 
+                className={`text-sm font-medium hover:text-primary ${
+                  location.pathname.startsWith('/dashboard') 
+                    ? 'text-primary font-semibold' 
+                    : ''
+                }`}
+              >
                 Dashboard
               </Link>
             </motion.div>
@@ -183,7 +191,14 @@ export function Navbar() {
             Testimonials
           </a>
           {isAuthenticated && (
-            <Link to="/dashboard" className="block text-sm font-medium">
+            <Link 
+              to="/dashboard" 
+              className={`block text-sm font-medium ${
+                location.pathname.startsWith('/dashboard') 
+                  ? 'text-primary font-semibold' 
+                  : ''
+              }`}
+            >
               Dashboard
             </Link>
           )}

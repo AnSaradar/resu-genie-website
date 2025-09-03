@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,15 +31,15 @@ import { ResumeData } from "../../pages/ResumeGenerator";
 // New interface reflecting renamed fields
 export interface PersonalProject {
   id: string;
-  name: string;
+  title: string; // Changed from 'name' to match backend
   description: string;
   technologies: string[];
-  startDate: string;
-  endDate: string;
+  startDate?: string; // Made optional
+  endDate?: string; // Made optional
   isOngoing: boolean;
   liveUrl?: string; // formerly projectUrl
   projectUrl?: string; // formerly githubUrl
-  achievements?: string;
+  // Removed 'achievements' field as it's not supported by backend
 }
 
 interface PersonalProjectsStepProps {
@@ -61,17 +61,25 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
 
   const projects = data.personalProjects || [];
 
+  // Sync with updated data prop (for edit mode)
+  useEffect(() => {
+    if (data.personalProjects && data.personalProjects.length > 0) {
+      // Data is already synced via the projects variable
+      // This effect ensures we're aware of data changes
+    }
+  }, [data.personalProjects]);
+
   const emptyProject: PersonalProject = {
     id: '',
-    name: '',
+    title: '', // Changed from 'name' to 'title'
     description: '',
     technologies: [],
-    startDate: '',
-    endDate: '',
+    startDate: undefined, // Made optional
+    endDate: undefined, // Made optional
     isOngoing: false,
     liveUrl: '',
     projectUrl: '',
-    achievements: ''
+    // Removed 'achievements' field as it's not supported by backend
   };
 
   // Auto-fill handler – imports all personal projects from user profile
@@ -149,8 +157,8 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
     }
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'No date';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
@@ -253,14 +261,14 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
                       <div className="flex-1">
                         <CardTitle className="text-xl flex items-center gap-2">
                           <Code className="h-5 w-5 text-blue-600" />
-                          {project.name}
+                          {project.title}
                         </CardTitle>
                         <CardDescription className="mt-1">
                           <div className="flex items-center gap-4 text-sm">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              {formatDate(project.startDate)} - {
-                                project.isOngoing ? 'Present' : formatDate(project.endDate)
+                              {project.startDate ? formatDate(project.startDate) : 'No start date'} - {
+                                project.isOngoing ? 'Present' : (project.endDate ? formatDate(project.endDate) : 'No end date')
                               }
                             </span>
                             {project.isOngoing && (
@@ -306,16 +314,6 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
                               </span>
                             ))}
                           </div>
-                        </div>
-                      )}
-
-                      {project.achievements && (
-                        <div>
-                          <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
-                            <Target className="h-4 w-4" />
-                            Key Achievements:
-                          </h4>
-                          <p className="text-sm text-muted-foreground">{project.achievements}</p>
                         </div>
                       )}
 
@@ -371,7 +369,7 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
               {isEditing ? 'Edit Personal Project' : 'Add Personal Project'}
             </DialogTitle>
             <DialogDescription>
-              Add details about your personal project, including technologies used and achievements.
+              Add details about your personal project, including technologies used.
             </DialogDescription>
           </DialogHeader>
 
@@ -380,11 +378,11 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
               {/* First Row - Project Name */}
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <Label htmlFor="name">Project Name *</Label>
+                  <Label htmlFor="title">Project Title *</Label>
                   <Input
-                    id="name"
-                    value={editingProject.name}
-                    onChange={(e) => updateEditingItem('name', e.target.value)}
+                    id="title"
+                    value={editingProject.title}
+                    onChange={(e) => updateEditingItem('title', e.target.value)}
                     placeholder="My Awesome Project"
                   />
                 </div>
@@ -429,11 +427,11 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startDate">Start Date *</Label>
+                  <Label htmlFor="startDate">Start Date</Label>
                   <Input
                     id="startDate"
                     type="date"
-                    value={editingProject.startDate}
+                    value={editingProject.startDate || ''}
                     onChange={(e) => updateEditingItem('startDate', e.target.value)}
                   />
                 </div>
@@ -442,7 +440,7 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
                   <Input
                     id="endDate"
                     type="date"
-                    value={editingProject.endDate}
+                    value={editingProject.endDate || ''}
                     onChange={(e) => updateEditingItem('endDate', e.target.value)}
                     disabled={editingProject.isOngoing}
                   />
@@ -478,17 +476,6 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
                   />
                 </div>
               </div>
-
-              <div>
-                <Label htmlFor="achievements">Key Achievements</Label>
-                <Textarea
-                  id="achievements"
-                  value={editingProject.achievements || ''}
-                  onChange={(e) => updateEditingItem('achievements', e.target.value)}
-                  placeholder="Highlight specific achievements, metrics, or notable features..."
-                  rows={2}
-                />
-              </div>
             </div>
           )}
 
@@ -498,7 +485,7 @@ export function PersonalProjectsStep({ data, onUpdate, onNext, onPrevious, isFir
             </Button>
             <Button 
               onClick={handleSave}
-              disabled={!editingProject?.name || !editingProject?.description || !editingProject?.startDate}
+              disabled={!editingProject?.title || !editingProject?.description}
             >
               {isEditing ? 'Update' : 'Add'} Project
             </Button>

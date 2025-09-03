@@ -9,6 +9,7 @@ import { useGetResumeDetails } from '@/services/resume/hook';
 import { ResumePreview } from '../components/resume-generator/ResumePreview';
 import { useState } from 'react';
 import apiClient from '@/lib/axios';
+import { mapBackendResumeToFrontend } from '@/utils/resume-mapper';
 
 export default function MyResumes() {
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ export default function MyResumes() {
           {previewError && <div className="py-10 text-center text-destructive">{previewError.message}</div>}
           {previewData && previewData.resume && (
             <ResumePreview
-              data={previewData.resume}
+              data={mapBackendResumeToFrontend(previewData.resume)}
               onUpdate={() => {}}
               onNext={() => {}}
               onPrevious={() => {}}

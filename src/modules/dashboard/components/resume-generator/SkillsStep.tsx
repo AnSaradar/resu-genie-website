@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,6 +60,14 @@ export function SkillsStep({ data, onUpdate, onNext, onPrevious, isFirstStep, is
 
   const skills = data.skills || [];
   
+  // Sync with updated data prop (for edit mode)
+  useEffect(() => {
+    if (data.skills && data.skills.length > 0) {
+      // Data is already synced via the skills variable
+      // This effect ensures we're aware of data changes
+    }
+  }, [data.skills]);
+
   const filteredSkills = selectedType === 'all'
     ? skills
     : skills.filter((skill: Skill) => skill.is_soft_skill === (selectedType === 'soft'));

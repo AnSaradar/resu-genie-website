@@ -97,6 +97,30 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
 
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
+  // Sync local state with updated data prop (for edit mode)
+  useEffect(() => {
+    if (data.personalInfo) {
+      setPersonalInfo({
+        firstName: data.personalInfo.firstName || '',
+        lastName: data.personalInfo.lastName || '',
+        email: data.personalInfo.email || '',
+        phone: data.personalInfo.phone || '',
+        city: data.personalInfo.city || '',
+        country: data.personalInfo.country || '',
+        linkedinUrl: data.personalInfo.linkedinUrl || '',
+        websiteUrl: data.personalInfo.websiteUrl || '',
+        currentPosition: data.personalInfo.currentPosition || '',
+        profileSummary: data.personalInfo.profileSummary || '',
+        seniorityLevel: (data.personalInfo.seniorityLevel as any) || '',
+        workField: (data.personalInfo.workField as any) || '',
+        yearsOfExperience: typeof data.personalInfo.yearsOfExperience === 'number'
+          ? data.personalInfo.yearsOfExperience
+          : (data.personalInfo.yearsOfExperience ? parseInt(data.personalInfo.yearsOfExperience as string, 10) || '' : ''),
+        birthDate: data.personalInfo.birthDate || '',
+      });
+    }
+  }, [data.personalInfo]);
+
   // Auto-fill from user and profile data
   const handleAutoFill = () => {
     if (user || userProfile) {

@@ -35,15 +35,15 @@ export interface PersonalProjectResponse {
 
 export interface PersonalProject {
   id: string;
-  name: string;
+  title: string; // Changed from 'name' to match backend
   description: string;
   technologies: string[];
-  startDate: string;
-  endDate: string;
+  startDate?: string; // Made optional
+  endDate?: string; // Made optional
   isOngoing: boolean;
   liveUrl?: string;
   projectUrl?: string;
-  achievements?: string;
+  // Removed 'achievements' field as it's not supported by backend
   duration?: string;
 }
 
