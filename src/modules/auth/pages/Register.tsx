@@ -2,6 +2,7 @@ import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,6 +19,8 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Validation states
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -339,13 +342,14 @@ export function Register() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                     className={passwordError ? "border-red-500" : ""}
+                    showPassword={showPassword}
+                    onTogglePassword={() => setShowPassword(!showPassword)}
                     required
                   />
                   {passwordError && (
@@ -358,13 +362,14 @@ export function Register() {
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
-                    type="password"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                     className={confirmPasswordError ? "border-red-500" : ""}
+                    showPassword={showConfirmPassword}
+                    onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
                     required
                   />
                   {confirmPasswordError && (

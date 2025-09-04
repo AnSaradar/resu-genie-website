@@ -5,6 +5,8 @@ import { LandingPage } from './modules/landing/LandingPage';
 import { Login } from './modules/auth/pages/Login';
 import { Register } from './modules/auth/pages/Register';
 import { OTPVerification } from './modules/auth/pages/OTPVerification';
+import { ForgotPassword } from './modules/auth/pages/ForgotPassword';
+import { ResetPassword } from './modules/auth/pages/ResetPassword';
 import { AuthLayout } from './modules/auth/layout';
 import { Layout } from '@/components/layout/Layout';
 import { ThemeProvider } from 'next-themes';
@@ -14,6 +16,7 @@ import { Profile } from './modules/onboarding/pages/Profile';
 import DashboardLayout from './modules/dashboard/layout';
 import { MainDashboard } from './modules/dashboard/pages/MainDashboard';
 import { ResumeGenerator } from './modules/dashboard/pages/ResumeGenerator';
+import { ResumeEvaluator } from './modules/dashboard/pages/ResumeEvaluator';
 import MyResumes from './modules/dashboard/pages/MyResumes';
 import Account from './modules/dashboard/pages/Account';
 
@@ -130,6 +133,16 @@ function AppContent() {
             <AuthLayout><OTPVerification /></AuthLayout>
           </AuthRoute>
         } />
+        <Route path="/forgot-password" element={
+          <AuthRoute>
+            <AuthLayout><ForgotPassword /></AuthLayout>
+          </AuthRoute>
+        } />
+        <Route path="/reset-password" element={
+          <AuthRoute>
+            <AuthLayout><ResetPassword /></AuthLayout>
+          </AuthRoute>
+        } />
         
         {/* Onboarding routes */}
         <Route path="/onboarding" element={
@@ -154,7 +167,7 @@ function AppContent() {
           <Route path="generate/:resumeId" element={<ResumeGenerator />} />
           <Route path="templates" element={<div>Templates coming soon</div>} />
           <Route path="enhancer" element={<div>AI Enhancer coming soon</div>} />
-          <Route path="evaluator" element={<div>Resume Evaluator coming soon</div>} />
+          <Route path="evaluator" element={<ResumeEvaluator />} />
           <Route path="generate" element={<ResumeGenerator />} />
           <Route path="upload" element={<div>Upload Resume coming soon</div>} />
           <Route path="schedule" element={<div>Schedule Review coming soon</div>} />

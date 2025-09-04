@@ -3,8 +3,15 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { useGetUserProfile } from "@/services/user_profile/hook";
+import { useGetAllExperiences } from "@/services/experience/hook";
+import { useGetAllEducations } from "@/services/education/hook";
+import { useGetAllSkills } from "@/services/skill/hook";
+import { useGetAllCertifications } from "@/services/certification/hook";
+import { useGetAllLanguages } from "@/services/language/hook";
+import { useGetAllPersonalProjects } from "@/services/personal_project/hook";
 import { useAuth } from "@/services/auth/hook";
 import { 
   FilePlus2, 
@@ -19,18 +26,60 @@ import {
   ArrowRight,
   Download,
   Calendar,
-  Target
+  Target,
+  BarChart3,
+  Activity,
+  Shield,
+  Clock,
+  Eye,
+  EyeOff,
+  Zap,
+  Award,
+  Globe,
+  Code,
+  BookOpen,
+  Briefcase,
+  GraduationCap,
+  Languages,
+  Link as LinkIcon,
+  FolderOpen
 } from 'lucide-react';
 
 export function MainDashboard() {
   const { user } = useAuth();
-  const { data: userProfile, isLoading: profileLoading } = useGetUserProfile();
   const navigate = useNavigate();
 
-  // Dummy data for demonstration - replace with actual data later
-  const userDocuments: any[] = []; // Replace with actual documents later
-  const hasDocuments = userDocuments.length > 0;
-  const profileCompletionPercentage = userProfile ? 100 : 0;
+  // Fetch all user data
+  const { data: userProfile, isLoading: profileLoading } = useGetUserProfile();
+  const { data: experiences, isLoading: experiencesLoading } = useGetAllExperiences();
+  const { data: educations, isLoading: educationsLoading } = useGetAllEducations();
+  const { data: skills, isLoading: skillsLoading } = useGetAllSkills();
+  const { data: certifications, isLoading: certificationsLoading } = useGetAllCertifications();
+  const { data: languages, isLoading: languagesLoading } = useGetAllLanguages();
+  const { data: personalProjects, isLoading: projectsLoading } = useGetAllPersonalProjects();
+
+  // Calculate profile completeness
+  const calculateProfileCompleteness = () => {
+    if (!userProfile) return 0;
+    
+    let completedSections = 0;
+    const totalSections = 8;
+    
+    // Check each section
+    if (userProfile.profile_summary) completedSections++;
+    if (userProfile.linkedin_url) completedSections++;
+    if (userProfile.current_position) completedSections++;
+    if (userProfile.work_field) completedSections++;
+    if (userProfile.years_of_experience !== null && userProfile.years_of_experience !== undefined) completedSections++;
+    if (experiences && experiences.length > 0) completedSections++;
+    if (educations && educations.length > 0) completedSections++;
+    if (skills && skills.length > 0) completedSections++;
+    
+    return Math.round((completedSections / totalSections) * 100);
+  };
+
+  const profileCompletionPercentage = calculateProfileCompleteness();
+  const hasDocuments = false; // Will be updated when resume service is implemented
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -64,7 +113,8 @@ export function MainDashboard() {
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
       iconColor: 'text-blue-600',
       action: 'Browse Templates',
-      route: '/dashboard/templates'
+      route: '/dashboard/templates',
+      enabled: false // Not implemented yet
     },
     {
       id: 'builder',
@@ -74,32 +124,58 @@ export function MainDashboard() {
       bgColor: 'bg-green-50 dark:bg-green-900/20',
       iconColor: 'text-green-600',
       action: 'Start Building',
-      route: '/dashboard/generate'
+      route: '/dashboard/generate',
+      enabled: true
+    },
+    {
+      id: 'evaluator',
+      title: 'Resume Evaluator',
+      description: 'Get AI-powered feedback and suggestions to improve your resume',
+      icon: Wand2,
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      iconColor: 'text-purple-600',
+      action: 'Evaluate Resume',
+      route: '/dashboard/evaluator',
+      enabled: true
     }
   ];
 
   const quickActions = [
     {
-      title: 'Upload Resume',
-      description: 'Upload an existing resume to enhance or evaluate',
-      icon: Download,
-      action: () => navigate('/dashboard/upload')
+      title: 'Generate Resume',
+      description: 'Create a new resume from your profile data',
+      icon: FilePlus2,
+      action: () => navigate('/dashboard/generate'),
+      enabled: true
     },
     {
-      title: 'Schedule Review',
-      description: 'Book a 1-on-1 resume review session',
-      icon: Calendar,
-      action: () => navigate('/dashboard/schedule')
+      title: 'Complete Profile',
+      description: 'Finish setting up your profile information',
+      icon: User,
+      action: () => navigate('/dashboard/account'),
+      enabled: true
     },
     {
-      title: 'Career Goals',
-      description: 'Set and track your career objectives',
-      icon: Target,
-      action: () => navigate('/dashboard/goals')
+      title: 'Browse Templates',
+      description: 'Explore professional resume templates',
+      icon: FileText,
+      action: () => navigate('/dashboard/templates'),
+      enabled: false // Not implemented yet
+    },
+    {
+      title: 'Get Evaluation',
+      description: 'Get AI feedback on your resume',
+      icon: BarChart3,
+      action: () => navigate('/dashboard/evaluator'),
+      enabled: true
     }
   ];
 
-  if (profileLoading) {
+  // Loading state
+  const isLoading = profileLoading || experiencesLoading || educationsLoading || 
+                   skillsLoading || certificationsLoading || languagesLoading || projectsLoading;
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -131,105 +207,117 @@ export function MainDashboard() {
             onClick={() => navigate('/dashboard/generate')}
           >
             <FilePlus2 className="mr-2 h-4 w-4" />
-            Build a Resume
+            Generate Resume
           </Button>
         </div>
       </motion.div>
 
-      {/* Profile Completion Status */}
-      {profileCompletionPercentage < 100 && (
-        <motion.div variants={itemVariants}>
-          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-900/20">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-orange-600" />
-                <CardTitle className="text-orange-800 dark:text-orange-200">
-                  Complete Your Profile
-                </CardTitle>
+      {/* Top Row: Resume Generation Status & Profile Completeness */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Resume Generation Status */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              <CardTitle>Resume Generation Status</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Ready to Generate</span>
+                <Badge variant="outline" className="text-green-600 border-green-600">
+                  {profileCompletionPercentage >= 70 ? "Ready" : "Incomplete"}
+                </Badge>
               </div>
-              <CardDescription className="text-orange-700 dark:text-orange-300">
-                Finish setting up your profile to unlock all features
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Profile completion</span>
-                  <span>{profileCompletionPercentage}%</span>
-                </div>
-                <Progress value={profileCompletionPercentage} className="h-2" />
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Profile Completeness</span>
+                <span className="text-sm font-medium">{profileCompletionPercentage}%</span>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+              <Progress value={profileCompletionPercentage} className="h-2" />
+              {profileCompletionPercentage < 70 && (
+                <p className="text-xs text-muted-foreground">
+                  Complete your profile to generate resumes
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Platform Features Grid */}
-      <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-semibold mb-6">Explore ResuGenie Platform</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {platformFeatures.map((feature) => {
-            const IconComponent = feature.icon;
-            return (
-              <motion.div
-                key={feature.id}
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className={`p-3 rounded-lg ${feature.bgColor}`}>
-                        <IconComponent className={`h-6 w-6 ${feature.iconColor}`} />
-                      </div>
-                    </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      className="w-full group-hover:scale-105 transition-transform"
-                      onClick={() => navigate(feature.route)}
-                    >
-                      {feature.action}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
+        {/* Profile Completeness Score */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <CardTitle>Profile Completeness</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold">{profileCompletionPercentage}%</span>
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Complete</div>
+                </div>
+              </div>
+              <Progress value={profileCompletionPercentage} className="h-2" />
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-1">
+                  {userProfile?.profile_summary ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
+                  <span>Profile Summary</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {experiences && experiences.length > 0 ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
+                  <span>Experience</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {educations && educations.length > 0 ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
+                  <span>Education</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {skills && skills.length > 0 ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
+                  <span>Skills</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions Panel */}
       <motion.div variants={itemVariants}>
         <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => {
             const IconComponent = action.icon;
             return (
               <motion.div
                 key={index}
                 variants={itemVariants}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: action.enabled ? 1.02 : 1 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <Card 
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={action.action}
+                  className={`transition-shadow ${
+                    action.enabled 
+                      ? 'cursor-pointer hover:shadow-md' 
+                      : 'opacity-60 cursor-not-allowed'
+                  }`}
+                  onClick={action.enabled ? action.action : undefined}
                 >
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-3">
-                      <IconComponent className="h-5 w-5 text-blue-600" />
+                      <IconComponent className={`h-5 w-5 ${action.enabled ? 'text-blue-600' : 'text-gray-400'}`} />
                       <div>
                         <h3 className="font-medium">{action.title}</h3>
                         <p className="text-sm text-muted-foreground">
                           {action.description}
                         </p>
+                        {!action.enabled && (
+                          <Badge variant="secondary" className="mt-1 text-xs">
+                            Coming Soon
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -240,58 +328,151 @@ export function MainDashboard() {
         </div>
       </motion.div>
 
-      {/* Recent Activity / Statistics */}
-      <motion.div variants={itemVariants}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Resumes
-              </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{userDocuments.length}</div>
-              <p className="text-xs text-muted-foreground">
-                +0 from last month
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Profile Score
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">85%</div>
-              <p className="text-xs text-muted-foreground">
-                +5% from last week
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Job Matches
-              </CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">
-                +3 new this week
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+      {/* Middle Row: Data Statistics & Platform Features */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Data Statistics Overview */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              <CardTitle>Your Data Overview</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Briefcase className="h-4 w-4 text-blue-600 mr-1" />
+                  <span className="text-2xl font-bold">{experiences?.length || 0}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Work Experience</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <GraduationCap className="h-4 w-4 text-green-600 mr-1" />
+                  <span className="text-2xl font-bold">{educations?.length || 0}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Education</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Code className="h-4 w-4 text-purple-600 mr-1" />
+                  <span className="text-2xl font-bold">{skills?.length || 0}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Skills</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Award className="h-4 w-4 text-orange-600 mr-1" />
+                  <span className="text-2xl font-bold">{certifications?.length || 0}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Certifications</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Platform Features */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-green-600" />
+              <CardTitle>Platform Features</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {platformFeatures.map((feature) => {
+                const IconComponent = feature.icon;
+                return (
+                  <div 
+                    key={feature.id}
+                    className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                      feature.enabled 
+                        ? 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer' 
+                        : 'opacity-60'
+                    }`}
+                    onClick={feature.enabled ? () => navigate(feature.route) : undefined}
+                  >
+                    <div className={`p-2 rounded-lg ${feature.bgColor}`}>
+                      <IconComponent className={`h-4 w-4 ${feature.iconColor}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{feature.title}</p>
+                      <p className="text-xs text-muted-foreground">{feature.description}</p>
+                    </div>
+                    {!feature.enabled && (
+                      <Badge variant="secondary" className="text-xs">
+                        Soon
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Bottom Row: Recent Activity & Evaluation Summary */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity Feed */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-600" />
+              <CardTitle>Recent Activity</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-sm">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>Profile updated</span>
+                <span className="text-muted-foreground ml-auto">2 hours ago</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span>Account created</span>
+                <span className="text-muted-foreground ml-auto">1 day ago</span>
+              </div>
+              <div className="text-center py-4 text-muted-foreground text-sm">
+                <EyeOff className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Activity tracking coming soon</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Evaluation Quick Summary */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              <CardTitle>Last Evaluation</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600">-</div>
+                <p className="text-sm text-muted-foreground">No evaluation yet</p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/dashboard/evaluator')}
+              >
+                <Wand2 className="mr-2 h-4 w-4" />
+                Get Evaluation
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Getting Started Guide (for new users) */}
-      {!hasDocuments && (
+      {profileCompletionPercentage < 50 && (
         <motion.div variants={itemVariants}>
           <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
             <CardHeader>
@@ -308,20 +489,24 @@ export function MainDashboard() {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span>Profile setup completed</span>
+                  {userProfile ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
+                  <span>Complete your profile</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {experiences && experiences.length > 0 ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
+                  <span>Add work experience</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {educations && educations.length > 0 ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
+                  <span>Add education details</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {skills && skills.length > 0 ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
+                  <span>Add your skills</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                  <span>Choose a template or build from scratch</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                  <span>Fill in your experience and skills</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                  <span>Download your polished resume</span>
+                  <span>Generate your resume</span>
                 </div>
               </div>
             </CardContent>

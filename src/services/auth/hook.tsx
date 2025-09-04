@@ -141,10 +141,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Logout function
-  const logout = () => {
-    AuthService.logout();
-    setUser(null);
-    navigate('/login');
+  const logout = async () => {
+    try {
+      await AuthService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Continue with logout even if backend call fails
+    } finally {
+      setUser(null);
+      navigate('/login');
+    }
   };
 
   // Clear error

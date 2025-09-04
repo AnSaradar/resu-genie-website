@@ -12,6 +12,17 @@ export interface RegisterRequest {
   phone: string;
 }
 
+// Password Reset Request Types
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetComplete {
+  email: string;
+  otp_code: string;
+  new_password: string;
+}
+
 // Authentication Response Types
 export interface AuthResponse {
   access_token: string;
@@ -46,7 +57,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<AuthResponse>;
-  logout: () => void;
+  logout: () => Promise<void>;
   error: string | null;
   clearError: () => void;
 }

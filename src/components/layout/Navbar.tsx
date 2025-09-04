@@ -19,9 +19,8 @@ export function Navbar() {
   const location = useLocation();
   const { isAuthenticated, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (

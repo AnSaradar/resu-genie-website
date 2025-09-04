@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 // Only import types used by AuthService
-import { LoginRequest, RegisterRequest, AuthResponse, User } from './types'; 
+import { LoginRequest, RegisterRequest, AuthResponse, User, PasswordResetRequest, PasswordResetComplete } from './types'; 
 import { 
     saveAuthToken, 
     getAuthToken, 
@@ -173,12 +173,34 @@ export const AuthService = {
   },
 
   /**
-   * Logout user by removing tokens
+   * Logout user by calling backend logout endpoint and removing tokens
    */
-  logout(): void {
-    removeAuthToken();
-    removeRefreshToken();
-    console.log("User logged out, tokens removed.");
+  async logout(): Promise<void> {
+    try {
+      const token = getAuthToken();
+      if (token) {
+        // Call backend logout endpoint to blacklist the token
+        const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          console.warn('Backend logout failed, but continuing with local logout');
+        }
+      }
+    } catch (error) {
+      console.warn('Error calling backend logout:', error);
+      // Continue with local logout even if backend call fails
+    } finally {
+      // Always remove tokens locally
+      removeAuthToken();
+      removeRefreshToken();
+      console.log("User logged out, tokens removed.");
+    }
   },
 
   /**
@@ -314,22 +336,46 @@ export const AuthService = {
      }
    },
 
-   /**
-    * Resend verification OTP with cooldown check
-    */
-   async resendVerificationOTP(email: string): Promise<any> {
-     try {
-       const response = await api.post('/api/v1/auth/resend-verification-otp', {
-         email,
-         purpose: 'verification'
-       });
-       return response.data;
-     } catch (error) {
-       throw createApiError(error, 'Failed to resend verification OTP');
-     }
-   },
+     /**
+   * Resend verification OTP with cooldown check
+   */
+  async resendVerificationOTP(email: string): Promise<any> {
+    try {
+      const response = await api.post('/api/v1/auth/resend-verification-otp', {
+        email,
+        purpose: 'verification'
+      });
+      return response.data;
+    } catch (error) {
+      throw createApiError(error, 'Failed to resend verification OTP');
+    }
+  },
 
-   // Add other methods like getUserInfo if needed, making sure they use the 
-   // upcoming configured axios instance (apiClient)
+  /**
+   * Request password reset OTP
+   */
+  async requestPasswordReset(data: PasswordResetRequest): Promise<any> {
+    try {
+      const response = await api.post('/api/v1/otp/password-reset/request', data);
+      return response.data;
+    } catch (error) {
+      throw createApiError(error, 'Failed to request password reset');
+    }
+  },
+
+  /**
+   * Complete password reset with OTP verification
+   */
+  async completePasswordReset(data: PasswordResetComplete): Promise<any> {
+    try {
+      const response = await api.post('/api/v1/otp/password-reset/complete', data);
+      return response.data;
+    } catch (error) {
+      throw createApiError(error, 'Failed to complete password reset');
+    }
+  },
+
+  // Add other methods like getUserInfo if needed, making sure they use the 
+  // upcoming configured axios instance (apiClient)
 
 };

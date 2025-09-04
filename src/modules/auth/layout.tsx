@@ -10,26 +10,12 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="py-4 px-6 border-b border-gray-200 dark:border-gray-800">
-        <div className="container flex justify-between items-center">
+        <div className="container flex justify-center items-center">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
               ResuGenie
             </span>
           </Link>
-          <nav className="flex items-center gap-4">
-            <Link 
-              to="/login" 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link 
-              to="/register" 
-              className="text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-4 py-2 rounded-md hover:opacity-90 transition-opacity"
-            >
-              Sign Up
-            </Link>
-          </nav>
         </div>
       </header>
 
