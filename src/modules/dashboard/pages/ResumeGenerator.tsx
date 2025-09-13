@@ -35,10 +35,11 @@ import { TemplateSelectionStep } from '../components/resume-generator/TemplateSe
 import { ResumePreview } from '../components/resume-generator/ResumePreview';
 import { Experience } from '@/services/experience/types';
 import { StepNavigation } from '../components/resume-generator/StepNavigation';
-import { useGenerateAndDownloadResume } from '@/services/resume/hook';
+import { useGenerateAndDownloadResume, useGetMyResumes } from '@/services/resume/hook';
 import { mapResumeDataToCreateRequest } from '@/utils/resume-mapper';
 import { mapBackendResumeToFrontend } from '@/utils/resume-mapper';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ResumeNamingDialog } from '@/components/resume/ResumeNamingDialog';
 
 export interface PersonalInfo {
   firstName: string;
@@ -156,7 +157,112 @@ export function ResumeGenerator() {
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const generateResumeMutation = useGenerateAndDownloadResume();
+  const { data: myResumesData } = useGetMyResumes();
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showNamingDialog, setShowNamingDialog] = useState(false);
+  const [pendingGeneration, setPendingGeneration] = useState<{
+    createPayload: any;
+    templateName: string;
+  } | null>(null);
+
+  // Validation function to check all required fields
+  const validateResumeData = (data: ResumeData): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // Validate Personal Info (required)
+    if (!data.personalInfo) {
+      errors.push('Personal Information is required');
+    } else {
+      const { personalInfo } = data;
+      if (!personalInfo.firstName?.trim()) errors.push('First name is required');
+      if (!personalInfo.lastName?.trim()) errors.push('Last name is required');
+      if (!personalInfo.email?.trim()) errors.push('Email is required');
+      if (!personalInfo.phone?.trim()) errors.push('Phone number is required');
+      if (!personalInfo.birthDate?.trim()) errors.push('Birth date is required');
+    }
+
+    // Validate Experience (at least one required)
+    if (!data.experience || data.experience.length === 0) {
+      errors.push('At least one work experience is required');
+    } else {
+      data.experience.forEach((exp, index) => {
+        if (!exp.title?.trim()) errors.push(`Experience ${index + 1}: Job title is required`);
+        if (!exp.company?.trim()) errors.push(`Experience ${index + 1}: Company name is required`);
+        if (!exp.start_date?.trim()) errors.push(`Experience ${index + 1}: Start date is required`);
+        if (exp.currently_working === undefined || exp.currently_working === null) {
+          errors.push(`Experience ${index + 1}: Please specify if you are currently working here`);
+        }
+        if (!exp.currently_working && !exp.end_date?.trim()) {
+          errors.push(`Experience ${index + 1}: End date is required when not currently working`);
+        }
+      });
+    }
+
+    // Validate Education (at least one required)
+    if (!data.education || data.education.length === 0) {
+      errors.push('At least one education entry is required');
+    } else {
+      data.education.forEach((edu, index) => {
+        if (!edu.institution?.trim()) errors.push(`Education ${index + 1}: Institution name is required`);
+        if (!edu.degree?.trim()) errors.push(`Education ${index + 1}: Degree is required`);
+        if (!edu.field?.trim()) errors.push(`Education ${index + 1}: Field of study is required`);
+        if (!edu.start_date?.trim()) errors.push(`Education ${index + 1}: Start date is required`);
+        if (edu.currently_studying === undefined || edu.currently_studying === null) {
+          errors.push(`Education ${index + 1}: Please specify if you are currently studying`);
+        }
+        if (!edu.currently_studying && !edu.end_date?.trim()) {
+          errors.push(`Education ${index + 1}: End date is required when not currently studying`);
+        }
+      });
+    }
+
+    // Validate Skills (at least one required)
+    if (!data.skills || data.skills.length === 0) {
+      errors.push('At least one skill is required');
+    } else {
+      data.skills.forEach((skill, index) => {
+        if (!skill.name?.trim()) errors.push(`Skill ${index + 1}: Skill name is required`);
+      });
+    }
+
+    // Validate Languages (at least one required)
+    if (!data.languages || data.languages.length === 0) {
+      errors.push('At least one language is required');
+    } else {
+      data.languages.forEach((lang, index) => {
+        if (!lang.name?.trim()) errors.push(`Language ${index + 1}: Language name is required`);
+        if (!lang.proficiency?.trim()) errors.push(`Language ${index + 1}: Proficiency level is required`);
+      });
+    }
+
+    // Validate Certificates (optional but if present, validate required fields)
+    if (data.certificates && data.certificates.length > 0) {
+      data.certificates.forEach((cert, index) => {
+        if (!cert.name?.trim()) errors.push(`Certificate ${index + 1}: Certificate name is required`);
+        if (!cert.issuingOrganization?.trim()) errors.push(`Certificate ${index + 1}: Issuing organization is required`);
+        if (!cert.issueDate?.trim()) errors.push(`Certificate ${index + 1}: Issue date is required`);
+      });
+    }
+
+    // Validate Personal Projects (optional but if present, validate required fields)
+    if (data.personalProjects && data.personalProjects.length > 0) {
+      data.personalProjects.forEach((project, index) => {
+        if (!project.title?.trim()) errors.push(`Project ${index + 1}: Project title is required`);
+        if (!project.description?.trim()) errors.push(`Project ${index + 1}: Project description is required`);
+      });
+    }
+
+    // Validate Template Selection
+    if (!data.selectedTemplate?.trim()) {
+      errors.push('Please select a resume template');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
 
   // Prefill for edit mode
   useEffect(() => {
@@ -188,6 +294,15 @@ export function ResumeGenerator() {
   const handleSaveAndDownload = async () => {
     if (isGenerating) return;
     setUpdateError(null);
+    setValidationErrors([]);
+
+    // Validate all required fields before proceeding
+    const validation = validateResumeData(resumeData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please complete all required fields before generating your resume');
+      return;
+    }
 
     // Ensure a template is selected – default to moey if not
     const templateMap: Record<string, string> = {
@@ -202,14 +317,29 @@ export function ResumeGenerator() {
     // Always map the data to ensure proper formatting (dates, language levels, etc.)
     const mappedPayload = mapResumeDataToCreateRequest(resumeData);
 
+    // Store the generation data and show naming dialog
+    setPendingGeneration({ createPayload: mappedPayload, templateName });
+    setShowNamingDialog(true);
+  };
+
+  // Handle resume naming confirmation
+  const handleResumeNameConfirm = async (resumeName: string) => {
+    if (!pendingGeneration) return;
+
     setIsGenerating(true);
+    setShowNamingDialog(false);
+
     try {
       if (isEditMode && resumeId) {
         // Update existing resume with mapped data
-        await updateResume(resumeId, mappedPayload);
-        // After update, trigger download
+        await updateResume(resumeId, pendingGeneration.createPayload);
+        // After update, trigger download with custom filename
         generateResumeMutation.mutate(
-          { createPayload: mappedPayload, templateName },
+          { 
+            createPayload: pendingGeneration.createPayload, 
+            templateName: pendingGeneration.templateName,
+            customFileName: resumeName
+          },
           {
             onSettled: () => setIsGenerating(false),
             onSuccess: () => {
@@ -220,9 +350,13 @@ export function ResumeGenerator() {
           }
         );
       } else {
-        // Create new resume with mapped data
+        // Create new resume with mapped data and custom filename
         generateResumeMutation.mutate(
-          { createPayload: mappedPayload, templateName },
+          { 
+            createPayload: pendingGeneration.createPayload, 
+            templateName: pendingGeneration.templateName,
+            customFileName: resumeName
+          },
           {
             onSettled: () => setIsGenerating(false),
             onSuccess: () => {
@@ -257,7 +391,15 @@ export function ResumeGenerator() {
         setUpdateError(errorMessage);
         toast.error(errorMessage);
       }
+    } finally {
+      setPendingGeneration(null);
     }
+  };
+
+  // Handle naming dialog close
+  const handleNamingDialogClose = () => {
+    setShowNamingDialog(false);
+    setPendingGeneration(null);
   };
 
   const handlePrevious = () => {
@@ -268,10 +410,49 @@ export function ResumeGenerator() {
 
   const handleStepClick = (stepIndex: number) => {
     setCurrentStep(stepIndex);
+    // Clear validation errors when navigating to a step
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
   };
 
   const updateResumeData = (stepData: Partial<ResumeData>) => {
     setResumeData(prev => ({ ...prev, ...stepData }));
+    // Clear validation errors when user starts editing
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+  };
+
+  // Helper function to check if a step has validation errors
+  const getStepValidationErrors = (stepIndex: number): string[] => {
+    const stepId = STEPS[stepIndex]?.id;
+    if (!stepId || validationErrors.length === 0) return [];
+    
+    return validationErrors.filter(error => {
+      switch (stepId) {
+        case 'personal':
+          return error.includes('Personal Information') || error.includes('First name') || 
+                 error.includes('Last name') || error.includes('Email') || 
+                 error.includes('Phone number') || error.includes('Birth date');
+        case 'experience':
+          return error.includes('Experience');
+        case 'education':
+          return error.includes('Education');
+        case 'skills':
+          return error.includes('Skill');
+        case 'languages':
+          return error.includes('Language');
+        case 'certificates':
+          return error.includes('Certificate');
+        case 'personalProjects':
+          return error.includes('Project');
+        case 'template':
+          return error.includes('template');
+        default:
+          return false;
+      }
+    });
   };
 
   const containerVariants = {
@@ -359,17 +540,20 @@ export function ResumeGenerator() {
                 const IconComponent = step.icon;
                 const isActive = index === currentStep;
                 const isCompleted = completedSteps.has(index);
+                const hasErrors = getStepValidationErrors(index).length > 0;
                 return (
                   <motion.button
                     key={step.id}
                     onClick={() => handleStepClick(index)}
                     className={`
-                      flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium
+                      flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium relative
                       ${isActive 
                         ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500' 
                         : isCompleted 
                           ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-blue-300'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          : hasErrors
+                            ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 ring-1 ring-red-300 dark:ring-red-700'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }
                     `}
                     whileHover={{ scale: 1.05 }}
@@ -377,10 +561,20 @@ export function ResumeGenerator() {
                   >
                     {isCompleted ? (
                       <CheckCircle className="h-4 w-4" />
+                    ) : hasErrors ? (
+                      <div className="relative">
+                        <IconComponent className="h-4 w-4" />
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                      </div>
                     ) : (
                       <IconComponent className="h-4 w-4" />
                     )}
                     <span className="hidden sm:inline">{step.title}</span>
+                    {hasErrors && (
+                      <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                        ({getStepValidationErrors(index).length})
+                      </span>
+                    )}
                   </motion.button>
                 );
               })}
@@ -402,6 +596,19 @@ export function ResumeGenerator() {
           <CardContent className="pb-24">
             {updateError && (
               <div className="mb-4 text-destructive text-center font-medium whitespace-pre-line">{updateError}</div>
+            )}
+            {validationErrors.length > 0 && (
+              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2">Please complete the following required fields:</h4>
+                <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-red-500 mt-0.5">•</span>
+                      <span>{error}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
             <AnimatePresence mode="wait">
               <motion.div
@@ -448,6 +655,16 @@ export function ResumeGenerator() {
           <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
         </DialogContent>
       </Dialog>
+
+      {/* Resume Naming Dialog */}
+      <ResumeNamingDialog
+        isOpen={showNamingDialog}
+        onClose={handleNamingDialogClose}
+        onConfirm={handleResumeNameConfirm}
+        existingResumeNames={myResumesData?.data?.resumes?.map(r => r.resume_name) || []}
+        defaultName={`${resumeData.personalInfo?.firstName || ''} ${resumeData.personalInfo?.lastName || ''}`.trim() || 'Resume'}
+        isLoading={isGenerating}
+      />
 
     </motion.div>
   );

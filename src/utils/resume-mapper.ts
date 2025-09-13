@@ -188,11 +188,13 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
   // Transform other fields
   const certificates = backendResume.certifications || [];
   
-  // Transform personal projects - Convert dates to frontend format
+  // Transform personal projects - Convert dates to frontend format and map URL fields
   const personalProjects = (backendResume.personal_projects || []).map((project: any) => ({
     ...project,
     startDate: project.start_date ? convertBackendDateToFrontend(project.start_date) : undefined,
     endDate: project.end_date ? convertBackendDateToFrontend(project.end_date) : undefined,
+    liveUrl: project.url,        // Map backend 'url' to frontend 'liveUrl'
+    projectUrl: project.repository_url,  // Map backend 'repository_url' to frontend 'projectUrl'
   }));
 
   return {

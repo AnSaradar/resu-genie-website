@@ -33,8 +33,8 @@ export const useExportResumePdf = () => {
  * Useful for the "Save & Download" action.
  */
 export const useGenerateAndDownloadResume = () => {
-  return useMutation<unknown, Error, { createPayload: ResumeCreateRequest; templateName: string }>({
-    mutationFn: async ({ createPayload, templateName }) => {
+  return useMutation<unknown, Error, { createPayload: ResumeCreateRequest; templateName: string; customFileName?: string }>({
+    mutationFn: async ({ createPayload, templateName, customFileName }) => {
       // Step 1: Create resume
       const createRes = await createResume(createPayload);
       const resumeId = createRes.data.resume_id;
@@ -46,8 +46,12 @@ export const useGenerateAndDownloadResume = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      // Use resume name if provided otherwise default
-      const fileName = `${createRes.data.resume_name ?? 'resume'}.pdf`.replace(/\s+/g, '_');
+      
+      // Use custom filename if provided, otherwise use resume name from backend
+      const fileName = customFileName 
+        ? `${customFileName}.pdf`.replace(/\s+/g, '_')
+        : `${createRes.data.resume_name ?? 'resume'}.pdf`.replace(/\s+/g, '_');
+      
       link.download = fileName;
       document.body.appendChild(link);
       link.click();

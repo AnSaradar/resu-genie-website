@@ -7,38 +7,29 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import imagineTemplate from "@/assets/images/imagine_template.jpg";
+import jobscanTemplate from "@/assets/images/jobscan_template.jpg";
+import moeyTemplate from "@/assets/images/moey_template.jpg";
 
 export function Templates() {
   const templates = [
     {
-      name: "Professional",
-      description: "A clean, professional template suitable for corporate roles.",
-      image: "https://placehold.co/600x800/e6f7ff/007bff?text=Professional+Template",
+      name: "MOEY",
+      description: "A clean and professional resume template with modern design.",
+      image: moeyTemplate,
       color: "blue",
     },
     {
-      name: "Creative",
-      description: "A modern, creative template for design and marketing roles.",
-      image: "https://placehold.co/600x800/fff0f5/ff69b4?text=Creative+Template",
-      color: "pink",
+      name: "IMAGINE",
+      description: "A modern and visually engaging resume template with creative layout.",
+      image: imagineTemplate,
+      color: "purple",
     },
     {
-      name: "Executive",
-      description: "An elegant template for senior management and executive positions.",
-      image: "https://placehold.co/600x800/f0f0f0/333333?text=Executive+Template",
-      color: "gray",
-    },
-    {
-      name: "Technical",
-      description: "A structured template highlighting technical skills and projects.",
-      image: "https://placehold.co/600x800/f0fff0/2e8b57?text=Technical+Template",
+      name: "JOBSCAN",
+      description: "ATS-friendly template optimized for job scanning systems.",
+      image: jobscanTemplate,
       color: "green",
-    },
-    {
-      name: "Minimalist",
-      description: "A clean, minimalist design that lets your content shine.",
-      image: "https://placehold.co/600x800/fff8dc/daa520?text=Minimalist+Template",
-      color: "yellow",
     },
   ];
 

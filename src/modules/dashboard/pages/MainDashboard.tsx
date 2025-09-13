@@ -5,14 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
-import { useGetUserProfile } from "@/services/user_profile/hook";
-import { useGetAllExperiences } from "@/services/experience/hook";
-import { useGetAllEducations } from "@/services/education/hook";
-import { useGetAllSkills } from "@/services/skill/hook";
-import { useGetAllCertifications } from "@/services/certification/hook";
-import { useGetAllLanguages } from "@/services/language/hook";
-import { useGetAllPersonalProjects } from "@/services/personal_project/hook";
 import { useAuth } from "@/services/auth/hook";
+import { useGetProfileCompletionData } from "@/services/profile_completion/hook";
+import { ProfileCompletionWidget } from "../components/ProfileCompletionWidget";
 import { 
   FilePlus2, 
   User, 
@@ -49,37 +44,8 @@ export function MainDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch all user data
-  const { data: userProfile, isLoading: profileLoading } = useGetUserProfile();
-  const { data: experiences, isLoading: experiencesLoading } = useGetAllExperiences();
-  const { data: educations, isLoading: educationsLoading } = useGetAllEducations();
-  const { data: skills, isLoading: skillsLoading } = useGetAllSkills();
-  const { data: certifications, isLoading: certificationsLoading } = useGetAllCertifications();
-  const { data: languages, isLoading: languagesLoading } = useGetAllLanguages();
-  const { data: personalProjects, isLoading: projectsLoading } = useGetAllPersonalProjects();
-
-  // Calculate profile completeness
-  const calculateProfileCompleteness = () => {
-    if (!userProfile) return 0;
-    
-    let completedSections = 0;
-    const totalSections = 8;
-    
-    // Check each section
-    if (userProfile.profile_summary) completedSections++;
-    if (userProfile.linkedin_url) completedSections++;
-    if (userProfile.current_position) completedSections++;
-    if (userProfile.work_field) completedSections++;
-    if (userProfile.years_of_experience !== null && userProfile.years_of_experience !== undefined) completedSections++;
-    if (experiences && experiences.length > 0) completedSections++;
-    if (educations && educations.length > 0) completedSections++;
-    if (skills && skills.length > 0) completedSections++;
-    
-    return Math.round((completedSections / totalSections) * 100);
-  };
-
-  const profileCompletionPercentage = calculateProfileCompleteness();
-  const hasDocuments = false; // Will be updated when resume service is implemented
+  // Single API call for all profile completion data
+  const { data: profileData, isLoading } = useGetProfileCompletionData();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -172,13 +138,26 @@ export function MainDashboard() {
   ];
 
   // Loading state
-  const isLoading = profileLoading || experiencesLoading || educationsLoading || 
-                   skillsLoading || certificationsLoading || languagesLoading || projectsLoading;
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold mb-2">Loading Dashboard</h2>
+          <p className="text-muted-foreground">Please wait while we load your data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no data, show error state
+  if (!profileData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Error Loading Data</h2>
+          <p className="text-muted-foreground">Failed to load profile data. Please try again.</p>
+        </div>
       </div>
     );
   }
@@ -212,76 +191,16 @@ export function MainDashboard() {
         </div>
       </motion.div>
 
-      {/* Top Row: Resume Generation Status & Profile Completeness */}
+      {/* Top Row: Resume Generation Status & Profile Completeness - Now using unified component */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Resume Generation Status */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-600" />
-              <CardTitle>Resume Generation Status</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Ready to Generate</span>
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  {profileCompletionPercentage >= 70 ? "Ready" : "Incomplete"}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Profile Completeness</span>
-                <span className="text-sm font-medium">{profileCompletionPercentage}%</span>
-              </div>
-              <Progress value={profileCompletionPercentage} className="h-2" />
-              {profileCompletionPercentage < 70 && (
-                <p className="text-xs text-muted-foreground">
-                  Complete your profile to generate resumes
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Profile Completeness Score */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              <CardTitle>Profile Completeness</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">{profileCompletionPercentage}%</span>
-                <div className="text-right">
-                  <div className="text-sm text-muted-foreground">Complete</div>
-                </div>
-              </div>
-              <Progress value={profileCompletionPercentage} className="h-2" />
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-1">
-                  {userProfile?.profile_summary ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
-                  <span>Profile Summary</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {experiences && experiences.length > 0 ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
-                  <span>Experience</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {educations && educations.length > 0 ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
-                  <span>Education</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {skills && skills.length > 0 ? <CheckCircle className="h-3 w-3 text-green-600" /> : <AlertCircle className="h-3 w-3 text-orange-600" />}
-                  <span>Skills</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileCompletionWidget 
+          data={profileData.data} 
+          variant="status" 
+        />
+        <ProfileCompletionWidget 
+          data={profileData.data} 
+          variant="detailed" 
+        />
       </motion.div>
 
       {/* Quick Actions Panel */}
@@ -343,28 +262,28 @@ export function MainDashboard() {
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Briefcase className="h-4 w-4 text-blue-600 mr-1" />
-                  <span className="text-2xl font-bold">{experiences?.length || 0}</span>
+                  <span className="text-2xl font-bold">{profileData.data.stats.totalExperiences}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Work Experience</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <GraduationCap className="h-4 w-4 text-green-600 mr-1" />
-                  <span className="text-2xl font-bold">{educations?.length || 0}</span>
+                  <span className="text-2xl font-bold">{profileData.data.stats.totalEducations}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Education</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Code className="h-4 w-4 text-purple-600 mr-1" />
-                  <span className="text-2xl font-bold">{skills?.length || 0}</span>
+                  <span className="text-2xl font-bold">{profileData.data.stats.totalTechnicalSkills + profileData.data.stats.totalSoftSkills}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Skills</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Award className="h-4 w-4 text-orange-600 mr-1" />
-                  <span className="text-2xl font-bold">{certifications?.length || 0}</span>
+                  <span className="text-2xl font-bold">{profileData.data.stats.totalCertifications}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Certifications</p>
               </div>
@@ -471,48 +390,12 @@ export function MainDashboard() {
         </Card>
       </motion.div>
 
-      {/* Getting Started Guide (for new users) */}
-      {profileCompletionPercentage < 50 && (
-        <motion.div variants={itemVariants}>
-          <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-blue-800 dark:text-blue-200">
-                  Get Started with ResuGenie
-                </CardTitle>
-              </div>
-              <CardDescription className="text-blue-700 dark:text-blue-300">
-                Follow these steps to create your first professional resume
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  {userProfile ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
-                  <span>Complete your profile</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {experiences && experiences.length > 0 ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
-                  <span>Add work experience</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {educations && educations.length > 0 ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
-                  <span>Add education details</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {skills && skills.length > 0 ? <CheckCircle className="h-5 w-5 text-green-600" /> : <div className="h-5 w-5 rounded-full border-2 border-gray-300" />}
-                  <span>Add your skills</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                  <span>Generate your resume</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+      {/* Getting Started Guide (for new users) - Now using unified component */}
+      <ProfileCompletionWidget 
+        data={profileData.data} 
+        variant="checklist" 
+        showOnlyWhenIncomplete={true}
+      />
     </motion.div>
   );
 } 
