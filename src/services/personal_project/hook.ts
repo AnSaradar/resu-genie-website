@@ -37,7 +37,7 @@ export const useAddPersonalProjects = () => {
   return useMutation({
     mutationFn: (projects: PersonalProject[]) => {
       const apiData: PersonalProjectData[] = projects.map((p) => ({
-        title: p.name,
+        title: p.title,
         description: p.description,
         technologies: p.technologies,
         start_date: p.startDate,

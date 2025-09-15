@@ -13,7 +13,7 @@ import {
 export const flattenPersonalProject = (project: PersonalProjectResponse): PersonalProject => {
   return {
     id: project.id,
-    name: project.title,
+    title: project.title,
     description: project.description,
     technologies: project.technologies || [],
     startDate: project.start_date || '',
@@ -21,7 +21,6 @@ export const flattenPersonalProject = (project: PersonalProjectResponse): Person
     isOngoing: project.is_ongoing,
     liveUrl: project.live_url || '',
     projectUrl: project.project_url || '',
-    achievements: '', // Backend currently does not provide this field
     duration: project.duration,
   };
 };
