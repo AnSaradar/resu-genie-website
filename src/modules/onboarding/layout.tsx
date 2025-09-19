@@ -12,17 +12,22 @@ export default function OnboardingLayout() {
   useEffect(() => {
     // Only check profile if user is authenticated and not loading
     if (!authLoading && isAuthenticated) {
-      if (!profileLoading && profileCheck) {
-        if (profileCheck.profile_exists) {
+      if (!profileLoading) {
+        if (profileCheck && profileCheck.profile_exists) {
           // User already has a profile, redirect to dashboard
           navigate('/dashboard');
+        } else if (error) {
+          // Profile check failed (likely 404 - no profile exists)
+          // This is expected for new users, continue with onboarding
+          console.log('No profile found, continuing with onboarding');
         }
+        // If profileCheck is null/undefined and no error, continue with onboarding
       }
     } else if (!authLoading && !isAuthenticated) {
       // User is not authenticated, redirect to login
       navigate('/login');
     }
-  }, [authLoading, isAuthenticated, profileLoading, profileCheck, navigate]);
+  }, [authLoading, isAuthenticated, profileLoading, profileCheck, error, navigate]);
 
   // Show loading while checking authentication or profile
   if (authLoading || profileLoading) {
@@ -33,10 +38,10 @@ export default function OnboardingLayout() {
     );
   }
 
-  // Show error state if profile check failed
-  if (error) {
+  // Show error state if profile check failed (but not 404s which are expected)
+  if (error && !error.message?.includes('404')) {
     console.error('Profile check error:', error);
-    // Continue with onboarding if there's an error (safer approach)
+    // Continue with onboarding if there's an unexpected error (safer approach)
   }
 
   return <Outlet />;

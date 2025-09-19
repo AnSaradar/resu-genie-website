@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/services/auth/hook";
 import { useGetProfileCompletionData } from "@/services/profile_completion/hook";
 import { ProfileCompletionWidget } from "../components/ProfileCompletionWidget";
+import { useTour } from "@/modules/tour/TourProvider";
+import { getDashboardSteps } from "@/modules/tour/steps";
 import { 
   FilePlus2, 
   User, 
@@ -43,9 +45,18 @@ import {
 export function MainDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { startTour, enabled, language } = useTour();
 
   // Single API call for all profile completion data
   const { data: profileData, isLoading } = useGetProfileCompletionData();
+
+  // Start dashboard tour on component mount
+  useEffect(() => {
+    if (enabled && profileData) {
+      const steps = getDashboardSteps(language);
+      startTour({ tourKey: 'dashboard', steps, autoRun: true });
+    }
+  }, [enabled, language, profileData, startTour]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -191,20 +202,18 @@ export function MainDashboard() {
         </div>
       </motion.div>
 
-      {/* Top Row: Resume Generation Status & Profile Completeness - Now using unified component */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProfileCompletionWidget 
-          data={profileData.data} 
-          variant="status" 
-        />
-        <ProfileCompletionWidget 
-          data={profileData.data} 
-          variant="detailed" 
-        />
+      {/* Profile Overview */}
+      <motion.div variants={itemVariants}>
+        <div data-tour="profile-widget">
+          <ProfileCompletionWidget 
+            data={profileData.data} 
+            variant="detailed" 
+          />
+        </div>
       </motion.div>
 
       {/* Quick Actions Panel */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} data-tour="quick-actions">
         <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => {
@@ -292,7 +301,7 @@ export function MainDashboard() {
         </Card>
 
         {/* Platform Features */}
-        <Card>
+        <Card data-tour="platform-features">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Rocket className="h-5 w-5 text-green-600" />
@@ -336,7 +345,7 @@ export function MainDashboard() {
       {/* Bottom Row: Recent Activity & Evaluation Summary */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity Feed */}
-        <Card>
+        <Card data-tour="recent-activity">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-blue-600" />

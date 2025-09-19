@@ -22,6 +22,8 @@ import { useGetResumeDetails } from '@/services/resume/hook';
 import { useEffect } from 'react';
 import { updateResume } from '@/services/resume/service';
 import { toast } from 'react-hot-toast';
+import { useTour } from '@/modules/tour/TourProvider';
+import { getResumeSteps } from '@/modules/tour/steps';
 
 // Step components (we'll create these)
 import { PersonalInfoStep } from '../components/resume-generator/PersonalInfoStep';
@@ -165,6 +167,15 @@ export function ResumeGenerator() {
     createPayload: any;
     templateName: string;
   } | null>(null);
+  const { startTour, enabled, language } = useTour();
+
+  // Start resume tour when component mounts
+  useEffect(() => {
+    if (enabled && !isEditMode) {
+      const steps = getResumeSteps(language);
+      startTour({ tourKey: 'resume', steps, autoRun: true });
+    }
+  }, [enabled, language, isEditMode, startTour]);
 
   // Validation function to check all required fields
   const validateResumeData = (data: ResumeData): { isValid: boolean; errors: string[] } => {
@@ -532,10 +543,10 @@ export function ResumeGenerator() {
       </motion.div>
 
       {/* Steps Navigation */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} data-tour="resume-steps">
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2" data-tour="step-navigation">
               {STEPS.map((step, index) => {
                 const IconComponent = step.icon;
                 const isActive = index === currentStep;

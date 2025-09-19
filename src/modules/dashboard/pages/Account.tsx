@@ -8,11 +8,14 @@ import { AccountSkillsSection } from '../components/account-sections/AccountSkil
 import { AccountLanguagesSection } from '../components/account-sections/AccountLanguagesSection';
 import { AccountCertificationsSection } from '../components/account-sections/AccountCertificationsSection';
 import { AccountPersonalProjectsSection } from '../components/account-sections/AccountPersonalProjectsSection';
+import { useTour } from '@/modules/tour/TourProvider';
+import { getProfileSteps } from '@/modules/tour/steps';
 
 export default function Account() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { startTour, enabled, language } = useTour();
 
   // Fetch all account data
   const fetchData = () => {
@@ -32,6 +35,14 @@ export default function Account() {
     fetchData();
   }, []);
 
+  // Start profile tour when data is loaded
+  useEffect(() => {
+    if (enabled && data) {
+      const steps = getProfileSteps(language);
+      startTour({ tourKey: 'profile', steps, autoRun: true });
+    }
+  }, [enabled, language, data, startTour]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -50,29 +61,43 @@ export default function Account() {
   }
 
   return (
-    <div className="w-full space-y-8 py-8">
+    <div className="w-full space-y-8 py-8" data-tour="profile-nav">
       <h1 className="text-3xl font-bold mb-6">My Account Data</h1>
       
       {/* Personal Info Section */}
-      <AccountPersonalInfoSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="personal-info">
+        <AccountPersonalInfoSection data={data} onDataUpdate={fetchData} />
+      </div>
       
       {/* Experience Section */}
-      <AccountExperienceSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="work-experience">
+        <AccountExperienceSection data={data} onDataUpdate={fetchData} />
+      </div>
       
       {/* Education Section */}
-      <AccountEducationSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="education">
+        <AccountEducationSection data={data} onDataUpdate={fetchData} />
+      </div>
       
       {/* Skills Section */}
-      <AccountSkillsSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="skills">
+        <AccountSkillsSection data={data} onDataUpdate={fetchData} />
+      </div>
       
       {/* Languages Section */}
-      <AccountLanguagesSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="languages">
+        <AccountLanguagesSection data={data} onDataUpdate={fetchData} />
+      </div>
       
       {/* Certifications Section */}
-      <AccountCertificationsSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="certifications">
+        <AccountCertificationsSection data={data} onDataUpdate={fetchData} />
+      </div>
       
       {/* Personal Projects Section */}
-      <AccountPersonalProjectsSection data={data} onDataUpdate={fetchData} />
+      <div data-tour="personal-projects">
+        <AccountPersonalProjectsSection data={data} onDataUpdate={fetchData} />
+      </div>
     </div>
   );
 } 

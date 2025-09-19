@@ -66,12 +66,6 @@ export function Profile() {
   const totalSteps = 2;
   const progress = (currentStep / totalSteps) * 100;
 
-  // Calculate completion for each step
-  const step1Fields = ['birth_date', 'country'] as const;
-  const step1Completion = step1Fields.filter(field => watchedValues[field]).length / step1Fields.length * 100;
-  
-  const step2Fields = ['current_position', 'work_field'] as const;
-  const step2Completion = step2Fields.filter(field => watchedValues[field]).length / step2Fields.length * 100;
 
   function onSubmit(data: ProfileFormValues) {
     // Transform form data to match API structure
@@ -339,13 +333,6 @@ export function Profile() {
                         )}
                       />
 
-                      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Step 1 Progress</span>
-                          <span className="text-sm text-blue-600">{Math.round(step1Completion)}%</span>
-                        </div>
-                        <Progress value={step1Completion} className="h-1 mt-2" />
-                      </div>
                     </motion.div>
                   )}
 
@@ -445,13 +432,6 @@ export function Profile() {
                         />
                       </div>
 
-                      <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Step 2 Progress</span>
-                          <span className="text-sm text-green-600">{Math.round(step2Completion)}%</span>
-                        </div>
-                        <Progress value={step2Completion} className="h-1 mt-2" />
-                      </div>
                     </motion.div>
                   )}
                 </form>

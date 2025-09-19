@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,8 @@ import { ResumeSelector } from "@/components/evaluation/ResumeSelector";
 import { EvaluationResults } from "@/components/evaluation/EvaluationResults";
 import { useResumeEvaluation, useGetEvaluationHistory } from "@/services/evaluation/hook";
 import { CompleteEvaluationResponse } from "@/services/evaluation/types";
+import { useTour } from "@/modules/tour/TourProvider";
+import { getEvaluationSteps } from "@/modules/tour/steps";
 
 export function ResumeEvaluator() {
   const navigate = useNavigate();
@@ -28,6 +30,15 @@ export function ResumeEvaluator() {
   // Hooks
   const { evaluateResume, isLoading, error } = useResumeEvaluation();
   const { data: evaluationHistory } = useGetEvaluationHistory();
+  const { startTour, enabled, language } = useTour();
+
+  // Start evaluation tour when component mounts
+  useEffect(() => {
+    if (enabled) {
+      const steps = getEvaluationSteps(language);
+      startTour({ tourKey: 'evaluation', steps, autoRun: true });
+    }
+  }, [enabled, language, startTour]);
 
   const handleEvaluate = async () => {
     try {
@@ -104,7 +115,7 @@ export function ResumeEvaluator() {
       </motion.div>
 
       {/* Resume Selection */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} data-tour="resume-selector">
         <ResumeSelector
           selectedResumeId={selectedResumeId}
           onResumeSelect={setSelectedResumeId}
@@ -125,6 +136,7 @@ export function ResumeEvaluator() {
               value={selectedEvaluationType} 
               onValueChange={(value) => setSelectedEvaluationType(value as any)}
               className="w-full"
+              data-tour="evaluation-types"
             >
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="complete">Complete</TabsTrigger>
@@ -282,7 +294,7 @@ export function ResumeEvaluator() {
 
       {/* Evaluation Results */}
       {currentEvaluation && (
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} data-tour="evaluation-results">
           <EvaluationResults
             evaluation={currentEvaluation}
             isLoading={isLoading}

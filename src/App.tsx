@@ -40,7 +40,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Public route component that redirects authenticated users to dashboard
+// Public route component that redirects authenticated users appropriately
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
@@ -53,14 +53,14 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Don't redirect authenticated users here - let the auth hook handle profile-based routing
+  // This prevents the race condition where PublicRoute redirects to dashboard
+  // before the auth hook can check profile existence
   
   return <>{children}</>;
 };
 
-// Auth route component that redirects authenticated users to dashboard
+// Auth route component that redirects authenticated users appropriately
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
@@ -73,9 +73,9 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Don't redirect authenticated users here - let the auth hook handle profile-based routing
+  // This prevents the race condition where AuthRoute redirects to dashboard
+  // before the auth hook can check profile existence
   
   return <>{children}</>;
 };
