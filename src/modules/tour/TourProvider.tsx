@@ -123,6 +123,9 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 				showSkipButton
 				scrollToFirstStep
 				disableOverlayClose={true}
+				disableOverlay
+				spotlightClicks
+				disableScrolling={true}
 				locale={{
 					back: value.language === 'ar' ? 'السابق' : 'Back',
 					close: value.language === 'ar' ? 'إغلاق' : 'Close',
@@ -140,7 +143,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 					},
 					overlay: { 
 						backgroundColor: 'transparent',
-						mixBlendMode: 'normal'
+						mixBlendMode: 'normal',
+						pointerEvents: 'none'
 					},
 					spotlight: {
 						backgroundColor: 'rgba(37, 99, 235, 0.15)',
