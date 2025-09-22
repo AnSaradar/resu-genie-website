@@ -31,6 +31,26 @@ export function useTour() {
 const TOUR_DEFAULT_VERSION = 'v1';
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
+    // Global kill switch to disable all tours
+    const TOURS_DISABLED = true;
+
+    if (TOURS_DISABLED) {
+        const disabledValue = useMemo<TourContextType>(() => ({
+            startTour: () => {},
+            stopTour: () => {},
+            setEnabled: () => {},
+            setLanguage: () => {},
+            enabled: false,
+            language: 'en' as LanguageCode,
+            running: false,
+        }), []);
+
+        return (
+            <TourContext.Provider value={disabledValue}>
+                {children}
+            </TourContext.Provider>
+        );
+    }
 	const { prefs, loading, setEnabled: setEnabledSrv, setLanguage: setLanguageSrv, setTour } = useUserTourPreferences();
 	const [steps, setSteps] = useState<Step[]>([]);
 	const [running, setRunning] = useState<boolean>(false);
