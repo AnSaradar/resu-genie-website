@@ -89,35 +89,12 @@ export function DashboardNavbar() {
 
         {/* Theme Switcher and Profile Dropdown */}
         <div className="flex items-center gap-4">
-          {/* Test Button */}
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={(e) => {
-              console.log('Test button clicked!', e);
-              alert('Test button works!');
-            }}
-          >
-            Test
-          </Button>
           {/* Theme Switcher */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={(e) => {
-                  console.log('Theme button clicked', e);
-                  e.stopPropagation();
-                }}
-                onPointerDown={(e) => {
-                  console.log('Theme button pointer down', e);
-                }}
-              >
+            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9">
                 <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                 <span className="sr-only">Toggle theme</span>
-              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTheme("light")}>
@@ -134,24 +111,11 @@ export function DashboardNavbar() {
 
           {/* Profile Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative"
-                onClick={(e) => {
-                  console.log('Profile button clicked', e);
-                  e.stopPropagation();
-                }}
-                onPointerDown={(e) => {
-                  console.log('Profile button pointer down', e);
-                }}
-              >
+            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 relative">
                 <Avatar>
                   <AvatarImage src="" alt="avatar" />
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
-           </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
