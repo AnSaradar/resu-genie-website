@@ -114,9 +114,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
 	return (
 		<TourContext.Provider value={value}>
-			<div className={running ? 'pointer-events-none' : ''}>
-				{children}
-			</div>
+			{children}
 			<Joyride
 				run={running}
 				steps={steps}
