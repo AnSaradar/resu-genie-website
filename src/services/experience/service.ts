@@ -50,11 +50,11 @@ export const prepareExperienceData = (experience: Experience): ExperienceData =>
 
 /**
  * Add multiple experiences for the authenticated user
- * POST /api/v1/experience/add
+ * POST /api/v1/experience/
  */
 export const addExperiences = async (experiences: ExperienceData[]): Promise<ExperienceResponse[]> => {
   try {
-    const response = await apiClient.post<ExperienceApiResponse>('/api/v1/experience/add', experiences);
+    const response = await apiClient.post<ExperienceApiResponse>('/api/v1/experience/', experiences);
     return response.data.experiences || [];
   } catch (error: any) {
     if (error.response?.data?.detail) {
@@ -100,17 +100,33 @@ export const deleteExperience = async (experienceId: string): Promise<void> => {
 
 /**
  * Get all experiences for the authenticated user
- * GET /api/v1/experience/all
+ * GET /api/v1/experience/
  */
 export const getAllExperiences = async (): Promise<ExperienceResponse[]> => {
   try {
-    const response = await apiClient.get<ExperienceApiResponse>('/api/v1/experience/all');
+    const response = await apiClient.get<ExperienceApiResponse>('/api/v1/experience/');
     return response.data.experiences || [];
   } catch (error: any) {
     if (error.response?.data?.detail) {
       throw new Error(error.response.data.detail);
     }
     throw new Error('Failed to get experiences');
+  }
+};
+
+/**
+ * Get a single experience by id
+ * GET /api/v1/experience/{experience_id}/
+ */
+export const getExperience = async (experienceId: string): Promise<ExperienceResponse> => {
+  try {
+    const response = await apiClient.get<ExperienceApiResponse>(`/api/v1/experience/${experienceId}`);
+    return response.data.experience!;
+  } catch (error: any) {
+    if (error.response?.data?.detail) {
+      throw new Error(error.response.data.detail);
+    }
+    throw new Error('Failed to get experience');
   }
 };
 

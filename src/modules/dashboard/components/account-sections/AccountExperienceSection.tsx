@@ -35,6 +35,9 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Prevent selecting a future month for end date
+  const maxMonth = new Date().toISOString().slice(0, 7);
+
   const experiences = data?.experience?.career || [];
 
   const defaultExperience: Omit<Experience, 'id'> = {
@@ -98,7 +101,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
         await apiClient.put(`/api/v1/experience/${editingItem.id}`, payload);
       } else {
         // Create new
-        await apiClient.post('/api/v1/experience', payload);
+        await apiClient.post('/api/v1/experience/', payload);
       }
       
       setIsDialogOpen(false);
@@ -334,6 +337,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                     type="month"
                     value={editingItem.end_date}
                     onChange={(e) => updateEditingItem('end_date', e.target.value)}
+                    max={maxMonth}
                     disabled={editingItem.currently_working}
                     placeholder={editingItem.currently_working ? "Present" : ""}
                     className="h-12 text-base"
@@ -350,8 +354,9 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                       id="currently_working"
                       checked={editingItem.currently_working}
                       onCheckedChange={(checked) => {
-                        updateEditingItem('currently_working', checked);
-                        if (checked) {
+                        const isChecked = checked === true;
+                        updateEditingItem('currently_working', isChecked);
+                        if (isChecked) {
                           updateEditingItem('end_date', '');
                         }
                       }}
