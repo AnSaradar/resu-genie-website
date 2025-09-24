@@ -18,9 +18,14 @@ import {
   Trash2,
   Building
 } from 'lucide-react';
-import { useGetSeniorityLevels } from '@/services/experience/hook';
+import { 
+  useGetSeniorityLevels,
+  useGetAllExperiences,
+  useAddExperiences,
+  useUpdateExperience,
+  useDeleteExperience
+} from '@/services/experience/hook';
 import { Experience } from '@/services/experience/types';
-import apiClient from '@/lib/axios';
 
 interface AccountExperienceSectionProps {
   data: any;
@@ -29,6 +34,10 @@ interface AccountExperienceSectionProps {
 
 export function AccountExperienceSection({ data, onDataUpdate }: AccountExperienceSectionProps) {
   const { data: seniorityLevels = [] } = useGetSeniorityLevels();
+  const { data: experiencesData = [], isLoading } = useGetAllExperiences();
+  const addExperiencesMutation = useAddExperiences();
+  const updateExperienceMutation = useUpdateExperience();
+  const deleteExperienceMutation = useDeleteExperience();
   const [isEditing, setIsEditing] = useState(false);
   const [editingItem, setEditingItem] = useState<Experience | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,7 +47,8 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   // Prevent selecting a future month for end date
   const maxMonth = new Date().toISOString().slice(0, 7);
 
-  const experiences = data?.experience?.career || [];
+  // Prefer React Query data; fallback to provided data for initial render
+  const experiences = (experiencesData && Array.isArray(experiencesData)) ? experiencesData : (data?.experience?.career || []);
 
   const defaultExperience: Omit<Experience, 'id'> = {
     title: '',
@@ -69,10 +79,11 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/api/v1/experience/${id}`);
-      onDataUpdate();
+      await deleteExperienceMutation.mutateAsync(id);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to delete experience.');
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to delete experience.';
+      setError(message);
     }
   };
 
@@ -83,32 +94,61 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
     setError(null);
     
     try {
-      const payload = {
-        title: editingItem.title,
-        seniority_level: editingItem.seniority_level,
-        company: editingItem.company,
-        city: editingItem.city,
-        country: editingItem.country,
-        start_date: editingItem.start_date,
-        end_date: editingItem.end_date,
-        currently_working: editingItem.currently_working,
-        description: editingItem.description,
-        is_volunteer: editingItem.is_volunteer,
+      // Normalize month inputs (YYYY-MM) to full dates (YYYY-MM-DD)
+      const toIsoDate = (monthValue: string | undefined | null) => {
+        if (!monthValue) return undefined;
+        return monthValue.length === 7 ? `${monthValue}-01` : monthValue;
       };
+
+      const normalizedStart = toIsoDate(editingItem.start_date) as string;
+      const normalizedEnd = editingItem.currently_working ? undefined : toIsoDate(editingItem.end_date);
 
       if (editingItem.id && experiences.some((exp: Experience) => exp.id === editingItem.id)) {
         // Update existing
-        await apiClient.put(`/api/v1/experience/${editingItem.id}`, payload);
+        await updateExperienceMutation.mutateAsync({
+          experienceId: editingItem.id,
+          updateData: {
+            title: editingItem.title,
+            seniority_level: editingItem.seniority_level,
+            company: editingItem.company,
+            location: (editingItem.city || editingItem.country) ? {
+              city: editingItem.city,
+              country: editingItem.country
+            } : undefined,
+            start_date: normalizedStart,
+            end_date: normalizedEnd,
+            currently_working: editingItem.currently_working,
+            description: editingItem.description || undefined,
+            is_volunteer: editingItem.is_volunteer,
+          }
+        });
       } else {
-        // Create new
-        await apiClient.post('/api/v1/experience/', payload);
+        // Create new (mutation accepts array of one item)
+        const normalizedItem: Experience = {
+          ...editingItem,
+          start_date: normalizedStart,
+          end_date: normalizedEnd || '',
+          description: editingItem.description || ''
+        } as Experience;
+        await addExperiencesMutation.mutateAsync([normalizedItem]);
       }
-      
+
       setIsDialogOpen(false);
       setEditingItem(null);
-      onDataUpdate();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to save experience.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to save experience.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -164,7 +204,11 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
       {/* Display Mode */}
       {!isEditing && (
         <div className="space-y-6">
-          {experiences.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading experiences...
+            </div>
+          ) : experiences.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No work experience added yet.</p>
@@ -355,9 +399,12 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                       checked={!!editingItem.currently_working}
                       onCheckedChange={(checked) => {
                         const isChecked = checked === true;
-                        updateEditingItem('currently_working', isChecked);
-                        if (isChecked) {
-                          updateEditingItem('end_date', '');
+                        if (editingItem) {
+                          setEditingItem({
+                            ...editingItem,
+                            currently_working: isChecked,
+                            end_date: isChecked ? '' : editingItem.end_date
+                          });
                         }
                       }}
                     />

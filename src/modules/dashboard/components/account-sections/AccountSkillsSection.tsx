@@ -14,7 +14,13 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import apiClient from '@/lib/axios';
+import { 
+  useGetAllSkills,
+  useAddSkills,
+  useUpdateSkill,
+  useDeleteSkill
+} from '@/services/skill/hook';
+import { Skill as SkillType } from '@/services/skill/types';
 
 interface Skill {
   id: string;
@@ -37,18 +43,20 @@ const SKILL_LEVELS = [
 ];
 
 export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectionProps) {
+  const { data: skillsData = [], isLoading } = useGetAllSkills();
+  const addSkillsMutation = useAddSkills();
+  const updateSkillMutation = useUpdateSkill();
+  const deleteSkillMutation = useDeleteSkill();
   const [editingItem, setEditingItem] = useState<Skill | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<'all' | 'career' | 'soft'>('all');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Combine technical and soft skills from the data
-  const technicalSkills = data?.skills?.technical || [];
-  const softSkills = data?.skills?.soft || [];
-  const allSkills = [
-    ...technicalSkills.map((skill: any) => ({ ...skill, is_soft_skill: false })),
-    ...softSkills.map((skill: any) => ({ ...skill, is_soft_skill: true }))
+  // Prefer React Query data; fallback to provided data for initial render
+  const allSkills = (skillsData && Array.isArray(skillsData)) ? skillsData : [
+    ...(data?.skills?.technical || []).map((skill: any) => ({ ...skill, is_soft_skill: false })),
+    ...(data?.skills?.soft || []).map((skill: any) => ({ ...skill, is_soft_skill: true }))
   ];
 
   const filteredSkills = selectedType === 'all'
@@ -81,10 +89,11 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/api/v1/skill/${id}`);
-      onDataUpdate();
+      await deleteSkillMutation.mutateAsync(id);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to delete skill.');
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to delete skill.';
+      setError(message);
     }
   };
 
@@ -95,25 +104,43 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
     setError(null);
     
     try {
-      const payload = {
-        name: editingItem.name,
-        level: editingItem.level,
-        is_soft_skill: editingItem.is_soft_skill,
-      };
-
       if (editingItem.id && allSkills.some((skill: Skill) => skill.id === editingItem.id)) {
         // Update existing
-        await apiClient.put(`/api/v1/skill/${editingItem.id}`, payload);
+        await updateSkillMutation.mutateAsync({
+          skillId: editingItem.id,
+          updateData: {
+            name: editingItem.name,
+            proficiency: editingItem.level, // Convert level to proficiency
+            is_soft_skill: editingItem.is_soft_skill,
+          }
+        });
       } else {
-        // Create new
-        await apiClient.post('/api/v1/skill', payload);
+        // Create new (mutation accepts array of one item)
+        const skillToAdd: SkillType = {
+          id: editingItem.id,
+          name: editingItem.name,
+          level: editingItem.level,
+          is_soft_skill: editingItem.is_soft_skill
+        };
+        await addSkillsMutation.mutateAsync([skillToAdd]);
       }
       
       setIsDialogOpen(false);
       setEditingItem(null);
-      onDataUpdate();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to save skill.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to save skill.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -189,7 +216,11 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
 
       {/* Display Mode */}
       <div className="space-y-6">
-        {allSkills.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">
+            Loading skills...
+          </div>
+        ) : allSkills.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Lightbulb className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No skills added yet.</p>

@@ -14,7 +14,13 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import apiClient from '@/lib/axios';
+import { 
+  useGetAllLanguages,
+  useAddLanguages,
+  useUpdateLanguage,
+  useDeleteLanguage
+} from '@/services/language/hook';
+import { Language as LanguageType } from '@/services/language/types';
 
 interface Language {
   id: string;
@@ -44,12 +50,17 @@ const COMMON_LANGUAGES = [
 ];
 
 export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguagesSectionProps) {
+  const { data: languagesData = [], isLoading } = useGetAllLanguages();
+  const addLanguagesMutation = useAddLanguages();
+  const updateLanguageMutation = useUpdateLanguage();
+  const deleteLanguageMutation = useDeleteLanguage();
   const [editingItem, setEditingItem] = useState<Language | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const languages = data?.languages || [];
+  // Prefer React Query data; fallback to provided data for initial render
+  const languages = (languagesData && Array.isArray(languagesData)) ? languagesData : (data?.languages || []);
 
   const defaultLanguage: Omit<Language, 'id'> = {
     name: '',
@@ -72,10 +83,11 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/api/v1/language/${id}`);
-      onDataUpdate();
+      await deleteLanguageMutation.mutateAsync(id);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to delete language.');
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to delete language.';
+      setError(message);
     }
   };
 
@@ -86,25 +98,43 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
     setError(null);
     
     try {
-      const payload = {
-        name: editingItem.name,
-        proficiency: editingItem.proficiency,
-        isNative: editingItem.isNative,
-      };
-
       if (editingItem.id && languages.some((lang: Language) => lang.id === editingItem.id)) {
         // Update existing
-        await apiClient.put(`/api/v1/language/${editingItem.id}`, payload);
+        await updateLanguageMutation.mutateAsync({
+          languageId: editingItem.id,
+          updateData: {
+            name: editingItem.name,
+            proficiency: editingItem.proficiency,
+            is_native: editingItem.isNative,
+          }
+        });
       } else {
-        // Create new
-        await apiClient.post('/api/v1/language', payload);
+        // Create new (mutation accepts array of one item)
+        const languageToAdd: LanguageType = {
+          id: editingItem.id,
+          name: editingItem.name,
+          proficiency: editingItem.proficiency,
+          isNative: editingItem.isNative
+        };
+        await addLanguagesMutation.mutateAsync([languageToAdd]);
       }
       
       setIsDialogOpen(false);
       setEditingItem(null);
-      onDataUpdate();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to save language.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to save language.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -152,7 +182,11 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
 
       {/* Display Mode */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {languages.length === 0 ? (
+        {isLoading ? (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            Loading languages...
+          </div>
+        ) : languages.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
             <LanguagesIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No languages added yet.</p>

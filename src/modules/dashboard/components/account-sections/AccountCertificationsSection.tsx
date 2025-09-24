@@ -16,7 +16,13 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import apiClient from '@/lib/axios';
+import { 
+  useGetAllCertifications,
+  useAddCertifications,
+  useUpdateCertification,
+  useDeleteCertification
+} from '@/services/certification/hook';
+import { Certification as CertificationType } from '@/services/certification/types';
 
 interface Certificate {
   id: string;
@@ -33,12 +39,17 @@ interface AccountCertificationsSectionProps {
 }
 
 export function AccountCertificationsSection({ data, onDataUpdate }: AccountCertificationsSectionProps) {
+  const { data: certificationsData = [], isLoading } = useGetAllCertifications();
+  const addCertificationsMutation = useAddCertifications();
+  const updateCertificationMutation = useUpdateCertification();
+  const deleteCertificationMutation = useDeleteCertification();
   const [editingItem, setEditingItem] = useState<Certificate | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const certifications = data?.certifications || [];
+  // Prefer React Query data; fallback to provided data for initial render
+  const certifications = (certificationsData && Array.isArray(certificationsData)) ? certificationsData : (data?.certifications || []);
 
   const defaultCertificate: Omit<Certificate, 'id'> = {
     name: '',
@@ -63,10 +74,11 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/api/v1/certification/${id}`);
-      onDataUpdate();
+      await deleteCertificationMutation.mutateAsync(id);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to delete certification.');
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to delete certification.';
+      setError(message);
     }
   };
 
@@ -77,27 +89,55 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
     setError(null);
     
     try {
-      const payload = {
-        name: editingItem.name,
-        issuing_organization: editingItem.organization,
-        issue_date: editingItem.issueDate,
-        certificate_url: editingItem.certificateUrl,
-        description: editingItem.description,
+      // Normalize month input (YYYY-MM) to full date (YYYY-MM-DD)
+      const toIsoDate = (monthValue: string | undefined | null) => {
+        if (!monthValue) return undefined;
+        return monthValue.length === 7 ? `${monthValue}-01` : monthValue;
       };
+
+      const normalizedIssueDate = toIsoDate(editingItem.issueDate) as string;
 
       if (editingItem.id && certifications.some((cert: Certificate) => cert.id === editingItem.id)) {
         // Update existing
-        await apiClient.put(`/api/v1/certification/${editingItem.id}`, payload);
+        await updateCertificationMutation.mutateAsync({
+          certId: editingItem.id,
+          updateData: {
+            name: editingItem.name,
+            issuing_organization: editingItem.organization,
+            issue_date: normalizedIssueDate,
+            certificate_url: editingItem.certificateUrl || undefined,
+            description: editingItem.description || undefined,
+          }
+        });
       } else {
-        // Create new
-        await apiClient.post('/api/v1/certification', payload);
+        // Create new (mutation accepts array of one item)
+        const certificationToAdd: CertificationType = {
+          id: editingItem.id,
+          name: editingItem.name,
+          organization: editingItem.organization,
+          issueDate: normalizedIssueDate,
+          certificateUrl: editingItem.certificateUrl || '',
+          description: editingItem.description || ''
+        };
+        await addCertificationsMutation.mutateAsync([certificationToAdd]);
       }
       
       setIsDialogOpen(false);
       setEditingItem(null);
-      onDataUpdate();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to save certification.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to save certification.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -140,7 +180,11 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
 
       {/* Display Mode */}
       <div className="space-y-6">
-        {certifications.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">
+            Loading certifications...
+          </div>
+        ) : certifications.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Award className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No certifications added yet.</p>

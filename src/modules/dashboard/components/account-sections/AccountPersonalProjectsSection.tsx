@@ -17,7 +17,13 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import apiClient from '@/lib/axios';
+import { 
+  useGetAllPersonalProjects,
+  useAddPersonalProjects,
+  useUpdatePersonalProject,
+  useDeletePersonalProject
+} from '@/services/personal_project/hook';
+import { PersonalProject as PersonalProjectType } from '@/services/personal_project/types';
 
 interface PersonalProject {
   id: string;
@@ -38,13 +44,18 @@ interface AccountPersonalProjectsSectionProps {
 }
 
 export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPersonalProjectsSectionProps) {
+  const { data: projectsData = [], isLoading } = useGetAllPersonalProjects();
+  const addPersonalProjectsMutation = useAddPersonalProjects();
+  const updatePersonalProjectMutation = useUpdatePersonalProject();
+  const deletePersonalProjectMutation = useDeletePersonalProject();
   const [editingItem, setEditingItem] = useState<PersonalProject | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [techInput, setTechInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const projects = data?.personal_projects || [];
+  // Prefer React Query data; fallback to provided data for initial render
+  const projects = (projectsData && Array.isArray(projectsData)) ? projectsData : (data?.personal_projects || []);
 
   const emptyProject: PersonalProject = {
     id: '',
@@ -74,10 +85,11 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/api/v1/personal_project/${id}`);
-      onDataUpdate();
+      await deletePersonalProjectMutation.mutateAsync(id);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to delete project.');
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to delete project.';
+      setError(message);
     }
   };
 
@@ -88,31 +100,55 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
     setError(null);
     
     try {
-      const payload = {
-        name: editingItem.name,
-        description: editingItem.description,
-        technologies: editingItem.technologies,
-        start_date: editingItem.startDate,
-        end_date: editingItem.endDate,
-        is_ongoing: editingItem.isOngoing,
-        live_url: editingItem.liveUrl,
-        project_url: editingItem.projectUrl,
-        achievements: editingItem.achievements,
-      };
-
       if (editingItem.id && projects.some((proj: PersonalProject) => proj.id === editingItem.id)) {
         // Update existing
-        await apiClient.put(`/api/v1/personal_project/${editingItem.id}`, payload);
+        await updatePersonalProjectMutation.mutateAsync({
+          projectId: editingItem.id,
+          updateData: {
+            name: editingItem.name,
+            description: editingItem.description,
+            technologies: editingItem.technologies,
+            start_date: editingItem.startDate,
+            end_date: editingItem.endDate || undefined,
+            is_ongoing: editingItem.isOngoing,
+            live_url: editingItem.liveUrl || undefined,
+            project_url: editingItem.projectUrl || undefined,
+            achievements: editingItem.achievements || undefined,
+          }
+        });
       } else {
-        // Create new
-        await apiClient.post('/api/v1/personal_project', payload);
+        // Create new (mutation accepts array of one item)
+        const projectToAdd: PersonalProjectType = {
+          id: editingItem.id,
+          title: editingItem.name,
+          description: editingItem.description,
+          technologies: editingItem.technologies,
+          startDate: editingItem.startDate,
+          endDate: editingItem.endDate || '',
+          isOngoing: editingItem.isOngoing,
+          liveUrl: editingItem.liveUrl || '',
+          projectUrl: editingItem.projectUrl || '',
+          duration: '' // Will be computed by backend
+        };
+        await addPersonalProjectsMutation.mutateAsync([projectToAdd]);
       }
       
       setIsDialogOpen(false);
       setEditingItem(null);
-      onDataUpdate();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to save project.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to save project.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -173,7 +209,11 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
 
       {/* Display Mode */}
       <div className="space-y-6">
-        {projects.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">
+            Loading projects...
+          </div>
+        ) : projects.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Code className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No personal projects added yet.</p>

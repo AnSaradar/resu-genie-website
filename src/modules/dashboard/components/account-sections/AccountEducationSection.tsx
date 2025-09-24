@@ -17,9 +17,14 @@ import {
   Trash2,
   BookOpen
 } from 'lucide-react';
-import { useGetDegreeTypes } from '@/services/education/hook';
+import { 
+  useGetDegreeTypes, 
+  useGetAllEducations,
+  useAddEducations,
+  useUpdateEducation,
+  useDeleteEducation
+} from '@/services/education/hook';
 import { Education } from '@/services/education/types';
-import apiClient from '@/lib/axios';
 
 interface AccountEducationSectionProps {
   data: any;
@@ -28,12 +33,17 @@ interface AccountEducationSectionProps {
 
 export function AccountEducationSection({ data, onDataUpdate }: AccountEducationSectionProps) {
   const { data: degreeTypes = [] } = useGetDegreeTypes();
+  const { data: educationsData = [], isLoading } = useGetAllEducations();
+  const addEducationsMutation = useAddEducations();
+  const updateEducationMutation = useUpdateEducation();
+  const deleteEducationMutation = useDeleteEducation();
   const [editingItem, setEditingItem] = useState<Education | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const educations = data?.education || [];
+  // Prefer React Query data; fallback to provided data for initial render
+  const educations = (educationsData && Array.isArray(educationsData)) ? educationsData : (data?.education || []);
 
   const defaultEducation: Omit<Education, 'id'> = {
     institution: '',
@@ -60,10 +70,11 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/api/v1/education/${id}`);
-      onDataUpdate();
+      await deleteEducationMutation.mutateAsync(id);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to delete education.');
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to delete education.';
+      setError(message);
     }
   };
 
@@ -74,29 +85,56 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
     setError(null);
     
     try {
-      const payload = {
-        institution: editingItem.institution,
-        degree: editingItem.degree,
-        field: editingItem.field,
-        start_date: editingItem.start_date,
-        end_date: editingItem.end_date,
-        currently_studying: editingItem.currently_studying,
-        description: editingItem.description,
+      // Normalize month inputs (YYYY-MM) to full dates (YYYY-MM-DD)
+      const toIsoDate = (monthValue: string | undefined | null) => {
+        if (!monthValue) return undefined;
+        return monthValue.length === 7 ? `${monthValue}-01` : monthValue;
       };
 
+      const normalizedStart = toIsoDate(editingItem.start_date) as string;
+      const normalizedEnd = editingItem.currently_studying ? undefined : toIsoDate(editingItem.end_date);
+
       if (editingItem.id && educations.some((edu: Education) => edu.id === editingItem.id)) {
-        // Update existing
-        await apiClient.put(`/api/v1/education/${editingItem.id}`, payload);
+        // Update existing (send only fields that may have changed)
+        await updateEducationMutation.mutateAsync({
+          educationId: editingItem.id,
+          updateData: {
+            institution: editingItem.institution,
+            degree: editingItem.degree,
+            field: editingItem.field,
+            start_date: normalizedStart,
+            end_date: normalizedEnd,
+            currently_studying: editingItem.currently_studying,
+            description: editingItem.description || undefined,
+          }
+        });
       } else {
-        // Create new
-        await apiClient.post('/api/v1/education', payload);
+        // Create new (mutation accepts array of one item)
+        const normalizedItem: Education = {
+          ...editingItem,
+          start_date: normalizedStart,
+          end_date: normalizedEnd || '',
+          description: editingItem.description || ''
+        } as Education;
+        await addEducationsMutation.mutateAsync([normalizedItem]);
       }
-      
+
       setIsDialogOpen(false);
       setEditingItem(null);
-      onDataUpdate();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to save education.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to save education.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -150,6 +188,11 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
       </div>
 
       {/* Display Mode */}
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">
+          Loading education...
+        </div>
+      ) : (
       <div className="space-y-6">
         {educations.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
@@ -208,6 +251,7 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
           ))
         )}
       </div>
+      )}
 
       {/* Edit/Add Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
