@@ -352,7 +352,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="currently_working"
-                      checked={editingItem.currently_working}
+                      checked={!!editingItem.currently_working}
                       onCheckedChange={(checked) => {
                         const isChecked = checked === true;
                         updateEditingItem('currently_working', isChecked);
@@ -367,8 +367,8 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="is_volunteer"
-                      checked={editingItem.is_volunteer}
-                      onCheckedChange={(checked) => updateEditingItem('is_volunteer', checked)}
+                      checked={!!editingItem.is_volunteer}
+                      onCheckedChange={(checked) => updateEditingItem('is_volunteer', checked === true)}
                     />
                     <Label htmlFor="is_volunteer" className="text-base">This is volunteer work</Label>
                   </div>
