@@ -19,7 +19,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { SeniorityLevel, WorkField } from '@/services/user_profile/types';
-import apiClient from '@/lib/axios';
+import { useGetUserProfile, useUpdateUserProfile, useGetWorkFields } from '@/services/user_profile/hook';
 
 interface PersonalInfo {
   city: string;
@@ -40,39 +40,42 @@ interface AccountPersonalInfoSectionProps {
 }
 
 export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPersonalInfoSectionProps) {
+  const { data: userProfile, isLoading } = useGetUserProfile();
+  const updateProfileMutation = useUpdateUserProfile();
+  const { data: workFields = [] } = useGetWorkFields();
   const [isEditing, setIsEditing] = useState(false);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    city: data?.profile?.address?.city || '',
-    country: data?.profile?.address?.country || data?.profile?.country_of_residence || '',
-    linkedinUrl: data?.profile?.linkedin_url || '',
-    websiteUrl: data?.profile?.website_url || '',
-    currentPosition: data?.profile?.current_position || '',
-    profileSummary: data?.profile?.profile_summary || '',
-    seniorityLevel: data?.profile?.current_seniority_level || '',
-    workField: data?.profile?.work_field || '',
-    yearsOfExperience: data?.profile?.years_of_experience || '',
-    birthDate: data?.profile?.birth_date || '',
+    city: '',
+    country: '',
+    linkedinUrl: '',
+    websiteUrl: '',
+    currentPosition: '',
+    profileSummary: '',
+    seniorityLevel: '',
+    workField: '',
+    yearsOfExperience: '',
+    birthDate: '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Update local state when data changes
+  // Update local state when user profile data changes
   useEffect(() => {
-    if (data?.profile) {
+    if (userProfile) {
       setPersonalInfo({
-        city: data.profile.address?.city || '',
-        country: data.profile.address?.country || data.profile.country_of_residence || '',
-        linkedinUrl: data.profile.linkedin_url || '',
-        websiteUrl: data.profile.website_url || '',
-        currentPosition: data.profile.current_position || '',
-        profileSummary: data.profile.profile_summary || '',
-        seniorityLevel: data.profile.current_seniority_level || '',
-        workField: data.profile.work_field || '',
-        yearsOfExperience: data.profile.years_of_experience || '',
-        birthDate: data.profile.birth_date || '',
+        city: userProfile.address?.city || '',
+        country: userProfile.address?.country || userProfile.country_of_residence || '',
+        linkedinUrl: userProfile.linkedin_url || '',
+        websiteUrl: userProfile.website_url || '',
+        currentPosition: userProfile.current_position || '',
+        profileSummary: userProfile.profile_summary || '',
+        seniorityLevel: userProfile.current_seniority_level || '',
+        workField: userProfile.work_field || '',
+        yearsOfExperience: userProfile.years_of_experience || '',
+        birthDate: userProfile.birth_date || '',
       });
     }
-  }, [data]);
+  }, [userProfile]);
 
   const handleInputChange = (field: keyof PersonalInfo, value: string | number) => {
     setPersonalInfo(prev => ({ ...prev, [field]: value }));
@@ -93,17 +96,28 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
         website_url: personalInfo.websiteUrl,
         current_position: personalInfo.currentPosition,
         profile_summary: personalInfo.profileSummary,
-        current_seniority_level: personalInfo.seniorityLevel,
-        work_field: personalInfo.workField,
-        years_of_experience: personalInfo.yearsOfExperience,
+        current_seniority_level: personalInfo.seniorityLevel || undefined,
+        work_field: personalInfo.workField || undefined,
+        years_of_experience: personalInfo.yearsOfExperience === '' ? undefined : personalInfo.yearsOfExperience,
         birth_date: personalInfo.birthDate,
       };
 
-      await apiClient.post('/api/v1/user_profile', payload);
+      await updateProfileMutation.mutateAsync(payload);
       setIsEditing(false);
-      onDataUpdate(); // Refresh data
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to update profile.');
+      // Robustly extract error message; FastAPI 422 returns detail as array of objects
+      const detail = err?.response?.data?.detail;
+      let message = 'Failed to update profile.';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
+      } else if (detail && typeof detail === 'object') {
+        message = detail.msg || JSON.stringify(detail);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -111,18 +125,18 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
 
   const handleCancel = () => {
     // Reset to original data
-    if (data?.profile) {
+    if (userProfile) {
       setPersonalInfo({
-        city: data.profile.address?.city || '',
-        country: data.profile.address?.country || data.profile.country_of_residence || '',
-        linkedinUrl: data.profile.linkedin_url || '',
-        websiteUrl: data.profile.website_url || '',
-        currentPosition: data.profile.current_position || '',
-        profileSummary: data.profile.profile_summary || '',
-        seniorityLevel: data.profile.current_seniority_level || '',
-        workField: data.profile.work_field || '',
-        yearsOfExperience: data.profile.years_of_experience || '',
-        birthDate: data.profile.birth_date || '',
+        city: userProfile.address?.city || '',
+        country: userProfile.address?.country || userProfile.country_of_residence || '',
+        linkedinUrl: userProfile.linkedin_url || '',
+        websiteUrl: userProfile.website_url || '',
+        currentPosition: userProfile.current_position || '',
+        profileSummary: userProfile.profile_summary || '',
+        seniorityLevel: userProfile.current_seniority_level || '',
+        workField: userProfile.work_field || '',
+        yearsOfExperience: userProfile.years_of_experience || '',
+        birthDate: userProfile.birth_date || '',
       });
     }
     setIsEditing(false);
@@ -148,6 +162,12 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
 
       {/* Display Mode */}
       {!isEditing && (
+        <>
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading personal information...
+            </div>
+          ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Location & Links */}
           <div className="space-y-4">
@@ -218,6 +238,8 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
             )}
           </div>
         </div>
+          )}
+        </>
       )}
 
       {/* Edit Modal */}
@@ -349,7 +371,7 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
                       <SelectValue placeholder="Select field" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.values(WorkField).map((field) => (
+                      {workFields.map((field) => (
                         <SelectItem key={field} value={field}>
                           {field}
                         </SelectItem>

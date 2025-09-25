@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/services/auth/hook";
 import { useGetProfileCompletionData } from "@/services/profile_completion/hook";
+import { useGetMyActivityFeed } from "@/services/activity/hook";
 import { ProfileCompletionWidget } from "../components/ProfileCompletionWidget";
 import { useTour } from "@/modules/tour/TourProvider";
 import { getDashboardSteps } from "@/modules/tour/steps";
@@ -49,6 +50,7 @@ export function MainDashboard() {
 
   // Single API call for all profile completion data
   const { data: profileData, isLoading } = useGetProfileCompletionData();
+  const { data: activityFeed } = useGetMyActivityFeed(5);
 
   // Start dashboard tour on component mount
   useEffect(() => {
@@ -353,22 +355,35 @@ export function MainDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>Profile updated</span>
-                <span className="text-muted-foreground ml-auto">2 hours ago</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>Last login</span>
+                  <span className="text-muted-foreground ml-auto">
+                    {user?.last_login_at ? new Date(user.last_login_at).toLocaleString() : '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                  <span>Last activity</span>
+                  <span className="text-muted-foreground ml-auto">
+                    {user?.last_activity_at ? new Date(user.last_activity_at).toLocaleString() : '-'}
+                  </span>
+                </div>
+                {(activityFeed && activityFeed.length > 0) ? (
+                  activityFeed.map((item, idx) => (
+                    <div key={item._id} className="flex items-center gap-3 text-sm">
+                      <span className="text-muted-foreground">{item.type.replace(/_/g, ' ').toLowerCase()}</span>
+                      <span className="ml-auto text-muted-foreground">{new Date(item.created_at).toLocaleString()}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    <EyeOff className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No recent activity</p>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span>Account created</span>
-                <span className="text-muted-foreground ml-auto">1 day ago</span>
-              </div>
-              <div className="text-center py-4 text-muted-foreground text-sm">
-                <EyeOff className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>Activity tracking coming soon</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

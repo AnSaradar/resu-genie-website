@@ -30,6 +30,21 @@ export const createUserProfile = async (
   }
 };
 
+export const updateUserProfile = async (
+  profileData: UserProfileData
+): Promise<UserProfileResponse> => {
+  try {
+    const response = await apiClient.post('/api/v1/user_profile', profileData);
+    return response.data.profile_data; // Same endpoint for create/update
+  } catch (error: any) {
+    // Handle error response
+    if (error.response?.data?.detail) {
+      throw new Error(error.response.data.detail);
+    }
+    throw new Error('Failed to update user profile');
+  }
+};
+
 export const getUserProfile = async (): Promise<UserProfileResponse> => {
   try {
     const response = await apiClient.get('/api/v1/user_profile');

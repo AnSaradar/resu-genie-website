@@ -42,6 +42,12 @@ const SKILL_LEVELS = [
   { value: 5, label: 'Master' }
 ];
 
+// Helper function to convert numeric level to proficiency string
+const getProficiencyFromLevel = (level: number): string => {
+  const skillLevel = SKILL_LEVELS.find(l => l.value === level);
+  return skillLevel ? skillLevel.label : 'Intermediate';
+};
+
 export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectionProps) {
   const { data: skillsData = [], isLoading } = useGetAllSkills();
   const addSkillsMutation = useAddSkills();
@@ -110,7 +116,7 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
           skillId: editingItem.id,
           updateData: {
             name: editingItem.name,
-            proficiency: editingItem.level, // Convert level to proficiency
+            proficiency: getProficiencyFromLevel(editingItem.level), // Convert level to proficiency
             is_soft_skill: editingItem.is_soft_skill,
           }
         });

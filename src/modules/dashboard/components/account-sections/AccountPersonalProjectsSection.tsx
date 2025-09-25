@@ -105,7 +105,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
         await updatePersonalProjectMutation.mutateAsync({
           projectId: editingItem.id,
           updateData: {
-            name: editingItem.name,
+            title: editingItem.name,
             description: editingItem.description,
             technologies: editingItem.technologies,
             start_date: editingItem.startDate,
@@ -113,7 +113,6 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
             is_ongoing: editingItem.isOngoing,
             live_url: editingItem.liveUrl || undefined,
             project_url: editingItem.projectUrl || undefined,
-            achievements: editingItem.achievements || undefined,
           }
         });
       } else {

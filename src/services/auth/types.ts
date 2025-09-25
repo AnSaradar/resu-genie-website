@@ -48,6 +48,8 @@ export interface User {
   is_verified?: boolean; // Added verification status
   created_at?: string; // Made optional since backend might not always include it
   updated_at?: string; // Made optional since backend might not always include it
+  last_login_at?: string | null;
+  last_activity_at?: string | null;
 }
 
 // Auth Context Types

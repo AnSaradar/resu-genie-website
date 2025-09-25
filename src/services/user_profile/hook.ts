@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createUserProfile, getUserProfile, getWorkFields, checkProfileExists } from './service';
+import { createUserProfile, updateUserProfile, getUserProfile, getWorkFields, checkProfileExists } from './service';
 import { UserProfileData, UserProfileResponse } from './types';
 import { toast } from 'react-hot-toast';
 
@@ -16,6 +16,23 @@ export const useCreateUserProfile = () => {
     onError: (error: Error) => {
       console.error('Error creating profile:', error);
       toast.error(error.message || 'Failed to create profile');
+    },
+  });
+};
+
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: updateUserProfile,
+    onSuccess: (data) => {
+      // Invalidate and refetch user profile data
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      toast.success('Profile updated successfully!');
+    },
+    onError: (error: Error) => {
+      console.error('Error updating profile:', error);
+      toast.error(error.message || 'Failed to update profile');
     },
   });
 };
