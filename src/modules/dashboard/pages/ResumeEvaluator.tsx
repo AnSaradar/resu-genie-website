@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { 
   Wand2, 
@@ -24,7 +23,7 @@ import { getEvaluationSteps } from "@/modules/tour/steps";
 export function ResumeEvaluator() {
   const navigate = useNavigate();
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
-  const [selectedEvaluationType, setSelectedEvaluationType] = useState<'complete' | 'user_profile' | 'experience' | 'education'>('complete');
+  const [selectedEvaluationType, setSelectedEvaluationType] = useState<'complete'>('complete');
   const [currentEvaluation, setCurrentEvaluation] = useState<CompleteEvaluationResponse | null>(null);
 
   // Hooks
@@ -42,7 +41,7 @@ export function ResumeEvaluator() {
 
   const handleEvaluate = async () => {
     try {
-      const result = await evaluateResume(selectedResumeId, selectedEvaluationType);
+      const result = await evaluateResume(selectedResumeId, 'complete');
       setCurrentEvaluation(result.evaluation);
     } catch (err) {
       console.error('Evaluation failed:', err);
@@ -126,153 +125,58 @@ export function ResumeEvaluator() {
       <motion.div variants={itemVariants}>
         <Card>
           <CardHeader>
-            <CardTitle>Evaluation Type</CardTitle>
+            <CardTitle>Complete Evaluation</CardTitle>
             <CardDescription>
-              Choose what you'd like to evaluate
+              Get comprehensive AI-powered feedback on your {selectedResumeId ? 'selected resume' : 'current profile'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs 
-              value={selectedEvaluationType} 
-              onValueChange={(value) => setSelectedEvaluationType(value as any)}
-              className="w-full"
-              data-tour="evaluation-types"
-            >
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="complete">Complete</TabsTrigger>
-                <TabsTrigger value="user_profile">Profile</TabsTrigger>
-                <TabsTrigger value="experience">Experience</TabsTrigger>
-                <TabsTrigger value="education">Education</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="complete" className="mt-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <BarChart3 className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <h3 className="font-medium">Complete Evaluation</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Get comprehensive feedback on your entire {selectedResumeId ? 'resume' : 'profile'} including profile, experience, and education
-                      </p>
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={handleEvaluate} 
-                    disabled={isLoading}
-                    size="lg"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Evaluating...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="mr-2 h-4 w-4" />
-                        Evaluate Complete {selectedResumeId ? 'Resume' : 'Profile'}
-                      </>
-                    )}
-                  </Button>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/50">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                <div>
+                  <h3 className="font-medium">Complete Evaluation</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Get comprehensive feedback on your entire {selectedResumeId ? 'resume' : 'profile'} including profile information, work experience, and education
+                  </p>
                 </div>
-              </TabsContent>
+              </div>
               
-              <TabsContent value="user_profile" className="mt-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <User className="h-5 w-5 text-green-600" />
-                    <div>
-                      <h3 className="font-medium">Profile Evaluation</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Evaluate your profile summary, LinkedIn URL, current position, and work field
-                      </p>
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={handleEvaluate} 
-                    disabled={isLoading}
-                    size="lg"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Evaluating...
-                      </>
-                    ) : (
-                      <>
-                        <User className="mr-2 h-4 w-4" />
-                        Evaluate Profile
-                      </>
-                    )}
-                  </Button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-green-600" />
+                  <span>Profile Information</span>
                 </div>
-              </TabsContent>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-orange-600" />
+                  <span>Work Experience</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-purple-600" />
+                  <span>Education</span>
+                </div>
+              </div>
               
-              <TabsContent value="experience" className="mt-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <Briefcase className="h-5 w-5 text-orange-600" />
-                    <div>
-                      <h3 className="font-medium">Experience Evaluation</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Get feedback on your work experience entries, job descriptions, and achievements
-                      </p>
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={handleEvaluate} 
-                    disabled={isLoading}
-                    size="lg"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Evaluating...
-                      </>
-                    ) : (
-                      <>
-                        <Briefcase className="mr-2 h-4 w-4" />
-                        Evaluate Experience
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="education" className="mt-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <GraduationCap className="h-5 w-5 text-purple-600" />
-                    <div>
-                      <h3 className="font-medium">Education Evaluation</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Review your educational qualifications, institutions, and academic achievements
-                      </p>
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={handleEvaluate} 
-                    disabled={isLoading}
-                    size="lg"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Evaluating...
-                      </>
-                    ) : (
-                      <>
-                        <GraduationCap className="mr-2 h-4 w-4" />
-                        Evaluate Education
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+              <Button 
+                className="w-full" 
+                onClick={handleEvaluate} 
+                disabled={isLoading}
+                size="lg"
+                data-tour="evaluation-button"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Evaluating...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Evaluate {selectedResumeId ? 'Resume' : 'Profile'}
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

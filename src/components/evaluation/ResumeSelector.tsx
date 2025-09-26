@@ -83,10 +83,10 @@ export function ResumeSelector({ selectedResumeId, onResumeSelect, className }: 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          Select Resume to Evaluate
+          Choose What to Evaluate
         </CardTitle>
         <CardDescription>
-          Choose a saved resume to evaluate, or evaluate your current profile
+          Select a saved resume for evaluation, or evaluate your current profile data
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -103,14 +103,14 @@ export function ResumeSelector({ selectedResumeId, onResumeSelect, className }: 
                 <div className="flex items-center gap-3">
                   <User className="h-5 w-5 text-blue-600" />
                   <div>
-                    <p className="font-medium">Current Profile</p>
+                    <p className="font-medium">Current Profile Data</p>
                     <p className="text-sm text-muted-foreground">
-                      Evaluate your current profile data
+                      Evaluate your complete profile including all sections
                     </p>
                   </div>
                 </div>
                 <Badge variant="outline" className="text-blue-600 border-blue-600">
-                  Profile
+                  Complete Profile
                 </Badge>
               </div>
             </Label>
@@ -141,7 +141,7 @@ export function ResumeSelector({ selectedResumeId, onResumeSelect, className }: 
                       </div>
                     </div>
                     <Badge variant="outline" className="text-green-600 border-green-600">
-                      Resume
+                      Complete Resume
                     </Badge>
                   </div>
                 </Label>
@@ -173,10 +173,22 @@ export function ResumeSelector({ selectedResumeId, onResumeSelect, className }: 
         </RadioGroup>
 
         {/* Selection Summary */}
-        {selectedResumeId && (
+        {selectedResumeId ? (
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <p className="text-sm font-medium">
               Selected: {resumes.find(r => r.id === selectedResumeId)?.resume_name || 'Unknown Resume'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Complete resume evaluation will be performed
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 p-3 bg-muted rounded-lg">
+            <p className="text-sm font-medium">
+              Selected: Current Profile Data
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Complete profile evaluation will be performed
             </p>
           </div>
         )}

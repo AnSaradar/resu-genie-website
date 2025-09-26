@@ -124,22 +124,14 @@ export const useResumeEvaluation = () => {
   
   const evaluateResume = async (
     resumeId: string | null,
-    evaluationType: 'complete' | 'user_profile' | 'experience' | 'education'
+    evaluationType: 'complete' = 'complete'
   ) => {
     if (resumeId) {
       // Evaluate specific resume
-      if (evaluationType === 'complete') {
-        return evaluateCompleteResumeMutation.mutateAsync(resumeId);
-      } else {
-        return evaluateResumeAreaMutation.mutateAsync({ resumeId, evaluationType });
-      }
+      return evaluateCompleteResumeMutation.mutateAsync(resumeId);
     } else {
       // Evaluate user profile (not tied to specific resume)
-      if (evaluationType === 'complete') {
-        return evaluateCompleteProfileMutation.mutateAsync();
-      } else {
-        return evaluateProfileAreaMutation.mutateAsync({ evaluationType });
-      }
+      return evaluateCompleteProfileMutation.mutateAsync();
     }
   };
   

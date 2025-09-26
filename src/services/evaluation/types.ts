@@ -42,11 +42,11 @@ export interface EvaluationHistoryItem {
 // Request types
 export interface EvaluateResumeRequest {
   resumeId: string;
-  evaluationType: 'complete' | 'user_profile' | 'experience' | 'education';
+  evaluationType: 'complete';
 }
 
 export interface EvaluateProfileRequest {
-  evaluationType: 'complete' | 'user_profile' | 'experience' | 'education';
+  evaluationType: 'complete';
 }
 
 // UI State types
