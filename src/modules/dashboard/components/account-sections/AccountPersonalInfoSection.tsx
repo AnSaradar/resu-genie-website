@@ -165,79 +165,152 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
         <>
           {isLoading ? (
             <div className="text-center py-12 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
               Loading personal information...
             </div>
           ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Location & Links */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Location & Links</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Location:</span>
-                <span className="text-sm">
-                  {personalInfo.city && personalInfo.country 
-                    ? `${personalInfo.city}, ${personalInfo.country}`
-                    : 'Not provided'
-                  }
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">LinkedIn:</span>
-                <span className="text-sm">
-                  {personalInfo.linkedinUrl ? (
-                    <a href={personalInfo.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      View Profile
-                    </a>
-                  ) : 'Not provided'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Website:</span>
-                <span className="text-sm">
-                  {personalInfo.websiteUrl ? (
-                    <a href={personalInfo.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      Visit Site
-                    </a>
-                  ) : 'Not provided'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Birth Date:</span>
-                <span className="text-sm">{personalInfo.birthDate || 'Not provided'}</span>
-              </div>
-            </div>
-          </div>
+            <div className="space-y-8">
+              {/* Main Information Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Personal Details & Location */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Location & Personal</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
+                        <MapPin className="h-4 w-4" />
+                        Location
+                      </span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.city && personalInfo.country 
+                          ? `${personalInfo.city}, ${personalInfo.country}`
+                          : <span className="text-gray-400 italic">Not provided</span>
+                        }
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
+                        <User className="h-4 w-4" />
+                        Birth Date
+                      </span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.birthDate ? (
+                          new Date(personalInfo.birthDate).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })
+                        ) : (
+                          <span className="text-gray-400 italic">Not provided</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-          {/* Professional Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Professional Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Current Position:</span>
-                <span className="text-sm">{personalInfo.currentPosition || 'Not provided'}</span>
+                {/* Online Presence */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Globe className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Online Presence</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
+                        <Linkedin className="h-4 w-4" />
+                        LinkedIn
+                      </span>
+                      <span className="text-sm">
+                        {personalInfo.linkedinUrl ? (
+                          <a 
+                            href={personalInfo.linkedinUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                          >
+                            View Profile
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 italic">Not provided</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
+                        <Globe className="h-4 w-4" />
+                        Website
+                      </span>
+                      <span className="text-sm">
+                        {personalInfo.websiteUrl ? (
+                          <a 
+                            href={personalInfo.websiteUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                          >
+                            Visit Site
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 italic">Not provided</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Information */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileUser className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Professional Information</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">Current Position</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.currentPosition || <span className="text-gray-400 italic">Not provided</span>}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">Seniority Level</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.seniorityLevel || <span className="text-gray-400 italic">Not provided</span>}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">Work Field</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.workField || <span className="text-gray-400 italic">Not provided</span>}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">Years of Experience</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.yearsOfExperience || <span className="text-gray-400 italic">Not provided</span>}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Seniority Level:</span>
-                <span className="text-sm">{personalInfo.seniorityLevel || 'Not provided'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Work Field:</span>
-                <span className="text-sm">{personalInfo.workField || 'Not provided'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Years of Experience:</span>
-                <span className="text-sm">{personalInfo.yearsOfExperience || 'Not provided'}</span>
-              </div>
+
+              {/* Professional Summary - Full Width on New Line */}
+              {personalInfo.profileSummary && (
+                <div className="w-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileUser className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Professional Summary</h3>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {personalInfo.profileSummary}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-            {personalInfo.profileSummary && (
-              <div className="mt-4">
-                <span className="text-sm font-medium text-gray-500 block mb-2">Professional Summary:</span>
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{personalInfo.profileSummary}</p>
-              </div>
-            )}
-          </div>
-        </div>
           )}
         </>
       )}
