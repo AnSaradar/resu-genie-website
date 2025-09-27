@@ -51,4 +51,19 @@ export interface ResumeDetailsResponse {
   signal: string;
   message: string;
   resume: any; // TODO: Strongly type this to match backend Resume schema
+}
+
+// --- Rename Resume ---
+export interface ResumeRenameRequest {
+  new_name: string;
+}
+
+export interface ResumeRenameResponse {
+  signal: string;
+  message: string;
+  data: {
+    resume_id: string;
+    resume_name: string;
+    updated_at?: string;
+  };
 } 

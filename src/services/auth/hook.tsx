@@ -36,8 +36,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
             // Get current user data
             const userData = await AuthService.getCurrentUser();
             setUser(userData);
+            
+            // Handle automatic redirection for authenticated users
+            const currentPath = window.location.pathname;
+            const publicPaths = ['/', '/login', '/register', '/verify-otp', '/forgot-password', '/reset-password'];
+            
+            // If user is on a public path and authenticated, redirect appropriately
+            if (publicPaths.includes(currentPath)) {
+              try {
+                const profileCheck = await checkProfileExists();
+                
+                if (profileCheck.profile_exists) {
+                  // Profile exists, navigate to dashboard
+                  navigate('/dashboard', { replace: true });
+                } else {
+                  // Profile doesn't exist, navigate to onboarding
+                  navigate('/onboarding/welcome', { replace: true });
+                }
+              } catch (profileError) {
+                console.error('Error checking profile existence:', profileError);
+                // If profile check fails, default to onboarding for safety
+                navigate('/onboarding/welcome', { replace: true });
+              }
+            }
           } else {
             // Token is invalid, clear auth state
+            AuthService.logout();
             setUser(null);
           }
         }
@@ -52,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     checkAuth();
-  }, []);
+  }, [navigate]);
 
   // Parse API error
   const parseApiError = (err: any): string => {

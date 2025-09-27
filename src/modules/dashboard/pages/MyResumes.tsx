@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useGetMyResumes } from '@/services/resume/hook';
+import { useGetMyResumes, useRenameResume } from '@/services/resume/hook';
 import { ResumeListItem } from '@/services/resume/types';
 import { 
   FileText, 
@@ -18,7 +18,8 @@ import {
   FilePlus,
   Sparkles,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Edit3
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -49,11 +50,16 @@ export default function MyResumes() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'modified'>('modified');
   const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [newName, setNewName] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
   const {
     data: previewData,
     isLoading: previewLoading,
     error: previewError,
   } = useGetResumeDetails(previewId ?? '', !!previewId);
+  
+  const renameResumeMutation = useRenameResume();
 
   // Helper functions
   const getResumeStatus = (resume: ResumeListItem) => {
@@ -109,6 +115,34 @@ export default function MyResumes() {
         ? prev.filter(id => id !== resumeId)
         : [...prev, resumeId]
     );
+  };
+
+  const handleRenameResume = async () => {
+    if (!renamingId || !newName.trim()) {
+      setRenameError('Please enter a valid name');
+      return;
+    }
+
+    try {
+      setRenameError(null);
+      await renameResumeMutation.mutateAsync({
+        resumeId: renamingId,
+        payload: { new_name: newName.trim() }
+      });
+      
+      // Close dialog and reset state
+      setRenamingId(null);
+      setNewName('');
+      setRenameError(null);
+    } catch (error) {
+      // Error is handled by the hook's onError callback
+    }
+  };
+
+  const openRenameDialog = (resume: ResumeListItem) => {
+    setRenamingId(resume.id);
+    setNewName(resume.resume_name);
+    setRenameError(null);
   };
 
   const handleSelectAll = () => {
@@ -347,6 +381,10 @@ export default function MyResumes() {
                         <Download className="h-4 w-4 mr-2" />
                         Edit & Download
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openRenameDialog(resume)}>
+                        <Edit3 className="h-4 w-4 mr-2" />
+                        Rename
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => setDeletingId(resume.id)}
@@ -547,6 +585,72 @@ export default function MyResumes() {
             />
               </div>
           )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Dialog */}
+      <Dialog open={!!renamingId} onOpenChange={(open) => { 
+        if (!open) {
+          setRenamingId(null);
+          setNewName('');
+          setRenameError(null);
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit3 className="h-5 w-5" />
+              Rename Resume
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="resume-name" className="block text-sm font-medium mb-2">
+                  Resume Name
+                </label>
+                <Input
+                  id="resume-name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Enter new resume name"
+                  maxLength={100}
+                  className={renameError ? 'border-red-500' : ''}
+                />
+                {renameError && (
+                  <p className="text-sm text-red-600 mt-1">{renameError}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {newName.length}/100 characters
+                </p>
+              </div>
+              
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Note:</strong> If a resume with this name already exists, a number will be automatically added (e.g., "My Resume (1)").
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRenamingId(null);
+                setNewName('');
+                setRenameError(null);
+              }}
+              disabled={renameResumeMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRenameResume}
+              disabled={renameResumeMutation.isPending || !newName.trim()}
+            >
+              {renameResumeMutation.isPending ? 'Renaming...' : 'Rename'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

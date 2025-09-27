@@ -1,5 +1,5 @@
 import apiClient from '@/lib/axios';
-import { ResumeCreateRequest, ResumeCreateResponse, ResumeExportParams } from './types';
+import { ResumeCreateRequest, ResumeCreateResponse, ResumeExportParams, ResumeRenameRequest, ResumeRenameResponse } from './types';
 import { ResumeListResponse } from './types';
 import { ResumeDetailsResponse } from './types';
 
@@ -72,6 +72,20 @@ export const updateResume = async (resumeId: string, payload: any): Promise<any>
     return response.data;
   } catch (error: any) {
     const message = error.response?.data?.message || 'Failed to update resume';
+    throw new Error(message);
+  }
+};
+
+/**
+ * Rename an existing resume by ID.
+ * Endpoint: PATCH /api/v1/resume/{resume_id}/rename
+ */
+export const renameResume = async (resumeId: string, payload: ResumeRenameRequest): Promise<ResumeRenameResponse> => {
+  try {
+    const response = await apiClient.patch<ResumeRenameResponse>(`/api/v1/resume/${resumeId}/rename`, payload);
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || 'Failed to rename resume';
     throw new Error(message);
   }
 }; 

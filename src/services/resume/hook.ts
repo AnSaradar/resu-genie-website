@@ -1,7 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { createResume, exportResumePdf, fetchMyResumes, getResumeDetails } from './service';
-import { ResumeCreateRequest, ResumeExportParams, ResumeCreateResponse, ResumeListResponse, ResumeDetailsResponse } from './types';
+import { createResume, exportResumePdf, fetchMyResumes, getResumeDetails, renameResume } from './service';
+import { ResumeCreateRequest, ResumeExportParams, ResumeCreateResponse, ResumeListResponse, ResumeDetailsResponse, ResumeRenameRequest, ResumeRenameResponse } from './types';
 import { useQuery } from '@tanstack/react-query';
 
 /**
@@ -89,5 +89,26 @@ export const useGetResumeDetails = (resumeId: string, enabled = true) => {
     queryKey: ['resume-details', resumeId],
     queryFn: () => getResumeDetails(resumeId),
     enabled: !!resumeId && enabled,
+  });
+};
+
+/**
+ * Hook to rename a resume
+ */
+export const useRenameResume = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<ResumeRenameResponse, Error, { resumeId: string; payload: ResumeRenameRequest }>({
+    mutationFn: ({ resumeId, payload }) => renameResume(resumeId, payload),
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch resumes list to show updated name
+      queryClient.invalidateQueries({ queryKey: ['my-resumes'] });
+      
+      // Show success message
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 }; 

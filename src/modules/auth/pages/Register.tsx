@@ -173,7 +173,7 @@ export function Register() {
         last_name: lastName,
         email,
         password,
-        phone: phone || "+1234567890" // Provide a default if empty
+        phone: phone || "" // Send empty string if no phone provided
       };
       
       const response = await register(registerData);
