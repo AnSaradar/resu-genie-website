@@ -436,15 +436,9 @@ export default function MyResumes() {
                           <Calendar className="h-4 w-4" />
                           <span>Created {formatDate(resume.created_at || '')}</span>
                         </div>
-                        {resume.updated_at && resume.updated_at !== resume.created_at && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>Modified {formatDate(resume.updated_at)}</span>
-                          </div>
-                        )}
                         <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          <span>{wordCount} words</span>
+                          <Clock className="h-4 w-4" />
+                          <span>Modified {formatDate(resume.updated_at || resume.created_at || '')}</span>
                         </div>
                       </div>
                       
@@ -490,10 +484,7 @@ export default function MyResumes() {
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         <span>Created {formatDate(resume.created_at || '')}</span>
-                        {resume.updated_at && resume.updated_at !== resume.created_at && (
-                          <span>• Modified {formatDate(resume.updated_at)}</span>
-                        )}
-                        <span>• {wordCount} words</span>
+                        <span>• Modified {formatDate(resume.updated_at || resume.created_at || '')}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
