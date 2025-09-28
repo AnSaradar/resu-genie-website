@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { 
   useGetSeniorityLevels,
+  useGetWorkTypes,
+  useGetWorkModels,
   useGetAllExperiences,
   useAddExperiences,
   useUpdateExperience,
@@ -34,6 +36,8 @@ interface AccountExperienceSectionProps {
 
 export function AccountExperienceSection({ data, onDataUpdate }: AccountExperienceSectionProps) {
   const { data: seniorityLevels = [] } = useGetSeniorityLevels();
+  const { data: workTypes = [] } = useGetWorkTypes();
+  const { data: workModels = [] } = useGetWorkModels();
   const { data: experiencesData = [], isLoading } = useGetAllExperiences();
   const addExperiencesMutation = useAddExperiences();
   const updateExperienceMutation = useUpdateExperience();
@@ -61,6 +65,8 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
     currently_working: false,
     description: '',
     is_volunteer: false,
+    work_type: '',
+    work_model: '',
     duration: ''
   };
 
@@ -120,6 +126,8 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
             currently_working: editingItem.currently_working,
             description: editingItem.description || undefined,
             is_volunteer: editingItem.is_volunteer,
+            work_type: editingItem.work_type || undefined,
+            work_model: editingItem.work_model || undefined,
           }
         });
       } else {
@@ -238,6 +246,20 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                           </>
                         )}
                       </div>
+                      {(experience.work_type || experience.work_model) && (
+                        <div className="flex items-center gap-2 text-xs mt-1">
+                          {experience.work_type && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                              {experience.work_type}
+                            </span>
+                          )}
+                          {experience.work_model && (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                              {experience.work_model}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       {(experience.city || experience.country) && (
                         <div className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
@@ -358,6 +380,49 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                     placeholder="e.g. United States"
                     className="h-12 text-base"
                   />
+                </div>
+              </div>
+
+              {/* Work Type and Work Model Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="work_type" className="text-sm font-semibold">Work Type</Label>
+                  <Select 
+                    value={editingItem.work_type || 'none'} 
+                    onValueChange={(value) => updateEditingItem('work_type', value === 'none' ? '' : value)}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Select work type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {workTypes.map((type: string) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="work_model" className="text-sm font-semibold">Work Model</Label>
+                  <Select 
+                    value={editingItem.work_model || 'none'} 
+                    onValueChange={(value) => updateEditingItem('work_model', value === 'none' ? '' : value)}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Select work model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {workModels.map((model: string) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

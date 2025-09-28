@@ -150,12 +150,18 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
       start_date: convertBackendDateToFrontend(exp.start_date),
       end_date: convertBackendDateToFrontend(exp.end_date),
       is_volunteer: false,
+      // Ensure work_type and work_model are preserved
+      work_type: exp.work_type,
+      work_model: exp.work_model,
     })),
     ...(backendResume.volunteering_experiences || []).map((exp: any) => ({
       ...exp,
       start_date: convertBackendDateToFrontend(exp.start_date),
       end_date: convertBackendDateToFrontend(exp.end_date),
       is_volunteer: true,
+      // Ensure work_type and work_model are preserved
+      work_type: exp.work_type,
+      work_model: exp.work_model,
     })),
   ];
 
@@ -206,6 +212,7 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
     certificates,
     personalProjects,
     selectedTemplate: undefined, // Not stored in backend
+    resumeName: backendResume.resume_name, // Add resume name mapping
   };
 }
 
@@ -229,7 +236,7 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     current_seniority_level: p.seniorityLevel,
   };
 
-  // Experiences - Remove key_achievements field (not supported by backend)
+  // Experiences - Include all fields including work_type and work_model
   const career_experiences = (data.experience || []).map((e) => {
     const location = e.city || e.country ? { city: e.city, country: e.country } : undefined;
     return {
@@ -242,6 +249,8 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
       currently_working: e.currently_working,
       description: e.description,
       is_volunteer: e.is_volunteer,
+      work_type: e.work_type,  // Include work_type field
+      work_model: e.work_model  // Include work_model field
     };
   });
 

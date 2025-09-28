@@ -18,7 +18,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useGetResumeDetails } from '@/services/resume/hook';
+import { useGetResumeDetails, useUpdateAndDownloadResume } from '@/services/resume/hook';
 import { useEffect } from 'react';
 import { updateResume } from '@/services/resume/service';
 import { toast } from 'react-hot-toast';
@@ -69,6 +69,7 @@ export interface ResumeData {
   certificates?: any[];
   personalProjects?: any[];
   selectedTemplate?: string;
+  resumeName?: string;
 }
 
 const STEPS = [
@@ -159,6 +160,7 @@ export function ResumeGenerator() {
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const generateResumeMutation = useGenerateAndDownloadResume();
+  const updateResumeMutation = useUpdateAndDownloadResume();
   const { data: myResumesData } = useGetMyResumes();
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -328,9 +330,18 @@ export function ResumeGenerator() {
     // Always map the data to ensure proper formatting (dates, language levels, etc.)
     const mappedPayload = mapResumeDataToCreateRequest(resumeData);
 
-    // Store the generation data and show naming dialog
+    // Store the generation data
     setPendingGeneration({ createPayload: mappedPayload, templateName });
-    setShowNamingDialog(true);
+    
+    // Only show naming dialog for NEW resumes, not updates
+    if (isEditMode && resumeId) {
+      // For updates, use existing resume name and proceed directly
+      const existingName = resumeData?.resumeName || 'Updated Resume';
+      handleResumeNameConfirm(existingName);
+    } else {
+      // For new resumes, show naming dialog
+      setShowNamingDialog(true);
+    }
   };
 
   // Handle resume naming confirmation
@@ -342,20 +353,19 @@ export function ResumeGenerator() {
 
     try {
       if (isEditMode && resumeId) {
-        // Update existing resume with mapped data
-        await updateResume(resumeId, pendingGeneration.createPayload);
-        // After update, trigger download with custom filename
-        generateResumeMutation.mutate(
+        // Update existing resume - NO NAMING DIALOG NEEDED
+        updateResumeMutation.mutate(
           { 
-            createPayload: pendingGeneration.createPayload, 
+            resumeId: resumeId,
+            updatePayload: pendingGeneration.createPayload, 
             templateName: pendingGeneration.templateName,
-            customFileName: resumeName
+            customFileName: resumeName // Use existing resume name, no custom name needed
           },
           {
             onSettled: () => setIsGenerating(false),
             onSuccess: () => {
               toast.success('Resume updated successfully!');
-              // Navigate to resume section after successful generation
+              // Navigate to resume section after successful update
               navigate('/dashboard/resumes');
             },
           }

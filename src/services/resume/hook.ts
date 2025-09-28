@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { createResume, exportResumePdf, fetchMyResumes, getResumeDetails, renameResume } from './service';
+import { createResume, exportResumePdf, fetchMyResumes, getResumeDetails, renameResume, updateResume } from './service';
 import { ResumeCreateRequest, ResumeExportParams, ResumeCreateResponse, ResumeListResponse, ResumeDetailsResponse, ResumeRenameRequest, ResumeRenameResponse } from './types';
 import { useQuery } from '@tanstack/react-query';
 
@@ -89,6 +89,54 @@ export const useGetResumeDetails = (resumeId: string, enabled = true) => {
     queryKey: ['resume-details', resumeId],
     queryFn: () => getResumeDetails(resumeId),
     enabled: !!resumeId && enabled,
+  });
+};
+
+/**
+ * Compound hook that performs update -> export -> download sequentially.
+ * Useful for updating existing resumes and downloading them.
+ */
+export const useUpdateAndDownloadResume = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<unknown, Error, { resumeId: string; updatePayload: any; templateName: string; customFileName?: string }>({
+    mutationFn: async ({ resumeId, updatePayload, templateName, customFileName }) => {
+      // Step 1: Update existing resume
+      const updateRes = await updateResume(resumeId, updatePayload);
+      
+      // Step 2: Export PDF
+      const blob = await exportResumePdf({ resumeId, templateName });
+
+      // Step 3: Trigger download in browser
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Use custom filename if provided, otherwise use resume name from backend
+      const fileName = customFileName 
+        ? `${customFileName}.pdf`.replace(/\s+/g, '_')
+        : `${updateRes.resume?.resume_name ?? 'resume'}.pdf`.replace(/\s+/g, '_');
+      
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return true;
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch resume data to show updated information
+      queryClient.invalidateQueries({ queryKey: ['resume-details', variables.resumeId] });
+      queryClient.invalidateQueries({ queryKey: ['my-resumes'] });
+      
+      toast.success('Resume updated and downloaded successfully!');
+    },
   });
 };
 

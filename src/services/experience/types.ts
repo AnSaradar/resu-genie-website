@@ -16,6 +16,25 @@ export enum SeniorityLevel {
   EXECUTIVE = "Executive"
 }
 
+// Work type enum from backend
+export enum WorkType {
+  FULL_TIME = "Full Time",
+  PART_TIME = "Part Time",
+  CONTRACT = "Contract",
+  FREELANCE = "Freelance",
+  INTERNSHIP = "Internship",
+  TEMPORARY = "Temporary",
+  OTHER = "Other"
+}
+
+// Work model enum from backend
+export enum WorkModel {
+  REMOTE = "Remote",
+  HYBRID = "Hybrid",
+  ONSITE = "Onsite",
+  FLEXIBLE = "Flexible"
+}
+
 /**
  * Structure for creating a new experience entry
  * Matches ExperienceCreate DTO from backend - used throughout frontend
@@ -30,6 +49,8 @@ export interface ExperienceData {
   end_date?: string; // ISO date string (YYYY-MM-DD), optional if currently_working is true
   description?: string;
   is_volunteer: boolean;
+  work_type?: WorkType | string;
+  work_model?: WorkModel | string;
 }
 
 /**
@@ -46,6 +67,8 @@ export interface ExperienceUpdateData {
   end_date?: string; // ISO date string (YYYY-MM-DD)
   description?: string;
   is_volunteer?: boolean;
+  work_type?: WorkType | string;
+  work_model?: WorkModel | string;
 }
 
 /**
@@ -65,6 +88,8 @@ export interface ExperienceResponse {
   is_active: boolean; // Computed property from backend
   duration: string; // Computed property from backend
   is_volunteer: boolean;
+  work_type?: WorkType | string;
+  work_model?: WorkModel | string;
 }
 
 /**
@@ -83,6 +108,8 @@ export interface Experience {
   end_date: string;
   description: string;
   is_volunteer: boolean;
+  work_type?: string;
+  work_model?: string;
   duration?: string; // Optional computed field
 }
 

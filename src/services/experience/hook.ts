@@ -6,6 +6,8 @@ import {
   deleteExperience, 
   getAllExperiences,
   getSeniorityLevels,
+  getWorkTypes,
+  getWorkModels,
   flattenExperience,
   prepareExperienceData
 } from './service';
@@ -109,6 +111,30 @@ export const useGetSeniorityLevels = () => {
   return useQuery({
     queryKey: ['seniorityLevels'],
     queryFn: getSeniorityLevels,
+    staleTime: Infinity, // Static data never goes stale
+    gcTime: Infinity, // Keep in cache forever
+  });
+};
+
+/**
+ * Hook to get work type options (static data)
+ */
+export const useGetWorkTypes = () => {
+  return useQuery({
+    queryKey: ['workTypes'],
+    queryFn: getWorkTypes,
+    staleTime: Infinity, // Static data never goes stale
+    gcTime: Infinity, // Keep in cache forever
+  });
+};
+
+/**
+ * Hook to get work model options (static data)
+ */
+export const useGetWorkModels = () => {
+  return useQuery({
+    queryKey: ['workModels'],
+    queryFn: getWorkModels,
     staleTime: Infinity, // Static data never goes stale
     gcTime: Infinity, // Keep in cache forever
   });

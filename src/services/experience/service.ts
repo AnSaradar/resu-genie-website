@@ -5,7 +5,9 @@ import {
   ExperienceResponse, 
   ExperienceApiResponse,
   Experience,
-  SeniorityLevel
+  SeniorityLevel,
+  WorkType,
+  WorkModel
 } from './types';
 
 /**
@@ -24,6 +26,8 @@ export const flattenExperience = (experience: ExperienceResponse): Experience =>
     end_date: experience.end_date || '',
     description: experience.description || '',
     is_volunteer: experience.is_volunteer,
+    work_type: experience.work_type,
+    work_model: experience.work_model,
     duration: experience.duration
   };
 };
@@ -44,7 +48,9 @@ export const prepareExperienceData = (experience: Experience): ExperienceData =>
     currently_working: experience.currently_working,
     end_date: experience.end_date || undefined,
     description: experience.description || undefined,
-    is_volunteer: experience.is_volunteer
+    is_volunteer: experience.is_volunteer,
+    work_type: experience.work_type,
+    work_model: experience.work_model
   };
 };
 
@@ -135,4 +141,18 @@ export const getExperience = async (experienceId: string): Promise<ExperienceRes
  */
 export const getSeniorityLevels = (): string[] => {
   return Object.values(SeniorityLevel);
+};
+
+/**
+ * Get work type options (static data)
+ */
+export const getWorkTypes = (): string[] => {
+  return Object.values(WorkType);
+};
+
+/**
+ * Get work model options (static data)
+ */
+export const getWorkModels = (): string[] => {
+  return Object.values(WorkModel);
 }; 
