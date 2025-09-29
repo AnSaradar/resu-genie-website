@@ -75,6 +75,7 @@ const itemVariants = {
 export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstStep, isLastStep }: PersonalInfoStepProps) {
   const { user } = useAuth();
   const { data: userProfile, isLoading: profileLoading } = useGetUserProfile();
+  const PROFILE_SUMMARY_MAX = 500;
   
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: data.personalInfo?.firstName || '',
@@ -439,7 +440,11 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
                 onChange={(e) => handleInputChange('profileSummary', e.target.value)}
                 placeholder="Brief professional summary highlighting your key skills and experience..."
                 rows={4}
+                maxLength={PROFILE_SUMMARY_MAX}
               />
+              <div className="mt-1 text-xs text-muted-foreground text-right">
+                {(personalInfo.profileSummary?.length || 0)}/{PROFILE_SUMMARY_MAX}
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -43,6 +43,7 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
   const { data: userProfile, isLoading } = useGetUserProfile();
   const updateProfileMutation = useUpdateUserProfile();
   const { data: workFields = [] } = useGetWorkFields();
+  const PROFILE_SUMMARY_MAX = 500;
   const [isEditing, setIsEditing] = useState(false);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     city: '',
@@ -85,6 +86,13 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
     setSaving(true);
     setError(null);
     
+    // Client-side validation for profile summary length
+    if (personalInfo.profileSummary && personalInfo.profileSummary.length > PROFILE_SUMMARY_MAX) {
+      setError(`Professional summary must be at most ${PROFILE_SUMMARY_MAX} characters.`);
+      setSaving(false);
+      return;
+    }
+
     try {
       // Transform data to match backend format
       const payload = {
@@ -475,7 +483,11 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
                   placeholder="Brief professional summary highlighting your key skills and experience..."
                   rows={4}
                   className="text-base"
+                maxLength={PROFILE_SUMMARY_MAX}
                 />
+              <div className="mt-1 text-xs text-muted-foreground text-right">
+                {(personalInfo.profileSummary?.length || 0)}/{PROFILE_SUMMARY_MAX}
+              </div>
               </div>
             </div>
           </div>
