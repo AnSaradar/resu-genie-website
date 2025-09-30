@@ -35,11 +35,12 @@ interface AccountLanguagesSectionProps {
 }
 
 const PROFICIENCY_LEVELS = [
-  { value: 'elementary', label: 'Elementary' },
-  { value: 'limited', label: 'Limited Working' },
-  { value: 'professional', label: 'Professional Working' },
-  { value: 'full', label: 'Full Professional' },
-  { value: 'native', label: 'Native or Bilingual' }
+  { value: 'A1', label: 'A1 - Elementary' },
+  { value: 'A2', label: 'A2 - Limited Working' },
+  { value: 'B1', label: 'B1 - Limited Working' },
+  { value: 'B2', label: 'B2 - Professional Working' },
+  { value: 'C1', label: 'C1 - Full Professional' },
+  { value: 'C2', label: 'C2 - Native or Bilingual' }
 ];
 
 const COMMON_LANGUAGES = [
@@ -64,7 +65,7 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
 
   const defaultLanguage: Omit<Language, 'id'> = {
     name: '',
-    proficiency: 'professional',
+    proficiency: 'B2',
     isNative: false
   };
 
@@ -153,11 +154,12 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
 
   const getProficiencyColor = (proficiency: string) => {
     switch (proficiency) {
-      case 'elementary': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
-      case 'limited': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
-      case 'professional': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
-      case 'full': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
-      case 'native': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+      case 'A1': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+      case 'A2': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
+      case 'B1': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+      case 'B2': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+      case 'C1': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
+      case 'C2': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300';
     }
   };

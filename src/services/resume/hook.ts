@@ -62,12 +62,7 @@ export const useGenerateAndDownloadResume = () => {
 
       return true;
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-    onSuccess: () => {
-      toast.success('Resume generated and downloaded successfully!');
-    },
+    // Remove automatic toast handling - let component handle it
   });
 };
 
@@ -127,16 +122,12 @@ export const useUpdateAndDownloadResume = () => {
 
       return true;
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
     onSuccess: (data, variables) => {
       // Invalidate and refetch resume data to show updated information
       queryClient.invalidateQueries({ queryKey: ['resume-details', variables.resumeId] });
       queryClient.invalidateQueries({ queryKey: ['my-resumes'] });
-      
-      toast.success('Resume updated and downloaded successfully!');
     },
+    // Remove automatic toast handling - let component handle it
   });
 };
 

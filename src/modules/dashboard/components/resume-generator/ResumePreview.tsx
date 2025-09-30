@@ -23,6 +23,8 @@ import {
   Languages,
   Award,
   Code,
+  Loader2,
+  X,
 } from 'lucide-react';
 import { ResumeData } from '../../pages/ResumeGenerator';
 
@@ -33,6 +35,10 @@ interface ResumePreviewProps {
   onPrevious: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  apiError?: string | null;
+  isApiLoading?: boolean;
+  onDismissError?: () => void;
+  validationErrors?: string[];
 }
 
 export function ResumePreview({
@@ -42,6 +48,10 @@ export function ResumePreview({
   onPrevious,
   isFirstStep,
   isLastStep,
+  apiError,
+  isApiLoading = false,
+  onDismissError,
+  validationErrors = [],
 }: ResumePreviewProps) {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
@@ -267,26 +277,90 @@ export function ResumePreview({
         </div>
       </motion.div>
 
-      {/* Tips */}
+      {/* Error Display or Pro Tips */}
       <motion.div variants={itemVariants}>
-        <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <h5 className="font-medium text-amber-800 dark:text-amber-300 mb-1">
-                  Pro Tips
-                </h5>
-                <ul className="text-sm text-amber-700 dark:text-amber-400 space-y-1">
-                  <li>• Add at least 2-3 work experiences for better impact</li>
-                  <li>• Include 8-12 relevant skills</li>
-                  <li>• Quantify achievements with numbers when possible</li>
-                  <li>• Keep descriptions concise and action-oriented</li>
-                </ul>
+        {apiError || isApiLoading ? (
+          <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                {isApiLoading ? (
+                  <Loader2 className="h-5 w-5 text-blue-500 animate-spin flex-shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                )}
+                
+                <div className="flex-1 min-w-0">
+                  {isApiLoading ? (
+                    <div className="text-blue-800 dark:text-blue-200">
+                      <p className="font-medium">Processing your request...</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+                        Please wait while we save and download your resume.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-red-800 dark:text-red-200">
+                      <p className="font-medium">Error occurred</p>
+                      <p className="text-sm text-red-600 dark:text-red-300 mt-1 whitespace-pre-line">
+                        {apiError}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {onDismissError && !isApiLoading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onDismissError}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 h-auto"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : validationErrors.length > 0 ? (
+          <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+            <CardContent className="pt-6">
+              <div className="flex gap-3">
+                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+                    Please complete the following required fields:
+                  </h5>
+                  <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-red-500 mt-0.5">•</span>
+                        <span>{error}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+            <CardContent className="pt-6">
+              <div className="flex gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h5 className="font-medium text-amber-800 dark:text-amber-300 mb-1">
+                    Pro Tips
+                  </h5>
+                  <ul className="text-sm text-amber-700 dark:text-amber-400 space-y-1">
+                    <li>• Add at least 2-3 work experiences for better impact</li>
+                    <li>• Include 8-12 relevant skills</li>
+                    <li>• Quantify achievements with numbers when possible</li>
+                    <li>• Keep descriptions concise and action-oriented</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </motion.div>
 
       {/* Navigation footer is handled globally via StepNavigation */}

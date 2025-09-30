@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface StepNavigationProps {
   onPrevious: () => void;
@@ -7,6 +8,7 @@ interface StepNavigationProps {
   isLastStep: boolean;
   nextLabel: string;
   nextDisabled?: boolean;
+  isLoading?: boolean;
 }
 
 export function StepNavigation({
@@ -16,6 +18,7 @@ export function StepNavigation({
   isLastStep,
   nextLabel,
   nextDisabled = false,
+  isLoading = false,
 }: StepNavigationProps) {
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0">
@@ -30,10 +33,17 @@ export function StepNavigation({
         </Button>
         <Button
           onClick={onNext}
-          disabled={nextDisabled || (isLastStep && nextDisabled)}
+          disabled={nextDisabled || (isLastStep && nextDisabled) || isLoading}
           className="pointer-events-auto"
         >
-          {nextLabel}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Processing...
+            </>
+          ) : (
+            nextLabel
+          )}
         </Button>
       </div>
     </div>

@@ -173,21 +173,32 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
     setEditingItem({ ...editingItem, [field]: value });
   };
 
-  const formatDateRange = (exp: Experience) => {
-    const startDate = exp.start_date ? new Date(exp.start_date + '-01').toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short' 
-    }) : '';
-    
-    if (exp.currently_working) {
-      return `${startDate} - Present`;
+  const normalizeMonthValue = (value: string | undefined | null) => {
+    if (!value) return '';
+    // Accept both YYYY-MM and YYYY-MM-DD, always output YYYY-MM for month inputs
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value.slice(0, 7);
+    if (/^\d{4}-\d{2}$/.test(value)) return value;
+    // Fallback: try Date parse and return YYYY-MM
+    const d = new Date(value);
+    if (!isNaN(d.getTime())) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      return `${y}-${m}`;
     }
-    
-    const endDate = exp.end_date ? new Date(exp.end_date + '-01').toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short' 
-    }) : '';
-    
+    return '';
+  };
+
+  const toDisplayMonth = (value: string | undefined | null) => {
+    const month = normalizeMonthValue(value);
+    if (!month) return '';
+    const d = new Date(month + '-01');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+  };
+
+  const formatDateRange = (exp: Experience) => {
+    const startDate = toDisplayMonth(exp.start_date);
+    if (exp.currently_working) return `${startDate} - Present`;
+    const endDate = toDisplayMonth(exp.end_date);
     return `${startDate} - ${endDate}`;
   };
 

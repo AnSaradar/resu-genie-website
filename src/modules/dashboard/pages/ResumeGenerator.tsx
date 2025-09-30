@@ -169,6 +169,8 @@ export function ResumeGenerator() {
     createPayload: any;
     templateName: string;
   } | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [isApiLoading, setIsApiLoading] = useState(false);
   const { startTour, enabled, language } = useTour();
 
   // Start resume tour when component mounts
@@ -305,9 +307,10 @@ export function ResumeGenerator() {
 
   // Final step action – save and download resume
   const handleSaveAndDownload = async () => {
-    if (isGenerating) return;
+    if (isGenerating || isApiLoading) return;
     setUpdateError(null);
     setValidationErrors([]);
+    setApiError(null);
 
     // Validate all required fields before proceeding
     const validation = validateResumeData(resumeData);
@@ -349,7 +352,9 @@ export function ResumeGenerator() {
     if (!pendingGeneration) return;
 
     setIsGenerating(true);
+    setIsApiLoading(true);
     setShowNamingDialog(false);
+    setApiError(null);
 
     try {
       if (isEditMode && resumeId) {
@@ -362,12 +367,18 @@ export function ResumeGenerator() {
             customFileName: resumeName // Use existing resume name, no custom name needed
           },
           {
-            onSettled: () => setIsGenerating(false),
+            onSettled: () => {
+              setIsGenerating(false);
+              setIsApiLoading(false);
+            },
             onSuccess: () => {
               toast.success('Resume updated successfully!');
               // Navigate to resume section after successful update
               navigate('/dashboard/resumes');
             },
+            onError: (error: any) => {
+              handleApiError(error);
+            }
           }
         );
       } else {
@@ -379,42 +390,52 @@ export function ResumeGenerator() {
             customFileName: resumeName
           },
           {
-            onSettled: () => setIsGenerating(false),
+            onSettled: () => {
+              setIsGenerating(false);
+              setIsApiLoading(false);
+            },
             onSuccess: () => {
               toast.success('Resume created successfully!');
               // Navigate to resume section after successful generation
               navigate('/dashboard/resumes');
             },
+            onError: (error: any) => {
+              handleApiError(error);
+            }
           }
         );
       }
     } catch (err: any) {
       setIsGenerating(false);
-      
-      // Parse validation errors from the API response
-      if (err?.response?.data?.detail) {
-        const validationErrors = err.response.data.detail;
-        if (Array.isArray(validationErrors)) {
-          // Format validation errors for display
-          const errorMessages = validationErrors.map((error: any) => {
-            const field = error.loc?.join('.') || 'unknown';
-            return `${field}: ${error.msg}`;
-          });
-          const errorText = `Validation errors:\n${errorMessages.join('\n')}`;
-          setUpdateError(errorText);
-          toast.error('Please fix the validation errors below');
-        } else {
-          setUpdateError(err.response.data.detail);
-          toast.error(err.response.data.detail);
-        }
-      } else {
-        const errorMessage = err?.message || 'Failed to update resume.';
-        setUpdateError(errorMessage);
-        toast.error(errorMessage);
-      }
+      setIsApiLoading(false);
+      handleApiError(err);
     } finally {
       setPendingGeneration(null);
     }
+  };
+
+  // Handle API errors consistently
+  const handleApiError = (error: any) => {
+    let errorMessage = 'An unexpected error occurred.';
+    
+    if (error?.response?.data?.detail) {
+      const validationErrors = error.response.data.detail;
+      if (Array.isArray(validationErrors)) {
+        // Format validation errors for display
+        const errorMessages = validationErrors.map((err: any) => {
+          const field = err.loc?.join('.') || 'unknown';
+          return `${field}: ${err.msg}`;
+        });
+        errorMessage = `Validation errors:\n${errorMessages.join('\n')}`;
+      } else {
+        errorMessage = validationErrors;
+      }
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    setApiError(errorMessage);
+    setUpdateError(errorMessage);
   };
 
   // Handle naming dialog close
@@ -518,6 +539,7 @@ export function ResumeGenerator() {
   }
 
   return (
+    <>
     <motion.div
       className="max-w-6xl mx-auto space-y-8"
       variants={containerVariants}
@@ -615,10 +637,10 @@ export function ResumeGenerator() {
             <p className="text-muted-foreground">{currentStepData.description}</p>
           </CardHeader>
           <CardContent className="pb-24">
-            {updateError && (
+            {updateError && currentStep !== STEPS.length - 1 && (
               <div className="mb-4 text-destructive text-center font-medium whitespace-pre-line">{updateError}</div>
             )}
-            {validationErrors.length > 0 && (
+            {validationErrors.length > 0 && currentStep !== STEPS.length - 1 && (
               <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2">Please complete the following required fields:</h4>
                 <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
@@ -646,6 +668,12 @@ export function ResumeGenerator() {
                   onPrevious={handlePrevious}
                   isFirstStep={currentStep === 0}
                   isLastStep={currentStep === STEPS.length - 1}
+                  {...(currentStep === STEPS.length - 1 && {
+                    apiError,
+                    isApiLoading,
+                    onDismissError: () => setApiError(null),
+                    validationErrors
+                  })}
                 />
               </motion.div>
             </AnimatePresence>
@@ -658,6 +686,7 @@ export function ResumeGenerator() {
             isLastStep={currentStep === STEPS.length - 1}
             nextLabel={currentStep === STEPS.length - 1 ? 'Save & Download Resume' : `Next: ${STEPS[currentStep + 1].title}`}
             nextDisabled={currentStep === 0 && !(resumeData.personalInfo?.firstName && resumeData.personalInfo?.lastName && resumeData.personalInfo?.email && resumeData.personalInfo?.birthDate)}
+            isLoading={isApiLoading}
           />
         </Card>
       </motion.div>
@@ -688,5 +717,6 @@ export function ResumeGenerator() {
       />
 
     </motion.div>
+    </>
   );
 }
