@@ -66,6 +66,16 @@ export function DashboardNavbar() {
             Dashboard
             </Link>
             <Link
+            to="/dashboard/job-matcher"
+              className={`transition-colors hover:text-foreground/80 ${
+                isActive('/dashboard/job-matcher') 
+                  ? 'text-foreground font-semibold' 
+                  : 'text-foreground/60'
+              }`}
+            >
+            Job Matcher
+            </Link>
+            <Link
             to="/dashboard/resumes"
               className={`transition-colors hover:text-foreground/80 ${
                 isActive('/dashboard/resumes') 

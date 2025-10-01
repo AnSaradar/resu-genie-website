@@ -20,6 +20,7 @@ import { ResumeEvaluator } from './modules/dashboard/pages/ResumeEvaluator';
 import MyResumes from './modules/dashboard/pages/MyResumes';
 import ResumeImport from './modules/dashboard/pages/ResumeImport';
 import Account from './modules/dashboard/pages/Account';
+import JobMatcher from './modules/dashboard/pages/JobMatcher';
 
 // Protected route component that uses auth context
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -174,6 +175,7 @@ function AppContent() {
           <Route path="templates" element={<div>Templates coming soon</div>} />
           <Route path="enhancer" element={<div>AI Enhancer coming soon</div>} />
           <Route path="evaluator" element={<ResumeEvaluator />} />
+          <Route path="job-matcher" element={<JobMatcher />} />
           <Route path="generate" element={<ResumeImport />} />
           <Route path="upload" element={<div>Upload Resume coming soon</div>} />
           <Route path="schedule" element={<div>Schedule Review coming soon</div>} />
