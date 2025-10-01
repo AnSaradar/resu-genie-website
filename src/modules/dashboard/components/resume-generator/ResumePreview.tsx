@@ -237,7 +237,7 @@ export function ResumePreview({
                 <div>
                   <h4 className="font-semibold">Selected Template</h4>
                   <p className="text-sm text-muted-foreground capitalize">
-                    {data.selectedTemplate.replace('-', ' ')}
+                    {data.selectedTemplate ? data.selectedTemplate.replace('-', ' ') : 'No template selected'}
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
@@ -380,14 +380,20 @@ export function ResumePreview({
             <section className="mb-6">
               <h4 className="font-semibold text-lg mb-2">Personal Information</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {Object.entries(data.personalInfo).map(([key, value]) => (
-                  <div key={key} className="flex flex-col">
-                    <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                    <span className="text-muted-foreground break-words">
-                      {String(value)}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(data.personalInfo || {}).map(([key, value]) => {
+                  // Skip empty values and ID fields
+                  if (value === null || value === undefined || value === '' || key === 'id' || String(value).trim() === '') {
+                    return null;
+                  }
+                  return (
+                    <div key={key} className="flex flex-col">
+                      <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                      <span className="text-muted-foreground break-words">
+                        {String(value).trim()}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -407,16 +413,22 @@ export function ResumePreview({
                       key={idx}
                       className="rounded-md border p-4 text-sm flex flex-col gap-1 bg-muted/50"
                     >
-                      {Object.entries(item).map(([key, value]) => (
-                        <div key={key} className="flex gap-2">
-                          <span className="font-medium capitalize">
-                            {key.replace(/([A-Z])/g, ' $1')}:&nbsp;
-                          </span>
-                          <span className="text-muted-foreground break-words">
-                            {String(value)}
-                          </span>
-                        </div>
-                      ))}
+                      {Object.entries(item).map(([key, value]) => {
+                        // Skip empty values and ID fields
+                        if (value === null || value === undefined || value === '' || key === 'id' || String(value).trim() === '') {
+                          return null;
+                        }
+                        return (
+                          <div key={key} className="flex gap-2">
+                            <span className="font-medium capitalize">
+                              {key.replace(/([A-Z])/g, ' $1')}:&nbsp;
+                            </span>
+                            <span className="text-muted-foreground break-words">
+                              {String(value).trim()}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
                 </div>

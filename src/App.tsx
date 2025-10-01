@@ -18,6 +18,7 @@ import { MainDashboard } from './modules/dashboard/pages/MainDashboard';
 import { ResumeGenerator } from './modules/dashboard/pages/ResumeGenerator';
 import { ResumeEvaluator } from './modules/dashboard/pages/ResumeEvaluator';
 import MyResumes from './modules/dashboard/pages/MyResumes';
+import ResumeImport from './modules/dashboard/pages/ResumeImport';
 import Account from './modules/dashboard/pages/Account';
 
 // Protected route component that uses auth context
@@ -168,11 +169,12 @@ function AppContent() {
           <Route index element={<MainDashboard />} />
           <Route path="resumes" element={<MyResumes />} />
           <Route path="account" element={<Account />} />
-          <Route path="generate/:resumeId" element={<ResumeGenerator />} />
+          <Route path="resume/:resumeId" element={<ResumeGenerator />} />
+          <Route path="resume/new" element={<ResumeGenerator />} />
           <Route path="templates" element={<div>Templates coming soon</div>} />
           <Route path="enhancer" element={<div>AI Enhancer coming soon</div>} />
           <Route path="evaluator" element={<ResumeEvaluator />} />
-          <Route path="generate" element={<ResumeGenerator />} />
+          <Route path="generate" element={<ResumeImport />} />
           <Route path="upload" element={<div>Upload Resume coming soon</div>} />
           <Route path="schedule" element={<div>Schedule Review coming soon</div>} />
           <Route path="goals" element={<div>Career Goals coming soon</div>} />

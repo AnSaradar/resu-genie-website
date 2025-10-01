@@ -17,7 +17,7 @@ import {
   Sparkles,
   Loader2
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useGetResumeDetails, useUpdateAndDownloadResume } from '@/services/resume/hook';
 import { useEffect } from 'react';
 import { updateResume } from '@/services/resume/service';
@@ -139,6 +139,7 @@ const STEPS = [
 ];
 
 export function ResumeGenerator() {
+  const location = useLocation();
   const { resumeId } = useParams<{ resumeId?: string }>();
   const isEditMode = !!resumeId;
   const {
@@ -172,6 +173,77 @@ export function ResumeGenerator() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [isApiLoading, setIsApiLoading] = useState(false);
   const { startTour, enabled, language } = useTour();
+
+  // Load CV extracted data if available (for new resumes only)
+  useEffect(() => {
+    if (!isEditMode) {
+      // Prefer navigation state first (more reliable than session storage)
+      const stateData: any = (location as any)?.state?.cvExtractedData;
+      if (stateData) {
+        try {
+          setResumeData(prevData => ({
+            ...prevData,
+            ...stateData,
+            experience: stateData.experience || prevData.experience || [],
+            education: stateData.education || prevData.education || [],
+            skills: stateData.skills || prevData.skills || [],
+            languages: stateData.languages || prevData.languages || [],
+            certificates: stateData.certificates || prevData.certificates || [],
+            personalProjects: stateData.personalProjects || prevData.personalProjects || [],
+          }));
+          setCompletedSteps(new Set([0, 1, 2, 3, 4, 5, 6]));
+          toast.success('Resume data imported from CV! Review and edit as needed.', { duration: 4000 });
+          // Clear the data from session storage since we used state data
+          sessionStorage.removeItem('cv-extracted-data');
+          return; // Skip sessionStorage path if state was provided
+        } catch (e) {
+          console.error('Error applying state CV data:', e);
+        }
+      }
+
+      const cvExtractedData = sessionStorage.getItem('cv-extracted-data');
+      console.log('CV extracted data from session storage:', cvExtractedData);
+      
+      if (cvExtractedData) {
+        try {
+          const parsedData = JSON.parse(cvExtractedData);
+          console.log('Parsed CV data:', parsedData);
+          
+          // Make sure we have a complete data structure
+          setResumeData(prevData => {
+            const mergedData = {
+              ...prevData,
+              ...parsedData,
+              // Ensure these arrays exist even if they're not in the parsed data
+              experience: parsedData.experience || prevData.experience || [],
+              education: parsedData.education || prevData.education || [],
+              skills: parsedData.skills || prevData.skills || [],
+              languages: parsedData.languages || prevData.languages || [],
+              certificates: parsedData.certificates || prevData.certificates || [],
+              personalProjects: parsedData.personalProjects || prevData.personalProjects || [],
+            };
+            
+            console.log('Merged resume data:', mergedData);
+            return mergedData;
+          });
+          
+          // Clear the data from session storage after loading
+          sessionStorage.removeItem('cv-extracted-data');
+          
+          // Mark all steps as completed
+          setCompletedSteps(new Set([0, 1, 2, 3, 4, 5, 6]));
+          
+          // Show success notification
+          toast.success('Resume data imported from CV! Review and edit as needed.', {
+            duration: 4000,
+          });
+        } catch (error) {
+          console.error('Error parsing CV extracted data:', error);
+          toast.error('Error loading imported CV data. Please try again.');
+        }
+      }
+    }
+  }, [isEditMode, location.state]);
 
   // Start resume tour when component mounts
   useEffect(() => {
