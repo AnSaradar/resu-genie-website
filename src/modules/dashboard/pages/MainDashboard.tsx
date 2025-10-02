@@ -40,7 +40,8 @@ import {
   GraduationCap,
   Languages,
   Link as LinkIcon,
-  FolderOpen
+  FolderOpen,
+  Mail
 } from 'lucide-react';
 
 export function MainDashboard() {
@@ -116,6 +117,28 @@ export function MainDashboard() {
       action: 'Evaluate Resume',
       route: '/dashboard/evaluator',
       enabled: true
+    },
+    {
+      id: 'job-matcher',
+      title: 'Job Matcher',
+      description: 'Compare your resume against job postings and get match scores',
+      icon: Target,
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+      iconColor: 'text-orange-600',
+      action: 'Match Jobs',
+      route: '/dashboard/job-matcher',
+      enabled: true
+    },
+    {
+      id: 'cover-letter',
+      title: 'Cover Letter Generator',
+      description: 'Generate tailored cover letters using AI for specific job applications',
+      icon: Mail,
+      bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+      iconColor: 'text-indigo-600',
+      action: 'Generate Letter',
+      route: '/dashboard/cover-letter',
+      enabled: true
     }
   ];
 
@@ -146,6 +169,20 @@ export function MainDashboard() {
       description: 'Get AI feedback on your resume',
       icon: BarChart3,
       action: () => navigate('/dashboard/evaluator'),
+      enabled: true
+    },
+    {
+      title: 'Match Jobs',
+      description: 'Compare your resume with job postings',
+      icon: Target,
+      action: () => navigate('/dashboard/job-matcher'),
+      enabled: true
+    },
+    {
+      title: 'Generate Cover Letter',
+      description: 'Create tailored cover letters for applications',
+      icon: Mail,
+      action: () => navigate('/dashboard/cover-letter'),
       enabled: true
     }
   ];

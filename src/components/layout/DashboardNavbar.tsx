@@ -76,6 +76,16 @@ export function DashboardNavbar() {
             Job Matcher
             </Link>
             <Link
+            to="/dashboard/cover-letter"
+              className={`transition-colors hover:text-foreground/80 ${
+                isActive('/dashboard/cover-letter') 
+                  ? 'text-foreground font-semibold' 
+                  : 'text-foreground/60'
+              }`}
+            >
+            Cover Letter
+            </Link>
+            <Link
             to="/dashboard/resumes"
               className={`transition-colors hover:text-foreground/80 ${
                 isActive('/dashboard/resumes') 
