@@ -52,6 +52,14 @@ export default function CoverLetterPage() {
       });
       setCurrentCoverLetter(result.cover_letter);
       setPage(1);
+      
+      // Clear form fields after successful generation
+      setJobTitle('');
+      setJobDescription('');
+      setCompanyName('');
+      setHiringManagerName('');
+      setSelectedResumeId(null);
+      setTone(CoverLetterTone.PROFESSIONAL);
     } catch (error) {
       console.error('Cover letter generation failed:', error);
     }

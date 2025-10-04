@@ -43,6 +43,11 @@ export default function JobMatcher() {
       });
       setCurrentMatch(result.job_match);
       setPage(1);
+      
+      // Clear form fields after successful match
+      setJobTitle('');
+      setJobOfferText('');
+      setSelectedResumeId(null);
     } catch (error) {
       console.error('Job match failed:', error);
     }
