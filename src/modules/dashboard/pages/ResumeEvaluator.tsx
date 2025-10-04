@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query';
 import { 
   Wand2, 
   ArrowLeft,
@@ -11,37 +15,35 @@ import {
   User,
   Briefcase,
   GraduationCap,
-  BarChart3
+  AlertTriangle,
+  CheckCircle2,
+  Info
 } from 'lucide-react';
-import { ResumeSelector } from "@/components/evaluation/ResumeSelector";
-import { EvaluationResults } from "@/components/evaluation/EvaluationResults";
-import { useResumeEvaluation, useGetEvaluationHistory } from "@/services/evaluation/hook";
-import { CompleteEvaluationResponse } from "@/services/evaluation/types";
-import { useTour } from "@/modules/tour/TourProvider";
-import { getEvaluationSteps } from "@/modules/tour/steps";
+import { useEvaluateUnified } from "@/services/evaluation/hook";
+import { UnifiedEvaluationResponse, getScoreColor, getStatusColor, getStatusBadgeVariant, SECTION_DISPLAY_CONFIG } from "@/services/evaluation/types";
+import { fetchMyResumes } from '@/services/resume/service';
+import { ResumeListResponse } from '@/services/resume/types';
 
 export function ResumeEvaluator() {
   const navigate = useNavigate();
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
-  const [selectedEvaluationType, setSelectedEvaluationType] = useState<'complete'>('complete');
-  const [currentEvaluation, setCurrentEvaluation] = useState<CompleteEvaluationResponse | null>(null);
+  const [currentEvaluation, setCurrentEvaluation] = useState<UnifiedEvaluationResponse | null>(null);
 
   // Hooks
-  const { evaluateResume, isLoading, error } = useResumeEvaluation();
-  const { data: evaluationHistory } = useGetEvaluationHistory();
-  const { startTour, enabled, language } = useTour();
+  const evaluateUnified = useEvaluateUnified();
+  const { data: resumes } = useQuery<ResumeListResponse>({
+    queryKey: ['my-resumes'],
+    queryFn: fetchMyResumes,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  // Start evaluation tour when component mounts
-  useEffect(() => {
-    if (enabled) {
-      const steps = getEvaluationSteps(language);
-      startTour({ tourKey: 'evaluation', steps, autoRun: true });
-    }
-  }, [enabled, language, startTour]);
+  const resumeOptions = resumes?.data.resumes ?? [];
 
   const handleEvaluate = async () => {
     try {
-      const result = await evaluateResume(selectedResumeId, 'complete');
+      const result = await evaluateUnified.mutateAsync({
+        resume_id: selectedResumeId
+      });
       setCurrentEvaluation(result.evaluation);
     } catch (err) {
       console.error('Evaluation failed:', err);
@@ -52,206 +54,275 @@ export function ResumeEvaluator() {
     handleEvaluate();
   };
 
-  const handleDownloadReport = () => {
-    // TODO: Implement report download functionality
-    console.log('Download report functionality to be implemented');
+  const getPriorityIcon = (priority: 'good' | 'warning' | 'critical') => {
+    switch (priority) {
+      case 'critical':
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case 'warning':
+        return <Info className="h-4 w-4 text-yellow-500" />;
+      case 'good':
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
+  const getPriorityColor = (priority: 'good' | 'warning' | 'critical') => {
+    switch (priority) {
+      case 'critical':
+        return 'text-red-600 bg-red-50 dark:bg-red-900/20';
+      case 'warning':
+        return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20';
+      case 'good':
+        return 'text-green-600 bg-green-50 dark:bg-green-900/20';
+    }
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 10,
-      },
-    },
+  // Normalize section keys coming from backend to our display config keys
+  const SECTION_ALIAS: Record<string, keyof typeof SECTION_DISPLAY_CONFIG> = {
+    profile: 'profile',
+    user_profile: 'profile',
+    personal_info: 'profile',
+
+    experience: 'experience',
+
+    education: 'education',
+
+    skills: 'skills',
+    technical_skills: 'skills',
+    soft_skills: 'skills',
+
+    projects: 'projects',
+    personal_projects: 'projects',
+    project: 'projects',
+
+    languages: 'languages',
+
+    certificates: 'certificates',
+    certifications: 'certificates',
+
+    links: 'links',
+    personal_links: 'links',
+
+    custom_sections: 'custom_sections',
+  };
+
+  const formatSectionName = (section: string): string => {
+    // Normalize first, then try to get from config
+    const normalizedKey = SECTION_ALIAS[section] ?? (section as keyof typeof SECTION_DISPLAY_CONFIG);
+    const configTitle = SECTION_DISPLAY_CONFIG[normalizedKey as keyof typeof SECTION_DISPLAY_CONFIG]?.title;
+    if (configTitle) {
+      return configTitle;
+    }
+    
+    // Fallback: capitalize first letter and replace underscores with spaces
+    return section.charAt(0).toUpperCase() + section.slice(1).replace(/_/g, ' ');
   };
 
   return (
-    <motion.div
-      className="space-y-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       {/* Header */}
-      <motion.div variants={itemVariants}>
-        <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+      <div className="flex items-center gap-4 mb-6">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => navigate('/dashboard')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+      </div>
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
+            <Wand2 className="h-8 w-8 text-purple-600" />
+            Resume Evaluator
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Get AI-powered feedback and suggestions to improve your resume
+          </p>
         </div>
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-              <Wand2 className="h-8 w-8 text-purple-600" />
-              Resume Evaluator
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Get AI-powered feedback and suggestions to improve your resume
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      </div>
 
-      {/* Resume Selection */}
-      <motion.div variants={itemVariants} data-tour="resume-selector">
-        <ResumeSelector
-          selectedResumeId={selectedResumeId}
-          onResumeSelect={setSelectedResumeId}
-        />
-      </motion.div>
-
-      {/* Evaluation Options */}
-      <motion.div variants={itemVariants}>
-        <Card>
+      {/* Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Complete Evaluation</CardTitle>
-            <CardDescription>
-              Get comprehensive AI-powered feedback on your {selectedResumeId ? 'selected resume' : 'current profile'}
-            </CardDescription>
+            <CardTitle>Resume Selection</CardTitle>
+            <CardDescription>Choose which resume to evaluate or evaluate your current profile</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/50">
-                <BarChart3 className="h-5 w-5 text-blue-600" />
-                <div>
-                  <h3 className="font-medium">Complete Evaluation</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Get comprehensive feedback on your entire {selectedResumeId ? 'resume' : 'profile'} including profile information, work experience, and education
-                  </p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-green-600" />
-                  <span>Profile Information</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-orange-600" />
-                  <span>Work Experience</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-purple-600" />
-                  <span>Education</span>
-                </div>
-              </div>
-              
-              <Button 
-                className="w-full" 
-                onClick={handleEvaluate} 
-                disabled={isLoading}
-                size="lg"
-                data-tour="evaluation-button"
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Evaluating...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    Evaluate {selectedResumeId ? 'Resume' : 'Profile'}
-                  </>
-                )}
-              </Button>
-            </div>
+          <CardContent className="space-y-4">
+            <Select onValueChange={(value) => setSelectedResumeId(value === 'profile' ? null : value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a resume or profile" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="profile">Current Profile (Account Data)</SelectItem>
+                {resumeOptions.map((resume) => (
+                  <SelectItem key={resume.id} value={resume.id}>{resume.resume_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </CardContent>
         </Card>
-      </motion.div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Evaluate</CardTitle>
+            <CardDescription>Get comprehensive feedback</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              className="w-full" 
+              size="lg" 
+              disabled={evaluateUnified.isPending} 
+              onClick={handleEvaluate}
+            >
+              {evaluateUnified.isPending ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Evaluating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Evaluate Now
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Error Display */}
-      {error && (
-        <motion.div variants={itemVariants}>
-          <Card className="border-red-200 bg-red-50 dark:bg-red-900/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-red-600">
-                <FileText className="h-5 w-5" />
-                <span className="font-medium">Evaluation Error</span>
-              </div>
-              <p className="text-sm text-red-600 mt-1">{error.message}</p>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {evaluateUnified.error && (
+        <Card className="border-red-200 bg-red-50 dark:bg-red-900/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-600">
+              <FileText className="h-5 w-5" />
+              <span className="font-medium">Evaluation Error</span>
+            </div>
+            <p className="text-sm text-red-600 mt-1">{evaluateUnified.error.message}</p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Evaluation Results */}
       {currentEvaluation && (
-        <motion.div variants={itemVariants} data-tour="evaluation-results">
-          <EvaluationResults
-            evaluation={currentEvaluation}
-            isLoading={isLoading}
-            onReEvaluate={handleReEvaluate}
-            onDownloadReport={handleDownloadReport}
-          />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wand2 className="h-5 w-5 text-purple-600" />
+                    Evaluation Results
+                  </CardTitle>
+                  <CardDescription>
+                    AI-powered analysis of your resume
+                  </CardDescription>
+                </div>
+                <Button variant="outline" onClick={handleReEvaluate} disabled={evaluateUnified.isPending}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Re-evaluate
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Overall Score */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-purple-600">
+                      <Wand2 className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-medium">Overall Score</span>
+                  </div>
+                  <div className={`text-3xl font-bold ${getScoreColor(currentEvaluation.score)}`}>
+                    {currentEvaluation.score}/10
+                  </div>
+                  <Progress value={currentEvaluation.score * 10} className="mt-2 h-2" />
+                </div>
+
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-medium">Status</span>
+                  </div>
+                  <Badge variant={getStatusBadgeVariant(currentEvaluation.status)} className="text-sm">
+                    {currentEvaluation.status.charAt(0).toUpperCase() + currentEvaluation.status.slice(1)}
+                  </Badge>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-green-50 to-yellow-50 dark:from-green-900/20 dark:to-yellow-900/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-green-600">
+                      <AlertTriangle className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-medium">Issues Found</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {currentEvaluation.mistakes_issues.length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="p-4 rounded-lg border bg-muted/50">
+                <h3 className="font-medium mb-2">Analysis Summary</h3>
+                <p className="text-sm text-muted-foreground">{currentEvaluation.message}</p>
+              </div>
+
+              {/* Mistakes and Issues */}
+              {currentEvaluation.mistakes_issues.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium">Issues & Recommendations</h3>
+                  <div className="space-y-3">
+                    {currentEvaluation.mistakes_issues.map((issue, index) => (
+                      <div key={index} className={`p-4 rounded-lg border ${getPriorityColor(issue.priority)}`}>
+                        <div className="flex items-start gap-3">
+                          {getPriorityIcon(issue.priority)}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-xs">
+                                {formatSectionName(issue.section)}
+                              </Badge>
+                              <Badge variant={getStatusBadgeVariant(issue.priority)} className="text-xs">
+                                {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm">{issue.issue}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Suggestions */}
+              {currentEvaluation.suggestions.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium">General Suggestions</h3>
+                  <div className="space-y-2">
+                    {currentEvaluation.suggestions.map((suggestion, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-blue-50 dark:bg-blue-900/20">
+                        <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </motion.div>
       )}
-
-      {/* Evaluation History */}
-      <motion.div variants={itemVariants}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Evaluation History</CardTitle>
-            <CardDescription>
-              Track your progress over time
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {evaluationHistory?.evaluations && evaluationHistory.evaluations.length > 0 ? (
-              <div className="space-y-3">
-                {evaluationHistory.evaluations.slice(0, 5).map((evaluation) => (
-                  <div key={evaluation._id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        {evaluation.evaluation_area === 'user_profile' && <User className="h-4 w-4 text-green-600" />}
-                        {evaluation.evaluation_area === 'experience' && <Briefcase className="h-4 w-4 text-orange-600" />}
-                        {evaluation.evaluation_area === 'education' && <GraduationCap className="h-4 w-4 text-purple-600" />}
-                        {evaluation.evaluation_area === 'complete' && <BarChart3 className="h-4 w-4 text-blue-600" />}
-                        <span className="font-medium capitalize">
-                          {evaluation.evaluation_area.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(evaluation.created_at).toLocaleDateString()}
-                      </span>
-                      <span className="font-medium">{evaluation.score}/10</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No evaluation history yet</p>
-                <p className="text-sm">Complete your first evaluation to see your progress</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
     </motion.div>
   );
 }

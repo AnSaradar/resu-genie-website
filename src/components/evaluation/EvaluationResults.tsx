@@ -52,12 +52,6 @@ export function EvaluationResults({
     return <XCircle className="h-5 w-5 text-red-600" />;
   };
 
-  const getStatusColor = (score: number) => {
-    if (score >= 8) return 'text-green-600';
-    if (score >= 6) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
   const evaluationAreas = [
     {
       key: 'user_profile',
@@ -146,7 +140,7 @@ export function EvaluationResults({
                   ) : (
                     <RefreshCw className="mr-2 h-4 w-4" />
                   )}
-                  Re-evaluate
+                  Re-Evaluate
                 </Button>
               )}
             </div>
@@ -202,12 +196,12 @@ export function EvaluationResults({
         })}
       </div>
 
-      {/* Detailed Suggestions */}
+      {/* Detailed Recommendations */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-yellow-600" />
-            <CardTitle>Improvement Suggestions</CardTitle>
+            <CardTitle>Improvement Recommendations</CardTitle>
           </div>
           <CardDescription>
             Actionable recommendations to enhance your resume
@@ -215,7 +209,7 @@ export function EvaluationResults({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Overall Suggestions */}
+            {/* Overall Recommendations */}
             {overall_suggestions && overall_suggestions.length > 0 && (
               <div>
                 <h4 className="font-medium mb-3 flex items-center gap-2">
@@ -238,7 +232,7 @@ export function EvaluationResults({
               </div>
             )}
 
-            {/* Area-specific Suggestions */}
+            {/* Area-Specific Recommendations */}
             {evaluationAreas.map((area) => {
               if (area.evaluation.suggestions && area.evaluation.suggestions.length > 0) {
                 return (
@@ -246,7 +240,7 @@ export function EvaluationResults({
                     <Separator className="my-4" />
                     <h4 className="font-medium mb-3 flex items-center gap-2">
                       <area.icon className="h-4 w-4" />
-                      {area.title} Suggestions
+                      {area.title} Recommendations
                     </h4>
                     <div className="space-y-2">
                       {area.evaluation.suggestions.map((suggestion, index) => (

@@ -15,8 +15,8 @@ export const getEvaluationSteps = (language: 'en' | 'ar'): Step[] => {
     {
       target: '[data-tour="evaluation-types"]',
       content: isArabic
-        ? 'أنواع التقييم: اختر ما تريد تقييمه - السيرة الذاتية كاملة، الملف الشخصي فقط، الخبرة فقط، أو التعليم فقط.'
-        : 'Evaluation Types: Choose what you want to evaluate - complete resume, profile only, experience only, or education only.',
+        ? 'أنواع التقييم: اختر التقييم الشامل (مُوصى به) أو التقييم القياسي للتحليل المتقدم.'
+        : 'Evaluation Types: Choose comprehensive evaluation (recommended) or standard evaluation for advanced analysis.',
       placement: 'bottom',
     },
     {
@@ -29,8 +29,8 @@ export const getEvaluationSteps = (language: 'en' | 'ar'): Step[] => {
     {
       target: '[data-tour="evaluation-results"]',
       content: isArabic
-        ? 'نتائج التقييم: ستظهر هنا النتائج التفصيلية مع النقاط والتوصيات لتحسين سيرتك الذاتية.'
-        : 'Evaluation Results: Detailed results with scores and recommendations to improve your resume will appear here.',
+        ? 'نتائج التقييم: ستظهر هنا النتائج التفصيلية مع النقاط والتوصيات والتحليل الشامل لتحسين سيرتك الذاتية.'
+        : 'Evaluation Results: Detailed results with scores, recommendations, and comprehensive analysis to improve your resume will appear here.',
       placement: 'top',
     },
     {
