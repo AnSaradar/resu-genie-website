@@ -26,6 +26,8 @@ export interface JobMatch {
   skills_score?: number;
   experience_score?: number;
   education_score?: number;
+  should_apply?: string;
+  strong_matching_points: string[];
   matched_skills: MatchedSkill[];
   missing_core_requirements: string[];
   recommendations: GapRecommendation[];

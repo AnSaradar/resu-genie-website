@@ -148,7 +148,7 @@ export default function JobMatcher() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Overall Score */}
+              {/* Overall Score and Recommendation */}
               <div className="text-center">
                 <div className="text-4xl font-bold text-violet-600 mb-2">
                   {currentMatch.overall_score ? Math.round(currentMatch.overall_score) : 'N/A'}
@@ -156,6 +156,23 @@ export default function JobMatcher() {
                 <div className="text-sm text-muted-foreground">Overall Match Score</div>
                 {currentMatch.overall_score && (
                   <Progress value={currentMatch.overall_score} className="mt-2 h-2" />
+                )}
+                
+                {/* Should Apply Recommendation */}
+                {currentMatch.should_apply && (
+                  <div className="mt-4">
+                    {currentMatch.should_apply === 'yes' ? (
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span className="font-semibold">Recommended to Apply</span>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-full">
+                        <X className="h-4 w-4" />
+                        <span className="font-semibold">Not Recommended</span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -186,6 +203,24 @@ export default function JobMatcher() {
                   color="violet"
                 />
               </div>
+
+              {/* Strong Matching Points */}
+              {currentMatch.strong_matching_points && currentMatch.strong_matching_points.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2 text-emerald-600">
+                    <Award className="h-5 w-5" />
+                    Key Strengths
+                  </h4>
+                  <div className="space-y-2">
+                    {currentMatch.strong_matching_points.map((point, idx) => (
+                      <div key={idx} className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Matched Skills */}
               {currentMatch.matched_skills && currentMatch.matched_skills.length > 0 && (
@@ -286,6 +321,21 @@ export default function JobMatcher() {
                     <div className="space-y-1">
                       <div className="text-sm text-muted-foreground">{new Date(item.created_at).toLocaleString()}</div>
                       <div className="font-medium">{item.job_title || 'Untitled Role'}</div>
+                      {item.should_apply && (
+                        <div className="flex items-center gap-2">
+                          {item.should_apply === 'yes' ? (
+                            <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Recommended
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs">
+                              <X className="h-3 w-3 mr-1" />
+                              Not Recommended
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-6">
                       <ScorePill label="Overall" value={item.overall_score} />
