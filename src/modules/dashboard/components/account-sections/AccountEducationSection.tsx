@@ -25,6 +25,7 @@ import {
   useDeleteEducation
 } from '@/services/education/hook';
 import { Education } from '@/services/education/types';
+import { normalizeMonthValue, toDisplayMonth, monthToIsoDate } from '@/utils/date';
 
 interface AccountEducationSectionProps {
   data: any;
@@ -85,14 +86,8 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
     setError(null);
     
     try {
-      // Normalize month inputs (YYYY-MM) to full dates (YYYY-MM-DD)
-      const toIsoDate = (monthValue: string | undefined | null) => {
-        if (!monthValue) return undefined;
-        return monthValue.length === 7 ? `${monthValue}-01` : monthValue;
-      };
-
-      const normalizedStart = toIsoDate(editingItem.start_date) as string;
-      const normalizedEnd = editingItem.currently_studying ? undefined : toIsoDate(editingItem.end_date);
+      const normalizedStart = monthToIsoDate(editingItem.start_date) as string;
+      const normalizedEnd = editingItem.currently_studying ? undefined : monthToIsoDate(editingItem.end_date);
 
       if (editingItem.id && educations.some((edu: Education) => edu.id === editingItem.id)) {
         // Update existing (send only fields that may have changed)
@@ -112,8 +107,8 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
         // Create new (mutation accepts array of one item)
         const normalizedItem: Education = {
           ...editingItem,
-          start_date: normalizedStart,
-          end_date: normalizedEnd || '',
+          start_date: normalizeMonthValue(editingItem.start_date),
+          end_date: editingItem.currently_studying ? '' : normalizeMonthValue(editingItem.end_date),
           description: editingItem.description || ''
         } as Education;
         await addEducationsMutation.mutateAsync([normalizedItem]);
@@ -152,20 +147,9 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
   };
 
   const formatDateRange = (edu: Education) => {
-    const startDate = edu.start_date ? new Date(edu.start_date + '-01').toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short' 
-    }) : '';
-    
-    if (edu.currently_studying) {
-      return `${startDate} - Present`;
-    }
-    
-    const endDate = edu.end_date ? new Date(edu.end_date + '-01').toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short' 
-    }) : '';
-    
+    const startDate = toDisplayMonth(edu.start_date);
+    if (edu.currently_studying) return `${startDate} - Present`;
+    const endDate = toDisplayMonth(edu.end_date);
     return `${startDate} - ${endDate}`;
   };
 
@@ -318,7 +302,7 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
                   <Input
                     id="start_date"
                     type="month"
-                    value={editingItem.start_date}
+                    value={normalizeMonthValue(editingItem.start_date)}
                     onChange={(e) => updateEditingItem('start_date', e.target.value)}
                     className="h-12 text-base"
                   />
@@ -328,7 +312,7 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
                   <Input
                     id="end_date"
                     type="month"
-                    value={editingItem.end_date}
+                    value={normalizeMonthValue(editingItem.end_date)}
                     onChange={(e) => updateEditingItem('end_date', e.target.value)}
                     disabled={editingItem.currently_studying}
                     className="h-12 text-base"
