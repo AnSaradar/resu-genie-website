@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { AdminService, AdminUser, UserListResponse } from '@/services/admin/service';
 
 const roles = [
@@ -79,7 +79,7 @@ export function UsersPage() {
       }
       return AdminService.getUsers({ page, page_size: pageSize, sort_by: sortBy, sort_order: sortOrder });
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     staleTime: 10_000,
   });
 
