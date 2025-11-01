@@ -13,7 +13,6 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchMyResumes } from '@/services/resume/service';
 import { ResumeListResponse } from '@/services/resume/types';
 import { JobMatch } from '@/services/job_match/types';
-import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 import { Sparkles, ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, ListChecks, Target, TrendingUp, Award, BookOpen, X } from 'lucide-react';
 
 export default function JobMatcher() {
@@ -23,10 +22,6 @@ export default function JobMatcher() {
   const [jobOfferText, setJobOfferText] = useState('');
   const [page, setPage] = useState(1);
   const [currentMatch, setCurrentMatch] = useState<JobMatch | null>(null);
-  
-  // Feedback dialog state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [feedbackInputSnapshot, setFeedbackInputSnapshot] = useState<Record<string, any> | undefined>();
 
   const createJobMatch = useCreateJobMatch();
   const { data: history, isLoading: historyLoading } = useJobMatchHistory(page, 10);
@@ -38,28 +33,9 @@ export default function JobMatcher() {
 
   const resumeOptions = useMemo(() => resumes?.data.resumes ?? [], [resumes]);
 
-  // Auto-open feedback dialog 10 seconds after successful match
-  useEffect(() => {
-    if (!currentMatch) return;
-
-    const timer = setTimeout(() => {
-      setIsFeedbackOpen(true);
-    }, 10000); // 10 seconds
-
-    return () => clearTimeout(timer);
-  }, [currentMatch]);
-
   const handleMatch = async () => {
     if (!selectedResumeId || !jobOfferText.trim()) return;
     try {
-      // Capture input snapshot for feedback
-      const inputSnapshot = {
-        resume_id: selectedResumeId,
-        job_title: jobTitle || 'Not specified',
-        job_offer_text: jobOfferText.substring(0, 500), // Truncate for storage
-      };
-      setFeedbackInputSnapshot(inputSnapshot);
-      
       const result = await createJobMatch.mutateAsync({
         resume_id: selectedResumeId,
         job_offer_text: jobOfferText,
@@ -415,27 +391,6 @@ export default function JobMatcher() {
           )}
         </CardContent>
       </Card>
-
-      {/* Feedback Dialog */}
-      {currentMatch && (
-        <FeedbackDialog
-          isOpen={isFeedbackOpen}
-          onClose={() => setIsFeedbackOpen(false)}
-          feature="job_match"
-          artifactId={currentMatch.artifact_id}
-          traceId={currentMatch.trace_id}
-          inputSnapshot={feedbackInputSnapshot}
-          outputSnapshotJson={{
-            overall_score: currentMatch.overall_score,
-            skills_score: currentMatch.skills_score,
-            experience_score: currentMatch.experience_score,
-            education_score: currentMatch.education_score,
-            should_apply: currentMatch.should_apply,
-            strong_matching_points_count: currentMatch.strong_matching_points?.length,
-            missing_requirements_count: currentMatch.missing_core_requirements?.length,
-          }}
-        />
-      )}
     </motion.div>
   );
 }

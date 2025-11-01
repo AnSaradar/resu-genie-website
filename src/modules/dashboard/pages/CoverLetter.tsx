@@ -12,7 +12,6 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchMyResumes } from '@/services/resume/service';
 import { ResumeListResponse } from '@/services/resume/types';
 import { CoverLetter, CoverLetterTone } from '@/services/cover_letter/types';
-import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 
 import { FileText, ArrowLeft, RefreshCw, Copy, Download, Eye, Clock, Building, User, CheckCircle2, X } from 'lucide-react';
 
@@ -29,10 +28,6 @@ export default function CoverLetterPage() {
   const [tone, setTone] = useState<CoverLetterTone>(CoverLetterTone.PROFESSIONAL);
   const [page, setPage] = useState(1);
   const [currentCoverLetter, setCurrentCoverLetter] = useState<CoverLetter | null>(null);
-  
-  // Feedback dialog state
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [feedbackInputSnapshot, setFeedbackInputSnapshot] = useState<Record<string, any> | undefined>();
 
   const createCoverLetter = useCreateCoverLetter();
   const { data: history, isLoading: historyLoading } = useCoverLetterHistory(page, 10);
@@ -44,31 +39,9 @@ export default function CoverLetterPage() {
 
   const resumeOptions = useMemo(() => resumes?.data.resumes ?? [], [resumes]);
 
-  // Auto-open feedback dialog 10 seconds after successful generation
-  useEffect(() => {
-    if (!currentCoverLetter) return;
-
-    const timer = setTimeout(() => {
-      setIsFeedbackOpen(true);
-    }, 10000); // 10 seconds
-
-    return () => clearTimeout(timer);
-  }, [currentCoverLetter]);
-
   const handleGenerate = async () => {
     if (!jobDescription.trim()) return;
     try {
-      // Capture input snapshot for feedback
-      const inputSnapshot = {
-        resume_id: selectedResumeId || 'account_data',
-        job_title: jobTitle,
-        job_description: jobDescription.substring(0, 500), // Truncate for storage
-        company_name: companyName,
-        hiring_manager_name: hiringManagerName,
-        tone: tone,
-      };
-      setFeedbackInputSnapshot(inputSnapshot);
-      
       const result = await createCoverLetter.mutateAsync({
         resume_id: selectedResumeId || undefined,
         job_title: jobTitle,
@@ -409,19 +382,6 @@ export default function CoverLetterPage() {
             </div>
           )}
         </motion.div>
-      )}
-
-      {/* Feedback Dialog */}
-      {currentCoverLetter && (
-        <FeedbackDialog
-          isOpen={isFeedbackOpen}
-          onClose={() => setIsFeedbackOpen(false)}
-          feature="cover_letter"
-          artifactId={currentCoverLetter.artifact_id}
-          traceId={currentCoverLetter.trace_id}
-          inputSnapshot={feedbackInputSnapshot}
-          outputSnapshotText={currentCoverLetter.cover_letter_content.substring(0, 2000)}
-        />
       )}
     </motion.div>
   );

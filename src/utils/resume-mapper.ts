@@ -191,13 +191,8 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
     isNative: lang.is_native,
   }));
 
-  // Transform certificates - Map backend field names to frontend field names
-  const certificates = (backendResume.certifications || []).map((cert: any) => ({
-    ...cert,
-    organization: cert.issuing_organization || cert.organization || '',
-    issueDate: cert.issue_date || cert.issueDate || '',
-    certificateUrl: cert.certificate_url || cert.certificateUrl || '',
-  }));
+  // Transform other fields
+  const certificates = backendResume.certifications || [];
   
   // Transform personal projects - Convert dates to frontend format and map URL fields
   const personalProjects = (backendResume.personal_projects || []).map((project: any) => ({
