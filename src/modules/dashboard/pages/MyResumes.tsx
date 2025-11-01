@@ -351,36 +351,39 @@ export default function MyResumes() {
                 </div>
 
                 {/* Actions Menu */}
-                <div className="absolute top-3 right-3 z-10">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                <div className="absolute top-3 right-3 z-20">
+                  <DropdownMenu modal={true}>
+                    <DropdownMenuTrigger 
+                      className="inline-flex items-center justify-center h-8 w-8 p-0 rounded-md transition-opacity opacity-30 group-hover:opacity-100 data-[state=open]:opacity-100 focus:opacity-100 hover:bg-accent hover:text-accent-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      type="button"
+                    >
+                      <MoreVertical className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => {
+                      <DropdownMenuItem onSelect={() => {
                         setPreviewId(resume.id);
                         setModalOpen(true);
                       }}>
                         <Eye className="h-4 w-4 mr-2" />
                         Preview
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate(`/dashboard/generate/${resume.id}`)}>
+                      <DropdownMenuItem onSelect={() => {
+                        navigate(`/dashboard/generate/${resume.id}`);
+                      }}>
                         <Download className="h-4 w-4 mr-2" />
                         Edit & Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => openRenameDialog(resume)}>
+                      <DropdownMenuItem onSelect={() => {
+                        openRenameDialog(resume);
+                      }}>
                         <Edit3 className="h-4 w-4 mr-2" />
                         Rename
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
-                        onClick={() => setDeletingId(resume.id)}
+                        onSelect={() => {
+                          setDeletingId(resume.id);
+                        }}
                         className="text-red-600"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />

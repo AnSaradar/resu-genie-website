@@ -45,6 +45,8 @@ export function ResumeEvaluator() {
         resume_id: selectedResumeId
       });
       setCurrentEvaluation(result.evaluation);
+      // Reset Resume Picker dropdown to default value after successful API call
+      setSelectedResumeId(null);
     } catch (err) {
       console.error('Evaluation failed:', err);
     }
@@ -151,7 +153,10 @@ export function ResumeEvaluator() {
             <CardDescription>Choose which resume to evaluate or evaluate your current profile</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Select onValueChange={(value) => setSelectedResumeId(value === 'profile' ? null : value)}>
+            <Select 
+              value={selectedResumeId === null ? 'profile' : selectedResumeId} 
+              onValueChange={(value) => setSelectedResumeId(value === 'profile' ? null : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a resume or profile" />
               </SelectTrigger>
