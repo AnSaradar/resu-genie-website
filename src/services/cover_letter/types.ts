@@ -49,6 +49,8 @@ export interface CoverLetter {
   tone?: CoverLetterTone;
   cover_letter_content: string;
   llm_model?: string;
+  artifact_id?: string;
+  trace_id?: string;
   created_at: string;
   updated_at: string;
 }

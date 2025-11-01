@@ -22,6 +22,11 @@ import ResumeImport from './modules/dashboard/pages/ResumeImport';
 import Account from './modules/dashboard/pages/Account';
 import JobMatcher from './modules/dashboard/pages/JobMatcher';
 import CoverLetterPage from './modules/dashboard/pages/CoverLetter';
+import AdminLayout from './modules/admin/layout/AdminLayout';
+import { AdminRoute } from './modules/admin/routes/AdminRoute';
+import { OverviewPage } from './modules/admin/pages/OverviewPage';
+import { UsersPage } from './modules/admin/pages/UsersPage';
+import { UserDetailsPage } from './modules/admin/pages/UserDetailsPage';
 
 // Protected route component that uses auth context
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -56,10 +61,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  // If user is authenticated, redirect to dashboard
-  // The auth hook will handle profile-based routing from there
+  // If user is authenticated, redirect based on role
   if (isAuthenticated && user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
   
   return <>{children}</>;
@@ -78,10 +82,9 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  // If user is authenticated, redirect to dashboard
-  // The auth hook will handle profile-based routing from there
+  // If user is authenticated, redirect based on role
   if (isAuthenticated && user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
   
   return <>{children}</>;
@@ -182,6 +185,18 @@ function AppContent() {
           <Route path="upload" element={<div>Upload Resume coming soon</div>} />
           <Route path="schedule" element={<div>Schedule Review coming soon</div>} />
           <Route path="goals" element={<div>Career Goals coming soon</div>} />
+        </Route>
+
+        {/* Admin routes */}
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AdminLayout />
+          </AdminRoute>
+        }>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="users/:id" element={<UserDetailsPage />} />
         </Route>
         
         {/* Fallback route */}
