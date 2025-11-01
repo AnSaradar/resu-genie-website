@@ -43,21 +43,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
             
             // If user is on a public path and authenticated, redirect appropriately
             if (publicPaths.includes(currentPath)) {
-              // If admin, send to admin area directly
-              if (userData.role === 'admin') {
-                navigate('/admin', { replace: true });
-              } else {
-                try {
-                  const profileCheck = await checkProfileExists();
-                  if (profileCheck.profile_exists) {
-                    navigate('/dashboard', { replace: true });
-                  } else {
-                    navigate('/onboarding/welcome', { replace: true });
-                  }
-                } catch (profileError) {
-                  console.error('Error checking profile existence:', profileError);
+              try {
+                const profileCheck = await checkProfileExists();
+                
+                if (profileCheck.profile_exists) {
+                  // Profile exists, navigate to dashboard
+                  navigate('/dashboard', { replace: true });
+                } else {
+                  // Profile doesn't exist, navigate to onboarding
                   navigate('/onboarding/welcome', { replace: true });
                 }
+              } catch (profileError) {
+                console.error('Error checking profile existence:', profileError);
+                // If profile check fails, default to onboarding for safety
+                navigate('/onboarding/welcome', { replace: true });
               }
             }
           } else {
@@ -121,21 +120,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userData = await AuthService.getCurrentUser();
       setUser(userData);
       
-      // Post-login redirect: admin to /admin, users keep existing flow
-      if (userData.role === 'admin') {
-        navigate('/admin');
-      } else {
-        try {
-          const profileCheck = await checkProfileExists();
-          if (profileCheck.profile_exists) {
-            navigate('/dashboard');
-          } else {
-            navigate('/onboarding/welcome');
-          }
-        } catch (profileError) {
-          console.error('Error checking profile existence:', profileError);
+      // Check if user has completed profile after successful login
+      try {
+        const profileCheck = await checkProfileExists();
+        
+        if (profileCheck.profile_exists) {
+          // Profile exists, can navigate to dashboard
+          navigate('/dashboard');
+        } else {
+          // Profile doesn't exist, navigate to onboarding
           navigate('/onboarding/welcome');
         }
+      } catch (profileError) {
+        console.error('Error checking profile existence:', profileError);
+        // If profile check fails, default to onboarding for safety
+        navigate('/onboarding/welcome');
       }
       
     } catch (err) {
