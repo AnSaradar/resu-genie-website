@@ -327,7 +327,7 @@ export function ResumeGenerator() {
     if (data.certificates && data.certificates.length > 0) {
       data.certificates.forEach((cert, index) => {
         if (!cert.name?.trim()) errors.push(`Certificate ${index + 1}: Certificate name is required`);
-        if (!cert.issuingOrganization?.trim()) errors.push(`Certificate ${index + 1}: Issuing organization is required`);
+        if (!cert.organization?.trim()) errors.push(`Certificate ${index + 1}: Issuing organization is required`);
         if (!cert.issueDate?.trim()) errors.push(`Certificate ${index + 1}: Issue date is required`);
       });
     }
