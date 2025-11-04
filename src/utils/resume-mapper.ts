@@ -241,8 +241,8 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     current_seniority_level: p.seniorityLevel,
   };
 
-  // Experiences - Include all fields including work_type and work_model
-  const career_experiences = (data.experience || []).map((e) => {
+  // Helper function to map experience data with proper field handling
+  const mapExperience = (e: any) => {
     const location = e.city || e.country ? { city: e.city, country: e.country } : undefined;
     return {
       title: e.title,
@@ -254,10 +254,20 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
       currently_working: e.currently_working,
       description: e.description,
       is_volunteer: e.is_volunteer,
-      work_type: e.work_type,  // Include work_type field
-      work_model: e.work_model  // Include work_model field
+      // Convert empty strings to undefined so Pydantic treats them as None
+      work_type: e.work_type && e.work_type.trim() !== '' ? e.work_type : undefined,
+      work_model: e.work_model && e.work_model.trim() !== '' ? e.work_model : undefined
     };
-  });
+  };
+
+  // Split experiences into career and volunteering based on is_volunteer flag
+  const allExperiences = data.experience || [];
+  const career_experiences = allExperiences
+    .filter((e: any) => !e.is_volunteer)
+    .map(mapExperience);
+  const volunteering_experiences = allExperiences
+    .filter((e: any) => e.is_volunteer)
+    .map(mapExperience);
 
   // Education
   const education = (data.education || []).map((edu: any) => ({
@@ -305,6 +315,7 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     resume_name: personal_info.first_name ? `${personal_info.first_name}'s Resume` : 'My Resume',
     personal_info,
     career_experiences,
+    volunteering_experiences,
     education,
     technical_skills: technical,
     soft_skills: soft,
