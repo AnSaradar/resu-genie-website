@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useNavigate } from "react-router-dom";
-import { useCreateUserProfile, useGetWorkFields } from "@/services/user_profile/hook";
+import { useCreateUserProfile, useGetWorkFields, useGetCountries } from "@/services/user_profile/hook";
 import { UserProfileData, SeniorityLevel, WorkField } from "@/services/user_profile/types";
 import { toast } from "react-hot-toast";
 import { ArrowLeft, ArrowRight, UserCircle, Briefcase } from "lucide-react";
@@ -44,6 +44,7 @@ export function Profile() {
   const navigate = useNavigate();
   const createProfileMutation = useCreateUserProfile();
   const { data: workFields, isLoading: workFieldsLoading } = useGetWorkFields();
+  const { data: countries, isLoading: countriesLoading } = useGetCountries();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -121,13 +122,6 @@ export function Profile() {
     visible: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: -20 }
   };
-
-  const countries = [
-    "United States", "Canada", "United Kingdom", "Germany", "France", "Australia", 
-    "Netherlands", "Sweden", "Norway", "Denmark", "Switzerland", "Austria", 
-    "Belgium", "Spain", "Italy", "Japan", "South Korea", "Singapore", "India", 
-    "Brazil", "Mexico", "Argentina", "Chile", "Other"
-  ];
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 py-12 px-4">
@@ -231,11 +225,17 @@ export function Profile() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {countries.map((country) => (
-                                    <SelectItem key={country} value={country}>
-                                      {country}
-                                    </SelectItem>
-                                  ))}
+                                  {countriesLoading ? (
+                                    <SelectItem value="loading" disabled>Loading countries...</SelectItem>
+                                  ) : countries && countries.length > 0 ? (
+                                    countries.map((country) => (
+                                      <SelectItem key={country} value={country}>
+                                        {country}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="error" disabled>Failed to load countries</SelectItem>
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -272,11 +272,17 @@ export function Profile() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {countries.map((country) => (
-                                    <SelectItem key={country} value={country}>
-                                      {country}
-                                    </SelectItem>
-                                  ))}
+                                  {countriesLoading ? (
+                                    <SelectItem value="loading" disabled>Loading countries...</SelectItem>
+                                  ) : countries && countries.length > 0 ? (
+                                    countries.map((country) => (
+                                      <SelectItem key={country} value={country}>
+                                        {country}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="error" disabled>Failed to load countries</SelectItem>
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />

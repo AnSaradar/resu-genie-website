@@ -22,6 +22,8 @@ import ResumeImport from './modules/dashboard/pages/ResumeImport';
 import Account from './modules/dashboard/pages/Account';
 import JobMatcher from './modules/dashboard/pages/JobMatcher';
 import CoverLetterPage from './modules/dashboard/pages/CoverLetter';
+import { checkProfileExists } from './services/user_profile/service';
+import { useEffect, useState } from 'react';
 
 // Protected route component that uses auth context
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -46,9 +48,45 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Public route component that redirects authenticated users appropriately
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const [isCheckingProfile, setIsCheckingProfile] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState<string | null>(null);
   
-  // Show loading spinner while checking authentication
-  if (isLoading) {
+  useEffect(() => {
+    const checkProfileAndRedirect = async () => {
+      if (isAuthenticated && user && !isLoading) {
+        setIsCheckingProfile(true);
+        try {
+          const profileCheck = await checkProfileExists();
+          
+          if (profileCheck.profile_exists) {
+            // Profile exists, redirect to dashboard
+            setShouldRedirect('/dashboard');
+          } else {
+            // Profile doesn't exist, redirect to onboarding
+            setShouldRedirect('/onboarding/welcome');
+          }
+        } catch (profileError: any) {
+          // Check if it's a 404 error (expected for users without profiles)
+          if (profileError?.response?.status === 404 || 
+              (profileError?.response?.data?.profile_exists === false)) {
+            // Profile doesn't exist, redirect to onboarding
+            setShouldRedirect('/onboarding/welcome');
+          } else {
+            // Other error - log it but default to onboarding for safety
+            console.error('Error checking profile existence:', profileError);
+            setShouldRedirect('/onboarding/welcome');
+          }
+        } finally {
+          setIsCheckingProfile(false);
+        }
+      }
+    };
+    
+    checkProfileAndRedirect();
+  }, [isAuthenticated, user, isLoading]);
+  
+  // Show loading spinner while checking authentication or profile
+  if (isLoading || isCheckingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -56,10 +94,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  // If user is authenticated, redirect to dashboard
-  // The auth hook will handle profile-based routing from there
-  if (isAuthenticated && user) {
-    return <Navigate to="/dashboard" replace />;
+  // If user is authenticated, redirect based on profile check
+  if (isAuthenticated && user && shouldRedirect) {
+    return <Navigate to={shouldRedirect} replace />;
   }
   
   return <>{children}</>;
@@ -68,9 +105,45 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 // Auth route component that redirects authenticated users appropriately
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const [isCheckingProfile, setIsCheckingProfile] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState<string | null>(null);
   
-  // Show loading spinner while checking authentication
-  if (isLoading) {
+  useEffect(() => {
+    const checkProfileAndRedirect = async () => {
+      if (isAuthenticated && user && !isLoading) {
+        setIsCheckingProfile(true);
+        try {
+          const profileCheck = await checkProfileExists();
+          
+          if (profileCheck.profile_exists) {
+            // Profile exists, redirect to dashboard
+            setShouldRedirect('/dashboard');
+          } else {
+            // Profile doesn't exist, redirect to onboarding
+            setShouldRedirect('/onboarding/welcome');
+          }
+        } catch (profileError: any) {
+          // Check if it's a 404 error (expected for users without profiles)
+          if (profileError?.response?.status === 404 || 
+              (profileError?.response?.data?.profile_exists === false)) {
+            // Profile doesn't exist, redirect to onboarding
+            setShouldRedirect('/onboarding/welcome');
+          } else {
+            // Other error - log it but default to onboarding for safety
+            console.error('Error checking profile existence:', profileError);
+            setShouldRedirect('/onboarding/welcome');
+          }
+        } finally {
+          setIsCheckingProfile(false);
+        }
+      }
+    };
+    
+    checkProfileAndRedirect();
+  }, [isAuthenticated, user, isLoading]);
+  
+  // Show loading spinner while checking authentication or profile
+  if (isLoading || isCheckingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -78,10 +151,9 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  // If user is authenticated, redirect to dashboard
-  // The auth hook will handle profile-based routing from there
-  if (isAuthenticated && user) {
-    return <Navigate to="/dashboard" replace />;
+  // If user is authenticated, redirect based on profile check
+  if (isAuthenticated && user && shouldRedirect) {
+    return <Navigate to={shouldRedirect} replace />;
   }
   
   return <>{children}</>;

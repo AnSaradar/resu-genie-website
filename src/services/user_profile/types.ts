@@ -74,3 +74,20 @@ export interface ProfileExistsResponse {
   signal?: string;
   message?: string;
 }
+
+// Standard API response format
+export interface ApiResponse<T> {
+  message: string;
+  data: T;
+  errors: string[];
+}
+
+// Work fields response
+export interface WorkFieldsResponse {
+  work_fields: string[];
+}
+
+// Countries response
+export interface CountriesResponse {
+  countries: string[];
+}

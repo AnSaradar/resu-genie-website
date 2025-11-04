@@ -381,8 +381,8 @@ export function MainDashboard() {
         </Card>
       </motion.div>
 
-      {/* Bottom Row: Recent Activity & Evaluation Summary */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Bottom Row: Recent Activity */}
+      <motion.div variants={itemVariants}>
         {/* Recent Activity Feed */}
         <Card data-tour="recent-activity">
           <CardHeader>
@@ -421,32 +421,6 @@ export function MainDashboard() {
                   </div>
                 )}
               </div>
-          </CardContent>
-        </Card>
-
-        {/* Evaluation Quick Summary */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-purple-600" />
-              <CardTitle>Last Evaluation</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">-</div>
-                <p className="text-sm text-muted-foreground">No evaluation yet</p>
-              </div>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate('/dashboard/evaluator')}
-              >
-                <Wand2 className="mr-2 h-4 w-4" />
-                Get Evaluation
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </motion.div>
