@@ -368,7 +368,7 @@ export default function MyResumes() {
                         Preview
                       </DropdownMenuItem>
                       <DropdownMenuItem onSelect={() => {
-                        navigate(`/dashboard/generate/${resume.id}`);
+                        navigate(`/dashboard/resume/${resume.id}`);
                       }}>
                         <Download className="h-4 w-4 mr-2" />
                         Edit & Download
@@ -454,7 +454,7 @@ export default function MyResumes() {
                   <Button
                     size="sm"
                     className="flex-1 gap-1"
-                          onClick={() => navigate(`/dashboard/generate/${resume.id}`)}
+                    onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
                   >
                     <Download className="h-4 w-4" />
                           Edit
@@ -497,7 +497,7 @@ export default function MyResumes() {
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => navigate(`/dashboard/generate/${resume.id}`)}
+                        onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
                       >
                         <Download className="h-4 w-4 mr-1" />
                         Edit
@@ -529,7 +529,7 @@ export default function MyResumes() {
                   size="sm"
                   onClick={() => {
                     if (previewId) {
-                      navigate(`/dashboard/generate/${previewId}`);
+                      navigate(`/dashboard/resume/${previewId}`);
                     }
                   }}
                   className="gap-2"

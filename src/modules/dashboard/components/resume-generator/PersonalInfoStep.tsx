@@ -122,9 +122,37 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
     }
   }, [data.personalInfo]);
 
+  // Check if there's meaningful data to autofill from account
+  const hasAccountDataToFill = () => {
+    // Check if user has basic info
+    const hasUserData = user && (
+      user.first_name ||
+      user.last_name ||
+      user.email ||
+      user.phone
+    );
+    
+    // Check if profile has additional info
+    const hasProfileData = userProfile && (
+      userProfile.address?.city ||
+      userProfile.address?.country ||
+      userProfile.country_of_residence ||
+      userProfile.linkedin_url ||
+      userProfile.website_url ||
+      userProfile.current_position ||
+      userProfile.profile_summary ||
+      userProfile.current_seniority_level ||
+      userProfile.work_field ||
+      userProfile.years_of_experience ||
+      userProfile.birth_date
+    );
+    
+    return !!(hasUserData || hasProfileData);
+  };
+
   // Auto-fill from user and profile data
   const handleAutoFill = () => {
-    if (user || userProfile) {
+    if (hasAccountDataToFill()) {
       const autoFilledData: PersonalInfo = {
         firstName: user?.first_name || personalInfo.firstName,
         lastName: user?.last_name || personalInfo.lastName,
@@ -185,7 +213,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onPrevious, isFirstSt
               </div>
               <Button
                 onClick={handleAutoFill}
-                disabled={profileLoading || (!user && !userProfile)}
+                disabled={profileLoading || !hasAccountDataToFill()}
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-800"
               >
