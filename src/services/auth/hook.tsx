@@ -43,20 +43,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
             
             // If user is on a public path and authenticated, redirect appropriately
             if (publicPaths.includes(currentPath)) {
-              try {
-                const profileCheck = await checkProfileExists();
-                
-                if (profileCheck.profile_exists) {
-                  // Profile exists, navigate to dashboard
-                  navigate('/dashboard', { replace: true });
-                } else {
-                  // Profile doesn't exist, navigate to onboarding
+              // Check user role and redirect accordingly
+              if (userData.role === 'admin') {
+                // Admin users go directly to admin dashboard
+                navigate('/admin', { replace: true });
+              } else {
+                // Regular users follow normal flow: check profile
+                try {
+                  const profileCheck = await checkProfileExists();
+                  
+                  if (profileCheck.profile_exists) {
+                    // Profile exists, navigate to dashboard
+                    navigate('/dashboard', { replace: true });
+                  } else {
+                    // Profile doesn't exist, navigate to onboarding
+                    navigate('/onboarding/welcome', { replace: true });
+                  }
+                } catch (profileError) {
+                  console.error('Error checking profile existence:', profileError);
+                  // If profile check fails, default to onboarding for safety
                   navigate('/onboarding/welcome', { replace: true });
                 }
-              } catch (profileError) {
-                console.error('Error checking profile existence:', profileError);
-                // If profile check fails, default to onboarding for safety
-                navigate('/onboarding/welcome', { replace: true });
               }
             }
           } else {
@@ -120,21 +127,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userData = await AuthService.getCurrentUser();
       setUser(userData);
       
-      // Check if user has completed profile after successful login
-      try {
-        const profileCheck = await checkProfileExists();
-        
-        if (profileCheck.profile_exists) {
-          // Profile exists, can navigate to dashboard
-          navigate('/dashboard');
-        } else {
-          // Profile doesn't exist, navigate to onboarding
+      // Check user role and redirect accordingly
+      if (userData.role === 'admin') {
+        // Admin users go directly to admin dashboard
+        navigate('/admin');
+      } else {
+        // Regular users follow normal flow: check profile
+        try {
+          const profileCheck = await checkProfileExists();
+          
+          if (profileCheck.profile_exists) {
+            // Profile exists, can navigate to dashboard
+            navigate('/dashboard');
+          } else {
+            // Profile doesn't exist, navigate to onboarding
+            navigate('/onboarding/welcome');
+          }
+        } catch (profileError) {
+          console.error('Error checking profile existence:', profileError);
+          // If profile check fails, default to onboarding for safety
           navigate('/onboarding/welcome');
         }
-      } catch (profileError) {
-        console.error('Error checking profile existence:', profileError);
-        // If profile check fails, default to onboarding for safety
-        navigate('/onboarding/welcome');
       }
       
     } catch (err) {

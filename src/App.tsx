@@ -24,6 +24,10 @@ import JobMatcher from './modules/dashboard/pages/JobMatcher';
 import CoverLetterPage from './modules/dashboard/pages/CoverLetter';
 import { checkProfileExists } from './services/user_profile/service';
 import { useEffect, useState } from 'react';
+import AdminLayout from './modules/admin/layout/AdminLayout';
+import AdminUsersPage from './modules/admin/pages/AdminUsersPage';
+import AdminUserDetailPage from './modules/admin/pages/AdminUserDetailPage';
+import AdminStatsPage from './modules/admin/pages/AdminStatsPage';
 
 // Protected route component that uses auth context
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -54,6 +58,12 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkProfileAndRedirect = async () => {
       if (isAuthenticated && user && !isLoading) {
+        // Admin users go directly to admin dashboard
+        if (user.role === 'admin') {
+          setShouldRedirect('/admin');
+          return;
+        }
+        
         setIsCheckingProfile(true);
         try {
           const profileCheck = await checkProfileExists();
@@ -111,6 +121,12 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkProfileAndRedirect = async () => {
       if (isAuthenticated && user && !isLoading) {
+        // Admin users go directly to admin dashboard
+        if (user.role === 'admin') {
+          setShouldRedirect('/admin');
+          return;
+        }
+        
         setIsCheckingProfile(true);
         try {
           const profileCheck = await checkProfileExists();
@@ -154,6 +170,32 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   // If user is authenticated, redirect based on profile check
   if (isAuthenticated && user && shouldRedirect) {
     return <Navigate to={shouldRedirect} replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Admin protected route component that ensures user is authenticated and has admin role
+const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Redirect to dashboard if not admin
+  if (user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
@@ -254,6 +296,18 @@ function AppContent() {
           <Route path="upload" element={<div>Upload Resume coming soon</div>} />
           <Route path="schedule" element={<div>Schedule Review coming soon</div>} />
           <Route path="goals" element={<div>Career Goals coming soon</div>} />
+        </Route>
+        
+        {/* Admin routes */}
+        <Route path="/admin" element={
+          <AdminProtectedRoute>
+            <AdminLayout />
+          </AdminProtectedRoute>
+        }>
+          <Route index element={<AdminUsersPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="users/:userId" element={<AdminUserDetailPage />} />
+          <Route path="stats" element={<AdminStatsPage />} />
         </Route>
         
         {/* Fallback route */}
