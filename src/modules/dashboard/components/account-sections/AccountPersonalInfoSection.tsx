@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SeniorityLevel, WorkField } from '@/services/user_profile/types';
 import { useGetUserProfile, useUpdateUserProfile, useGetWorkFields } from '@/services/user_profile/hook';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 interface PersonalInfo {
   city: string;
@@ -59,6 +60,26 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Validation helper
+  const validatePersonalInfo = (info: PersonalInfo): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!info.birthDate?.trim()) {
+      errors.push('Birth date is required');
+    }
+    
+    // Profile summary length validation
+    if (info.profileSummary && info.profileSummary.length > PROFILE_SUMMARY_MAX) {
+      errors.push(`Professional summary must be at most ${PROFILE_SUMMARY_MAX} characters`);
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
 
   // Update local state when user profile data changes
   useEffect(() => {
@@ -85,10 +106,13 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
   const handleSave = async () => {
     setSaving(true);
     setError(null);
+    setValidationErrors([]);
     
-    // Client-side validation for profile summary length
-    if (personalInfo.profileSummary && personalInfo.profileSummary.length > PROFILE_SUMMARY_MAX) {
-      setError(`Professional summary must be at most ${PROFILE_SUMMARY_MAX} characters.`);
+    // Client-side validation
+    const validation = validatePersonalInfo(personalInfo);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(validation.errors.join('; '));
       setSaving(false);
       return;
     }
@@ -112,20 +136,14 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
 
       await updateProfileMutation.mutateAsync(payload);
       setIsEditing(false);
+      setValidationErrors([]);
     } catch (err: any) {
-      // Robustly extract error message; FastAPI 422 returns detail as array of objects
-      const detail = err?.response?.data?.detail;
-      let message = 'Failed to update profile.';
-      if (typeof detail === 'string') {
-        message = detail;
-      } else if (Array.isArray(detail)) {
-        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
-      } else if (detail && typeof detail === 'object') {
-        message = detail.msg || JSON.stringify(detail);
-      } else if (err?.message) {
-        message = err.message;
-      }
-      setError(message);
+      // Use shared error utility
+      const errorMessage = extractApiErrorMessage(
+        err,
+        'Failed to update profile. Please try again.'
+      );
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -149,6 +167,7 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
     }
     setIsEditing(false);
     setError(null);
+    setValidationErrors([]);
   };
 
   return (
@@ -492,8 +511,24 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
             </div>
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 border border-red-200 rounded">
+          {validationErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2 text-sm">
+                Please fix the following issues:
+              </h4>
+              <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {error && validationErrors.length === 0 && (
+            <div className="text-red-600 dark:text-red-400 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
               {error}
             </div>
           )}
@@ -503,7 +538,11 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="h-12 px-8">
+            <Button 
+              onClick={handleSave} 
+              disabled={saving || !personalInfo.birthDate?.trim()} 
+              className="h-12 px-8"
+            >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />

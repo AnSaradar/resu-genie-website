@@ -26,6 +26,7 @@ import {
 } from '@/services/education/hook';
 import { Education } from '@/services/education/types';
 import { normalizeMonthValue, toDisplayMonth, monthToIsoDate } from '@/utils/date';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 interface AccountEducationSectionProps {
   data: any;
@@ -42,6 +43,46 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Validation helper
+  const validateEducation = (edu: Education | null): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!edu) {
+      errors.push('Education data is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!edu.institution?.trim()) {
+      errors.push('Institution name is required');
+    }
+    
+    if (!edu.degree?.trim()) {
+      errors.push('Degree type is required');
+    }
+    
+    if (!edu.field?.trim()) {
+      errors.push('Field of study is required');
+    }
+    
+    if (!edu.start_date?.trim()) {
+      errors.push('Start date is required');
+    }
+    
+    if (edu.currently_studying === undefined || edu.currently_studying === null) {
+      errors.push('Please specify if you are currently studying');
+    }
+    
+    if (!edu.currently_studying && !edu.end_date?.trim()) {
+      errors.push('End date is required when not currently studying');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
 
   // Prefer React Query data; fallback to provided data for initial render
   const educations = (educationsData && Array.isArray(educationsData)) ? educationsData : (data?.education || []);
@@ -84,6 +125,16 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
     
     setSaving(true);
     setError(null);
+    setValidationErrors([]);
+    
+    // Client-side validation
+    const validation = validateEducation(editingItem);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(validation.errors.join('; '));
+      setSaving(false);
+      return;
+    }
     
     try {
       const normalizedStart = monthToIsoDate(editingItem.start_date) as string;
@@ -116,20 +167,14 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
 
       setIsDialogOpen(false);
       setEditingItem(null);
+      setValidationErrors([]);
     } catch (err: any) {
-      // Robustly extract error message; FastAPI 422 returns detail as array of objects
-      const detail = err?.response?.data?.detail;
-      let message = 'Failed to save education.';
-      if (typeof detail === 'string') {
-        message = detail;
-      } else if (Array.isArray(detail)) {
-        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
-      } else if (detail && typeof detail === 'object') {
-        message = detail.msg || JSON.stringify(detail);
-      } else if (err?.message) {
-        message = err.message;
-      }
-      setError(message);
+      // Use shared error utility
+      const errorMessage = extractApiErrorMessage(
+        err,
+        'Failed to save education. Please try again.'
+      );
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -139,6 +184,7 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
     setIsDialogOpen(false);
     setEditingItem(null);
     setError(null);
+    setValidationErrors([]);
   };
 
   const updateEditingItem = (field: keyof Education, value: any) => {
@@ -347,8 +393,24 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
             </div>
           )}
 
-          {error && (
-            <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 border border-red-200 rounded">
+          {validationErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2 text-sm">
+                Please fix the following issues:
+              </h4>
+              <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {error && validationErrors.length === 0 && (
+            <div className="text-red-600 dark:text-red-400 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
               {error}
             </div>
           )}
@@ -360,7 +422,7 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
             </Button>
             <Button 
               onClick={handleSave} 
-              disabled={saving || !editingItem?.institution || !editingItem?.degree || !editingItem?.field || !editingItem?.start_date}
+              disabled={saving || !editingItem?.institution?.trim() || !editingItem?.degree?.trim() || !editingItem?.field?.trim() || !editingItem?.start_date?.trim()}
               className="h-12 px-8"
             >
               {saving ? (

@@ -42,6 +42,7 @@ import { mapResumeDataToCreateRequest } from '@/utils/resume-mapper';
 import { mapBackendResumeToFrontend } from '@/utils/resume-mapper';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ResumeNamingDialog } from '@/components/resume/ResumeNamingDialog';
+import { extractApiErrorMessage, formatValidationErrors } from '@/utils/error-utils';
 
 export interface PersonalInfo {
   firstName: string;
@@ -276,6 +277,7 @@ export function ResumeGenerator() {
       data.experience.forEach((exp, index) => {
         if (!exp.title?.trim()) errors.push(`Experience ${index + 1}: Job title is required`);
         if (!exp.company?.trim()) errors.push(`Experience ${index + 1}: Company name is required`);
+        if (!exp.seniority_level?.trim()) errors.push(`Experience ${index + 1}: Seniority level is required`);
         if (!exp.start_date?.trim()) errors.push(`Experience ${index + 1}: Start date is required`);
         if (exp.currently_working === undefined || exp.currently_working === null) {
           errors.push(`Experience ${index + 1}: Please specify if you are currently working here`);
@@ -389,6 +391,12 @@ export function ResumeGenerator() {
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
       toast.error('Please complete all required fields before generating your resume');
+      
+      // Navigate to the first step with errors
+      const firstErrorStep = findFirstStepWithError(validation.errors);
+      if (firstErrorStep !== null) {
+        setCurrentStep(firstErrorStep);
+      }
       return;
     }
 
@@ -486,28 +494,116 @@ export function ResumeGenerator() {
     }
   };
 
+  // Map backend field paths to frontend step IDs
+  const mapFieldPathToStep = (fieldPath: string): string | null => {
+    const path = fieldPath.toLowerCase();
+    
+    // Experience fields (check first to avoid conflicts with personal info)
+    if (path.includes('career_experiences') || path.includes('volunteering_experiences') || 
+        path.includes('experience') || path.includes('title') || path.includes('company') || 
+        path.includes('start_date') || path.includes('end_date') || path.includes('currently_working') || 
+        path.includes('description') || path.includes('seniority_level')) {
+      return 'experience';
+    }
+    
+    // Personal info fields
+    if (path.includes('personal_info') || path.includes('first_name') || path.includes('last_name') || 
+        path.includes('email') || path.includes('phone') || path.includes('birth_date') ||
+        path.includes('city') || path.includes('country') || path.includes('linkedin') ||
+        path.includes('website') || path.includes('current_position') || path.includes('profile_summary') ||
+        path.includes('current_seniority_level') || path.includes('work_field') || path.includes('years_of_experience')) {
+      return 'personal';
+    }
+    
+    // Education fields
+    if (path.includes('education') || path.includes('institution') || path.includes('degree') ||
+        path.includes('field') || path.includes('currently_studying')) {
+      return 'education';
+    }
+    
+    // Skills fields
+    if (path.includes('technical_skills') || path.includes('soft_skills') || path.includes('skill')) {
+      return 'skills';
+    }
+    
+    // Languages fields
+    if (path.includes('languages') || path.includes('language') || path.includes('proficiency')) {
+      return 'languages';
+    }
+    
+    // Certificates fields
+    if (path.includes('certifications') || path.includes('certificate') || path.includes('organization') ||
+        path.includes('issue_date')) {
+      return 'certificates';
+    }
+    
+    // Personal projects fields
+    if (path.includes('personal_projects') || path.includes('project') || path.includes('title') ||
+        path.includes('description') || path.includes('url')) {
+      return 'personalProjects';
+    }
+    
+    // Template selection
+    if (path.includes('template') || path.includes('selected_template')) {
+      return 'template';
+    }
+    
+    return null;
+  };
+
+  // Parse backend validation errors and map them to steps
+  const parseValidationErrors = (error: any): string[] => {
+    // Use the shared utility to extract validation errors
+    return formatValidationErrors(error);
+  };
+
   // Handle API errors consistently
   const handleApiError = (error: any) => {
-    let errorMessage = 'An unexpected error occurred.';
-    
-    if (error?.response?.data?.detail) {
-      const validationErrors = error.response.data.detail;
-      if (Array.isArray(validationErrors)) {
-        // Format validation errors for display
-        const errorMessages = validationErrors.map((err: any) => {
-          const field = err.loc?.join('.') || 'unknown';
-          return `${field}: ${err.msg}`;
-        });
-        errorMessage = `Validation errors:\n${errorMessages.join('\n')}`;
-      } else {
-        errorMessage = validationErrors;
+    // Check if it's a 422 validation error
+    if (error?.response?.status === 422) {
+      const parsedErrors = parseValidationErrors(error);
+      
+      if (parsedErrors.length > 0) {
+        // Set validation errors for display
+        setValidationErrors(parsedErrors);
+        
+        // Set a general error message for the API error display
+        const errorMessage = parsedErrors.length === 1 
+          ? parsedErrors[0]
+          : `Please fix ${parsedErrors.length} validation errors`;
+        
+        setApiError(errorMessage);
+        setUpdateError(errorMessage);
+        
+        // Navigate to the first step with errors
+        const stepWithError = findFirstStepWithError(parsedErrors);
+        if (stepWithError !== null) {
+          setCurrentStep(stepWithError);
+        }
+        
+        return;
       }
-    } else if (error?.message) {
-      errorMessage = error.message;
     }
+    
+    // Handle other error types using the shared utility
+    const errorMessage = extractApiErrorMessage(
+      error,
+      'An unexpected error occurred. Please try again.'
+    );
     
     setApiError(errorMessage);
     setUpdateError(errorMessage);
+  };
+
+  // Find the first step that has validation errors
+  const findFirstStepWithError = (errors: string[]): number | null => {
+    for (let stepIndex = 0; stepIndex < STEPS.length; stepIndex++) {
+      const stepErrors = getStepValidationErrors(stepIndex, errors);
+      if (stepErrors.length > 0) {
+        return stepIndex;
+      }
+    }
+    return null;
   };
 
   // Handle naming dialog close
@@ -524,10 +620,8 @@ export function ResumeGenerator() {
 
   const handleStepClick = (stepIndex: number) => {
     setCurrentStep(stepIndex);
-    // Clear validation errors when navigating to a step
-    if (validationErrors.length > 0) {
-      setValidationErrors([]);
-    }
+    // Don't clear validation errors - they should persist until fixed
+    // Errors will be cleared when user updates the data
   };
 
   const updateResumeData = (stepData: Partial<ResumeData>) => {
@@ -539,30 +633,86 @@ export function ResumeGenerator() {
   };
 
   // Helper function to check if a step has validation errors
-  const getStepValidationErrors = (stepIndex: number): string[] => {
+  const getStepValidationErrors = (stepIndex: number, errorsToCheck: string[] = validationErrors): string[] => {
     const stepId = STEPS[stepIndex]?.id;
-    if (!stepId || validationErrors.length === 0) return [];
+    if (!stepId || errorsToCheck.length === 0) return [];
     
-    return validationErrors.filter(error => {
+    const errorLower = errorsToCheck.map(e => e.toLowerCase());
+    
+    return errorsToCheck.filter(error => {
+      const errorLowercase = error.toLowerCase();
+      
       switch (stepId) {
         case 'personal':
-          return error.includes('Personal Information') || error.includes('First name') || 
-                 error.includes('Last name') || error.includes('Email') || 
-                 error.includes('Phone number') || error.includes('Birth date');
+          return errorLowercase.includes('personal information') || 
+                 errorLowercase.includes('personal info') ||
+                 errorLowercase.includes('first name') || 
+                 errorLowercase.includes('first_name') ||
+                 errorLowercase.includes('last name') || 
+                 errorLowercase.includes('last_name') ||
+                 errorLowercase.includes('email') || 
+                 errorLowercase.includes('phone') || 
+                 errorLowercase.includes('birth date') ||
+                 errorLowercase.includes('birth_date') ||
+                 errorLowercase.includes('city') ||
+                 errorLowercase.includes('country') ||
+                 errorLowercase.includes('linkedin') ||
+                 errorLowercase.includes('website') ||
+                 errorLowercase.includes('current position') ||
+                 errorLowercase.includes('current_position') ||
+                 errorLowercase.includes('profile summary') ||
+                 errorLowercase.includes('profile_summary') ||
+                 errorLowercase.includes('seniority') ||
+                 errorLowercase.includes('work field') ||
+                 errorLowercase.includes('work_field') ||
+                 errorLowercase.includes('years of experience') ||
+                 errorLowercase.includes('years_of_experience') ||
+                 errorLowercase.includes('name and email are required');
         case 'experience':
-          return error.includes('Experience');
+          return errorLowercase.includes('experience') || 
+                 errorLowercase.includes('career_experiences') ||
+                 errorLowercase.includes('work experience') ||
+                 errorLowercase.includes('job title') ||
+                 errorLowercase.includes('title') ||
+                 errorLowercase.includes('company') ||
+                 errorLowercase.includes('seniority level') ||
+                 errorLowercase.includes('seniority_level') ||
+                 errorLowercase.includes('start date') ||
+                 errorLowercase.includes('start_date') ||
+                 errorLowercase.includes('end date') ||
+                 errorLowercase.includes('end_date') ||
+                 errorLowercase.includes('currently working') ||
+                 errorLowercase.includes('currently_working');
         case 'education':
-          return error.includes('Education');
+          return errorLowercase.includes('education') || 
+                 errorLowercase.includes('institution') ||
+                 errorLowercase.includes('degree') ||
+                 errorLowercase.includes('field of study') ||
+                 errorLowercase.includes('field') ||
+                 errorLowercase.includes('currently studying') ||
+                 errorLowercase.includes('currently_studying');
         case 'skills':
-          return error.includes('Skill');
+          return errorLowercase.includes('skill') || 
+                 errorLowercase.includes('technical_skills') ||
+                 errorLowercase.includes('soft_skills');
         case 'languages':
-          return error.includes('Language');
+          return errorLowercase.includes('language') || 
+                 errorLowercase.includes('languages') ||
+                 errorLowercase.includes('proficiency');
         case 'certificates':
-          return error.includes('Certificate');
+          return errorLowercase.includes('certificate') || 
+                 errorLowercase.includes('certification') ||
+                 errorLowercase.includes('organization') ||
+                 errorLowercase.includes('issue date') ||
+                 errorLowercase.includes('issue_date');
         case 'personalProjects':
-          return error.includes('Project');
+          return errorLowercase.includes('project') || 
+                 errorLowercase.includes('personal_projects') ||
+                 errorLowercase.includes('personal project');
         case 'template':
-          return error.includes('template');
+          return errorLowercase.includes('template') || 
+                 errorLowercase.includes('selected_template') ||
+                 errorLowercase.includes('select a resume template');
         default:
           return false;
       }
@@ -674,12 +824,16 @@ export function ResumeGenerator() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {isCompleted ? (
+                    {isCompleted && !hasErrors ? (
                       <CheckCircle className="h-4 w-4" />
                     ) : hasErrors ? (
                       <div className="relative">
                         <IconComponent className="h-4 w-4" />
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                        <motion.div
+                          className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-900"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                        />
                       </div>
                     ) : (
                       <IconComponent className="h-4 w-4" />
@@ -709,21 +863,79 @@ export function ResumeGenerator() {
             <p className="text-muted-foreground">{currentStepData.description}</p>
           </CardHeader>
           <CardContent className="pb-24">
-            {updateError && currentStep !== STEPS.length - 1 && (
-              <div className="mb-4 text-destructive text-center font-medium whitespace-pre-line">{updateError}</div>
-            )}
-            {validationErrors.length > 0 && currentStep !== STEPS.length - 1 && (
-              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2">Please complete the following required fields:</h4>
-                <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-red-500 mt-0.5">•</span>
-                      <span>{error}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* Show validation errors for current step */}
+            {validationErrors.length > 0 && (() => {
+              const currentStepErrors = getStepValidationErrors(currentStep);
+              // Get all errors that belong to other steps
+              const otherStepErrors = validationErrors.filter(err => {
+                // Check if this error belongs to the current step
+                const belongsToCurrentStep = getStepValidationErrors(currentStep, [err]).length > 0;
+                return !belongsToCurrentStep;
+              });
+              
+              return (
+                <>
+                  {currentStepErrors.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+                    >
+                      <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2 flex items-center gap-2">
+                        <span className="text-red-500">⚠</span>
+                        Please fix the following issues in {currentStepData.title}:
+                      </h4>
+                      <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                        {currentStepErrors.map((error, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-red-500 mt-0.5">•</span>
+                            <span>{error}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                  
+                  {otherStepErrors.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+                    >
+                      <h4 className="text-amber-800 dark:text-amber-200 font-semibold mb-2 text-sm">
+                        ⚠ Additional issues found in other sections:
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {STEPS.map((step, index) => {
+                          const stepErrors = getStepValidationErrors(index, otherStepErrors);
+                          if (stepErrors.length === 0 || index === currentStep) return null;
+                          return (
+                            <button
+                              key={step.id}
+                              onClick={() => handleStepClick(index)}
+                              className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 rounded hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
+                            >
+                              {step.title} ({stepErrors.length})
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </>
+              );
+            })()}
+            
+            {/* Show general API error if not a validation error */}
+            {apiError && validationErrors.length === 0 && currentStep === STEPS.length - 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+              >
+                <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2">Error:</h4>
+                <p className="text-red-700 dark:text-red-300 text-sm">{apiError}</p>
+              </motion.div>
             )}
             <AnimatePresence mode="wait">
               <motion.div

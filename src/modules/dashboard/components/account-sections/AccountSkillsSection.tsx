@@ -21,6 +21,7 @@ import {
   useDeleteSkill
 } from '@/services/skill/hook';
 import { Skill as SkillType } from '@/services/skill/types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 interface Skill {
   id: string;
@@ -58,6 +59,30 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
   const [selectedType, setSelectedType] = useState<'all' | 'career' | 'soft'>('all');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Validation helper
+  const validateSkill = (skill: Skill | null): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!skill) {
+      errors.push('Skill data is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!skill.name?.trim()) {
+      errors.push('Skill name is required');
+    }
+    
+    if (skill.level < 1 || skill.level > 5) {
+      errors.push('Proficiency level must be between 1 and 5');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
 
   // Prefer React Query data; fallback to provided data for initial render
   const allSkills = (skillsData && Array.isArray(skillsData)) ? skillsData : [
@@ -108,6 +133,16 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
     
     setSaving(true);
     setError(null);
+    setValidationErrors([]);
+    
+    // Client-side validation
+    const validation = validateSkill(editingItem);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(validation.errors.join('; '));
+      setSaving(false);
+      return;
+    }
     
     try {
       if (editingItem.id && allSkills.some((skill: Skill) => skill.id === editingItem.id)) {
@@ -133,20 +168,14 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
       
       setIsDialogOpen(false);
       setEditingItem(null);
+      setValidationErrors([]);
     } catch (err: any) {
-      // Robustly extract error message; FastAPI 422 returns detail as array of objects
-      const detail = err?.response?.data?.detail;
-      let message = 'Failed to save skill.';
-      if (typeof detail === 'string') {
-        message = detail;
-      } else if (Array.isArray(detail)) {
-        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
-      } else if (detail && typeof detail === 'object') {
-        message = detail.msg || JSON.stringify(detail);
-      } else if (err?.message) {
-        message = err.message;
-      }
-      setError(message);
+      // Use shared error utility
+      const errorMessage = extractApiErrorMessage(
+        err,
+        'Failed to save skill. Please try again.'
+      );
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -156,6 +185,7 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
     setIsDialogOpen(false);
     setEditingItem(null);
     setError(null);
+    setValidationErrors([]);
   };
 
   const updateEditingItem = (field: keyof Skill, value: any) => {
@@ -392,8 +422,24 @@ export function AccountSkillsSection({ data, onDataUpdate }: AccountSkillsSectio
             </div>
           )}
 
-          {error && (
-            <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 border border-red-200 rounded">
+          {validationErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2 text-sm">
+                Please fix the following issues:
+              </h4>
+              <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {error && validationErrors.length === 0 && (
+            <div className="text-red-600 dark:text-red-400 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
               {error}
             </div>
           )}

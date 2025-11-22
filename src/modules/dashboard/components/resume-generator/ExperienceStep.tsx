@@ -153,7 +153,10 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
 
   const isFormValid = () => {
     if (!editingItem) return false;
-    return editingItem.title && editingItem.company && editingItem.start_date;
+    return editingItem.title?.trim() && 
+           editingItem.company?.trim() && 
+           editingItem.seniority_level?.trim() && 
+           editingItem.start_date?.trim();
   };
 
   const containerVariants = {
@@ -378,7 +381,7 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="seniority_level" className="text-sm font-semibold">Seniority Level</Label>
+                  <Label htmlFor="seniority_level" className="text-sm font-semibold">Seniority Level *</Label>
                   <Select 
                     value={editingItem.seniority_level} 
                     onValueChange={(value) => updateEditingItem('seniority_level', value)}
@@ -559,7 +562,7 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
                   {isFormValid() ? (
                     <span className="text-green-600 font-medium">✓ Ready to save</span>
                   ) : (
-                    <span>Please fill in required fields (Job Title, Company, Start Date)</span>
+                    <span>Please fill in required fields (Job Title, Company, Seniority Level, Start Date)</span>
                   )}
                 </div>
                 <div className="flex gap-4">

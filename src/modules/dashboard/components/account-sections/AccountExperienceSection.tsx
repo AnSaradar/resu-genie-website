@@ -28,6 +28,7 @@ import {
   useDeleteExperience
 } from '@/services/experience/hook';
 import { Experience } from '@/services/experience/types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 interface AccountExperienceSectionProps {
   data: any;
@@ -47,6 +48,46 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Validation helper
+  const validateExperience = (exp: Experience | null): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!exp) {
+      errors.push('Experience data is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!exp.title?.trim()) {
+      errors.push('Job title is required');
+    }
+    
+    if (!exp.company?.trim()) {
+      errors.push('Company name is required');
+    }
+    
+    if (!exp.seniority_level?.trim()) {
+      errors.push('Seniority level is required');
+    }
+    
+    if (!exp.start_date?.trim()) {
+      errors.push('Start date is required');
+    }
+    
+    if (exp.currently_working === undefined || exp.currently_working === null) {
+      errors.push('Please specify if you are currently working here');
+    }
+    
+    if (!exp.currently_working && !exp.end_date?.trim()) {
+      errors.push('End date is required when not currently working');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
 
   // Prevent selecting a future month for end date
   const maxMonth = new Date().toISOString().slice(0, 7);
@@ -98,6 +139,16 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
     
     setSaving(true);
     setError(null);
+    setValidationErrors([]);
+    
+    // Client-side validation
+    const validation = validateExperience(editingItem);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(validation.errors.join('; '));
+      setSaving(false);
+      return;
+    }
     
     try {
       // Normalize month inputs (YYYY-MM) to full dates (YYYY-MM-DD)
@@ -143,20 +194,14 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
 
       setIsDialogOpen(false);
       setEditingItem(null);
+      setValidationErrors([]);
     } catch (err: any) {
-      // Robustly extract error message; FastAPI 422 returns detail as array of objects
-      const detail = err?.response?.data?.detail;
-      let message = 'Failed to save experience.';
-      if (typeof detail === 'string') {
-        message = detail;
-      } else if (Array.isArray(detail)) {
-        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
-      } else if (detail && typeof detail === 'object') {
-        message = detail.msg || JSON.stringify(detail);
-      } else if (err?.message) {
-        message = err.message;
-      }
-      setError(message);
+      // Use shared error utility
+      const errorMessage = extractApiErrorMessage(
+        err,
+        'Failed to save experience. Please try again.'
+      );
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -166,6 +211,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
     setIsDialogOpen(false);
     setEditingItem(null);
     setError(null);
+    setValidationErrors([]);
   };
 
   const updateEditingItem = (field: keyof Experience, value: any) => {
@@ -350,7 +396,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="seniority_level" className="text-sm font-semibold">Seniority Level</Label>
+                  <Label htmlFor="seniority_level" className="text-sm font-semibold">Seniority Level *</Label>
                   <Select 
                     value={editingItem.seniority_level} 
                     onValueChange={(value) => updateEditingItem('seniority_level', value)}
@@ -513,8 +559,24 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
             </div>
           )}
 
-          {error && (
-            <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 border border-red-200 rounded">
+          {validationErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2 text-sm">
+                Please fix the following issues:
+              </h4>
+              <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {error && validationErrors.length === 0 && (
+            <div className="text-red-600 dark:text-red-400 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
               {error}
             </div>
           )}
@@ -526,7 +588,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
             </Button>
             <Button 
               onClick={handleSave} 
-              disabled={saving || !editingItem?.title || !editingItem?.company || !editingItem?.start_date}
+              disabled={saving || !editingItem?.title?.trim() || !editingItem?.company?.trim() || !editingItem?.seniority_level?.trim() || !editingItem?.start_date?.trim()}
               className="h-12 px-8"
             >
               {saving ? (

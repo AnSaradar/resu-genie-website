@@ -21,6 +21,7 @@ import {
   useDeleteLanguage
 } from '@/services/language/hook';
 import { Language as LanguageType } from '@/services/language/types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 interface Language {
   id: string;
@@ -59,6 +60,30 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Validation helper
+  const validateLanguage = (lang: Language | null): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!lang) {
+      errors.push('Language data is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!lang.name?.trim()) {
+      errors.push('Language name is required');
+    }
+    
+    if (!lang.proficiency?.trim()) {
+      errors.push('Proficiency level is required');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
 
   // Prefer React Query data; fallback to provided data for initial render
   const languages = (languagesData && Array.isArray(languagesData)) ? languagesData : (data?.languages || []);
@@ -97,6 +122,16 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
     
     setSaving(true);
     setError(null);
+    setValidationErrors([]);
+    
+    // Client-side validation
+    const validation = validateLanguage(editingItem);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(validation.errors.join('; '));
+      setSaving(false);
+      return;
+    }
     
     try {
       if (editingItem.id && languages.some((lang: Language) => lang.id === editingItem.id)) {
@@ -122,20 +157,14 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
       
       setIsDialogOpen(false);
       setEditingItem(null);
+      setValidationErrors([]);
     } catch (err: any) {
-      // Robustly extract error message; FastAPI 422 returns detail as array of objects
-      const detail = err?.response?.data?.detail;
-      let message = 'Failed to save language.';
-      if (typeof detail === 'string') {
-        message = detail;
-      } else if (Array.isArray(detail)) {
-        message = detail.map((d: any) => d?.msg || JSON.stringify(d)).join(' | ');
-      } else if (detail && typeof detail === 'object') {
-        message = detail.msg || JSON.stringify(detail);
-      } else if (err?.message) {
-        message = err.message;
-      }
-      setError(message);
+      // Use shared error utility
+      const errorMessage = extractApiErrorMessage(
+        err,
+        'Failed to save language. Please try again.'
+      );
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -145,6 +174,7 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
     setIsDialogOpen(false);
     setEditingItem(null);
     setError(null);
+    setValidationErrors([]);
   };
 
   const updateEditingItem = (field: keyof Language, value: any) => {
@@ -304,8 +334,24 @@ export function AccountLanguagesSection({ data, onDataUpdate }: AccountLanguages
             </div>
           )}
 
-          {error && (
-            <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 border border-red-200 rounded">
+          {validationErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <h4 className="text-red-800 dark:text-red-200 font-semibold mb-2 text-sm">
+                Please fix the following issues:
+              </h4>
+              <ul className="text-red-700 dark:text-red-300 text-sm space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {error && validationErrors.length === 0 && (
+            <div className="text-red-600 dark:text-red-400 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
               {error}
             </div>
           )}
