@@ -62,13 +62,13 @@ export default function AdminUsersPage() {
   );
 
   const { data: filterData, isLoading: isLoadingFilter } = useFilterAdminUsers(
-    filterRole,
-    filterStatus,
-    filterVerified,
+    filterRole as 'user' | 'admin' | undefined,
+    filterStatus as 'active' | 'disabled' | undefined,
+    filterVerified as boolean | undefined,
     undefined,
     page,
     pageSize,
-    useFilter
+    useFilter as boolean
   );
 
   const updateStatusMutation = useUpdateAdminUserStatus();

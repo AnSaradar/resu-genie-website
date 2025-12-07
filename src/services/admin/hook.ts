@@ -33,11 +33,13 @@ export const useAdminUsers = (
   page: number = 1,
   page_size: number = 20,
   sort_by: string = 'created_at',
-  sort_order: number = -1
+  sort_order: number = -1,
+  enabled: boolean = true
 ) => {
   return useQuery({
     queryKey: ['adminUsers', page, page_size, sort_by, sort_order],
     queryFn: () => getAdminUsers(page, page_size, sort_by, sort_order),
+    enabled,
     staleTime: 30 * 1000, // 30 seconds
   });
 };
