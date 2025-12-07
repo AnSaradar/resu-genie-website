@@ -11,7 +11,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/services/auth/hook";
 import { useTheme } from "next-themes";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { MoonIcon, SunIcon, Coins } from "lucide-react";
+import { useTokenBalance } from "@/services/token/hook";
 // import { MountainIcon } from "lucide-react"; // Example icon for logo
 // import { Settings } from "lucide-react"; // Example icon for settings
 
@@ -19,7 +20,11 @@ export function DashboardNavbar() {
   const { user, logout } = useAuth();
   const { setTheme, theme } = useTheme();
   const location = useLocation();
+  const { data: tokenData, isLoading: isLoadingTokens } = useTokenBalance();
   const initials = `${user?.first_name?.[0] ?? "U"}${user?.last_name?.[0] ?? ""}`;
+  
+  const tokensRemaining = tokenData?.data?.tokens_remaining ?? 0;
+  const totalTokensUsed = tokenData?.data?.total_tokens_used ?? 0;
 
   // Helper function to determine if a navigation item is active
   const isActive = (path: string) => {
@@ -107,8 +112,20 @@ export function DashboardNavbar() {
             </Link>
         </nav>
 
-        {/* Theme Switcher and Profile Dropdown */}
+        {/* Token Balance, Theme Switcher and Profile Dropdown */}
         <div className="flex items-center gap-4">
+          {/* Token Balance Display */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+            <Coins className="h-4 w-4 text-muted-foreground" />
+            {isLoadingTokens ? (
+              <span className="text-sm text-muted-foreground">Loading...</span>
+            ) : (
+              <span className="text-sm font-medium">
+                {tokensRemaining.toLocaleString()} tokens
+              </span>
+            )}
+          </div>
+
           {/* Theme Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9">
@@ -151,6 +168,24 @@ export function DashboardNavbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {/* Token Balance Info in Dropdown */}
+              {!isLoadingTokens && (
+                <>
+                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span>Tokens Remaining:</span>
+                        <span className="font-medium">{tokensRemaining.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Total Used:</span>
+                        <span className="font-medium">{totalTokensUsed.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem disabled>
                 Settings (coming soon)
               </DropdownMenuItem>

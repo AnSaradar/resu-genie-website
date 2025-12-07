@@ -22,12 +22,36 @@ export interface ValidationError {
  * @param resource - Optional resource name for API error messages (e.g., 'education', 'experience')
  * @returns A user-friendly error message string
  */
+/**
+ * Check if error is a token limit exceeded error
+ */
+export function isTokenLimitError(error: any): boolean {
+  const status = error?.response?.status;
+  if (status !== 403) return false;
+  
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === 'string') {
+    const lowerDetail = detail.toLowerCase();
+    return lowerDetail.includes('token limit') || 
+           lowerDetail.includes('token limit exceeded') ||
+           lowerDetail.includes('reached your token limit') ||
+           lowerDetail.includes('insufficient tokens');
+  }
+  
+  return false;
+}
+
 export function extractApiErrorMessage(
   error: any,
   fallback?: string,
   resource?: string
 ): string {
   const status = error?.response?.status;
+  
+  // Handle token limit errors first (403 with token limit message)
+  if (isTokenLimitError(error)) {
+    return "You don't have enough tokens to use this feature. Please check your token balance.";
+  }
   
   // Handle authentication errors (401, 403)
   if (status === 401 || status === 403) {

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { createCoverLetter, getCoverLetterHistory, getCoverLetterById } from './service';
 import { CreateCoverLetterResponse, CoverLetterHistoryResponse, CoverLetterRequest, GetCoverLetterResponse } from './types';
+import { isTokenLimitError } from '@/utils/error-utils';
 
 export const useCreateCoverLetter = () => {
   const queryClient = useQueryClient();
@@ -11,9 +12,18 @@ export const useCreateCoverLetter = () => {
     onSuccess: () => {
       toast.success('Cover letter generated successfully');
       queryClient.invalidateQueries({ queryKey: ['cover-letter-history'] });
+      // Refresh token balance after successful operation
+      queryClient.invalidateQueries({ queryKey: ['token-balance'] });
     },
     onError: (err) => {
-      toast.error(err.message);
+      // Check if it's a token limit error
+      if (isTokenLimitError(err)) {
+        toast.error("You don't have enough tokens to use this feature. Please check your token balance.");
+        // Refresh token balance to show updated balance
+        queryClient.invalidateQueries({ queryKey: ['token-balance'] });
+      } else {
+        toast.error(err.message);
+      }
     }
   });
 };
