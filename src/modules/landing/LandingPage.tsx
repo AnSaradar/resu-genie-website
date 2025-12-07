@@ -1,7 +1,7 @@
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
 import { Templates } from "@/components/landing/Templates";
-import { Testimonials } from "@/components/landing/Testimonials";
+// import { Testimonials } from "@/components/landing/Testimonials";
 import { CTA } from "@/components/landing/CTA";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +27,7 @@ export function LandingPage() {
       <Hero onLoginClick={handleLoginClick} onRegisterClick={handleRegisterClick} />
       <Features />
       <Templates />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <CTA onRegisterClick={handleRegisterClick} />
     </>
   );
