@@ -210,13 +210,13 @@ export function Register() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-background py-20 md:py-32 min-h-screen flex items-center">
+    <section className="relative overflow-hidden bg-background py-12 md:py-20 lg:py-32 min-h-screen flex items-center">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 opacity-50" />
 
-      {/* Floating elements */}
+      {/* Floating elements - optimized for mobile */}
       <motion.div
-        className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full bg-blue-200 dark:bg-blue-900 blur-3xl opacity-20"
+        className="absolute top-1/3 right-1/4 w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 rounded-full bg-blue-200 dark:bg-blue-900 blur-3xl opacity-10 md:opacity-15 lg:opacity-20"
         animate={{
           y: ["-10px", "10px"],
           transition: {
@@ -230,7 +230,7 @@ export function Register() {
         }}
       />
       <motion.div
-        className="absolute bottom-1/3 left-1/4 w-64 h-64 rounded-full bg-cyan-200 dark:bg-cyan-900 blur-3xl opacity-20"
+        className="absolute bottom-1/3 left-1/4 w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 rounded-full bg-cyan-200 dark:bg-cyan-900 blur-3xl opacity-10 md:opacity-15 lg:opacity-20"
         animate={{
           y: ["10px", "-10px"],
           transition: {
@@ -244,34 +244,34 @@ export function Register() {
         }}
       />
 
-      <div className="container relative z-10">
+      <div className="container relative z-10 px-4 md:px-6 lg:px-8">
         <div className="max-w-md mx-auto">
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-10"
+            className="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl shadow-xl p-6 md:p-8 lg:p-10 transition-all duration-300"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <motion.div
-              className="space-y-6"
+              className="space-y-4 md:space-y-6"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
               <motion.div className="text-center" variants={itemVariants}>
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
                   <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
                     Create Account
                   </span>
                 </h1>
-                <p className="mt-2 text-muted-foreground">
+                <p className="mt-2 text-sm md:text-base text-muted-foreground">
                   Join ResuGenie and start building your professional resume
                 </p>
               </motion.div>
 
               {error && (
                 <motion.div 
-                  className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm"
+                  className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 md:p-4 rounded-md text-xs md:text-sm"
                   variants={itemVariants}
                 >
                   {error}
@@ -279,137 +279,142 @@ export function Register() {
               )}
 
               <motion.form
-                className="space-y-4"
+                className="space-y-4 md:space-y-5"
                 onSubmit={handleSubmit}
                 variants={itemVariants}
               >
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName" className="text-sm md:text-base">First Name</Label>
                     <Input
                       id="firstName"
                       type="text"
                       placeholder="John"
                       value={firstName}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
+                      className="h-10 md:h-11 text-sm md:text-base"
                       required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName" className="text-sm md:text-base">Last Name</Label>
                     <Input
                       id="lastName"
                       type="text"
                       placeholder="Doe"
                       value={lastName}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
+                      className="h-10 md:h-11 text-sm md:text-base"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-sm md:text-base">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                    className={emailError ? "border-red-500" : ""}
+                    className={`h-10 md:h-11 text-sm md:text-base ${emailError ? "border-red-500" : ""}`}
                     required
                   />
                   {emailError && (
-                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                    <p className="text-red-500 text-xs md:text-sm mt-1">{emailError}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone (optional)</Label>
+                  <Label htmlFor="phone" className="text-sm md:text-base">Phone (optional)</Label>
                   <Input
                     id="phone"
                     type="tel"
                     placeholder="+1234567890"
                     value={phone}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                    className={phoneError ? "border-red-500" : ""}
+                    className={`h-10 md:h-11 text-sm md:text-base ${phoneError ? "border-red-500" : ""}`}
                   />
                   {phoneError && (
-                    <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+                    <p className="text-red-500 text-xs md:text-sm mt-1">{phoneError}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm md:text-base">Password</Label>
                   <PasswordInput
                     id="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                    className={passwordError ? "border-red-500" : ""}
+                    className={`h-10 md:h-11 text-sm md:text-base ${passwordError ? "border-red-500" : ""}`}
                     showPassword={showPassword}
                     onTogglePassword={() => setShowPassword(!showPassword)}
                     required
                   />
                   {passwordError && (
-                    <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+                    <p className="text-red-500 text-xs md:text-sm mt-1">{passwordError}</p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
                     Password must be at least 8 characters and contain at least one number
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm md:text-base">Confirm Password</Label>
                   <PasswordInput
                     id="confirmPassword"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                    className={confirmPasswordError ? "border-red-500" : ""}
+                    className={`h-10 md:h-11 text-sm md:text-base ${confirmPasswordError ? "border-red-500" : ""}`}
                     showPassword={showConfirmPassword}
                     onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
                     required
                   />
                   {confirmPasswordError && (
-                    <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
+                    <p className="text-red-500 text-xs md:text-sm mt-1">{confirmPasswordError}</p>
                   )}
                 </div>
 
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start space-x-2 md:space-x-3">
                   <Checkbox
                     id="terms"
                     checked={agreeTerms}
                     onCheckedChange={(checked: boolean) => 
                       setAgreeTerms(checked)
                     }
+                    className="h-4 w-4 md:h-5 md:w-5 mt-1 flex-shrink-0"
                     required
                   />
                   <Label
                     htmlFor="terms"
-                    className="text-sm font-normal cursor-pointer"
+                    className="text-xs md:text-sm font-normal cursor-pointer flex items-start py-2"
                   >
-                    I agree to the{" "}
-                    <Link
-                      to="/terms"
-                      className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      to="/privacy"
-                      className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      Privacy Policy
-                    </Link>
+                    <span className="leading-relaxed">
+                      I agree to the{" "}
+                      <Link
+                        to="/terms"
+                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline"
+                      >
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link
+                        to="/privacy"
+                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline"
+                      >
+                        Privacy Policy
+                      </Link>
+                    </span>
                   </Label>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full"
+                  className="w-full h-10 md:h-11 text-sm md:text-base font-medium"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Creating Account..." : "Create Account"}
@@ -417,14 +422,14 @@ export function Register() {
               </motion.form>
 
               <motion.div
-                className="text-center text-sm"
+                className="text-center text-xs md:text-sm"
                 variants={itemVariants}
               >
                 <p className="text-muted-foreground">
                   Already have an account?{" "}
                   <Link
                     to="/login"
-                    className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                    className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors duration-200 min-h-[44px] inline-flex items-center"
                   >
                     Sign in
                   </Link>

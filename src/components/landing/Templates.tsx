@@ -34,11 +34,11 @@ export function Templates() {
   ];
 
   return (
-    <section id="templates" className="py-20">
-      <div className="container">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+    <section id="templates" className="py-12 md:py-20 lg:py-24">
+      <div className="container px-4 md:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
           <motion.h2
-            className="text-3xl md:text-4xl font-bold mb-4"
+            className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -50,7 +50,7 @@ export function Templates() {
             </span>
           </motion.h2>
           <motion.p
-            className="text-xl text-muted-foreground"
+            className="text-base md:text-lg lg:text-xl text-muted-foreground px-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
