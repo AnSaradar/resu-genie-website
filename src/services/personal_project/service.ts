@@ -6,6 +6,7 @@ import {
   PersonalProjectApiResponse, 
   PersonalProject 
 } from './types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Convert PersonalProjectResponse from API to frontend PersonalProject structure
@@ -34,10 +35,8 @@ export const getAllPersonalProjects = async (): Promise<PersonalProjectResponse[
     const response = await apiClient.get<PersonalProjectApiResponse>('/api/v1/personal-project/');
     return response.data.personal_projects || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get personal projects');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'projects');
+    throw new Error(message);
   }
 };
 
@@ -52,10 +51,8 @@ export const addPersonalProjects = async (
     const response = await apiClient.post<PersonalProjectApiResponse>('/api/v1/personal-project/', projects);
     return response.data.personal_projects || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to add personal projects');
+    const message = extractApiErrorMessage(error, 'api.create_failed', 'projects');
+    throw new Error(message);
   }
 };
 
@@ -71,10 +68,8 @@ export const updatePersonalProject = async (
     const response = await apiClient.put<PersonalProjectApiResponse>(`/api/v1/personal-project/${projectId}`, updateData);
     return response.data.personal_project!;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to update personal project');
+    const message = extractApiErrorMessage(error, 'api.update_failed', 'project');
+    throw new Error(message);
   }
 };
 
@@ -86,9 +81,7 @@ export const deletePersonalProject = async (projectId: string): Promise<void> =>
   try {
     await apiClient.delete(`/api/v1/personal-project/${projectId}`);
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to delete personal project');
+    const message = extractApiErrorMessage(error, 'api.delete_failed', 'project');
+    throw new Error(message);
   }
 }; 

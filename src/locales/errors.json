@@ -1,0 +1,89 @@
+{
+  "en": {
+    "auth": {
+      "invalid_credentials": "Invalid email or password",
+      "login_failed": "Login failed. Please try again.",
+      "email_not_verified": "Please verify your email before logging in.",
+      "email_already_registered": "Email address is already registered",
+      "phone_already_registered": "Phone number is already registered",
+      "registration_failed": "User registration failed",
+      "session_expired": "Session expired. Please login again.",
+      "unauthorized": "You are not authorized to perform this action",
+      "forbidden": "Access forbidden",
+      "email_verification_required": "Email verification required. Please check your email for OTP",
+      "email_verification_failed": "Email verification failed",
+      "user_already_verified": "User email is already verified",
+      "otp_invalid": "Invalid or expired OTP code",
+      "otp_expired": "OTP code has expired. Please request a new one.",
+      "otp_too_many_attempts": "Too many attempts. Please request a new OTP code.",
+      "otp_resend_cooldown": "Please wait before requesting another OTP",
+      "otp_send_error": "Failed to send OTP. Please try again.",
+      "otp_verify_error": "Failed to verify OTP. Please try again.",
+      "otp_resend_error": "Failed to resend verification OTP. Please try again.",
+      "password_reset_failed": "Failed to reset password. Please try again.",
+      "password_reset_request_failed": "Failed to send password reset code. Please try again."
+    },
+    "validation": {
+      "field_required": "This field is required",
+      "field_invalid": "Invalid value for this field",
+      "email_invalid": "Please enter a valid email address",
+      "password_too_short": "Password must be at least 8 characters",
+      "password_mismatch": "Passwords do not match",
+      "phone_invalid": "Please enter a valid phone number",
+      "date_invalid": "Please enter a valid date",
+      "date_range_invalid": "End date must be after start date",
+      "number_invalid": "Please enter a valid number",
+      "url_invalid": "Please enter a valid URL",
+      "min_length": "This field must be at least {min} characters",
+      "max_length": "This field must be no more than {max} characters",
+      "min_value": "Value must be at least {min}",
+      "max_value": "Value must be no more than {max}",
+      "multiple_errors": "Please fix the following validation errors"
+    },
+    "general": {
+      "unexpected_error": "An unexpected error occurred. Please try again.",
+      "network_error": "Network error. Please check your connection and try again.",
+      "server_error": "Server error. Please try again later.",
+      "not_found": "The requested resource was not found",
+      "bad_request": "Invalid request. Please check your input.",
+      "timeout": "Request timed out. Please try again.",
+      "unknown_error": "An unknown error occurred"
+    },
+    "api": {
+      "create_failed": "Failed to create {resource}. Please try again.",
+      "update_failed": "Failed to update {resource}. Please try again.",
+      "delete_failed": "Failed to delete {resource}. Please try again.",
+      "fetch_failed": "Failed to retrieve {resource}. Please try again.",
+      "save_failed": "Failed to save {resource}. Please try again.",
+      "operation_failed": "Operation failed. Please try again.",
+      "validation_errors": "Please fix the validation errors before continuing"
+    },
+    "resources": {
+      "education": "education",
+      "educations": "education entries",
+      "experience": "experience",
+      "experiences": "experiences",
+      "certification": "certification",
+      "certifications": "certifications",
+      "project": "project",
+      "projects": "projects",
+      "skill": "skill",
+      "skills": "skills",
+      "language": "language",
+      "languages": "languages",
+      "profile": "profile",
+      "resume": "resume",
+      "resumes": "resumes",
+      "user": "user",
+      "data": "data"
+    }
+  },
+  "ar": {
+    "auth": {},
+    "validation": {},
+    "general": {},
+    "api": {},
+    "resources": {}
+  }
+}
+

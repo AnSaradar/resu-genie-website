@@ -8,7 +8,8 @@ import {
     saveRefreshToken, 
     getRefreshToken, 
     removeRefreshToken 
-} from './utils'; 
+} from './utils';
+import { extractApiErrorMessage } from '@/utils/error-utils'; 
 
 // Extend AxiosRequestConfig to include retry property
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -46,7 +47,12 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const original = error.config as ExtendedAxiosRequestConfig;
     
-    if (error.response?.status === 401 && original && !original._retry) {
+    // Don't attempt token refresh for auth endpoints (login, register, refresh)
+    // These endpoints should handle 401 errors directly
+    const authEndpoints = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/refresh'];
+    const isAuthEndpoint = original?.url && authEndpoints.some(endpoint => original.url.includes(endpoint));
+    
+    if (error.response?.status === 401 && original && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       
       try {
@@ -102,20 +108,10 @@ const parseErrorResponse = async (response: Response) => {
   }
 };
 
-// Helper to create consistent error messages
-const createApiError = (error: unknown, defaultMessage: string): Error => {
-    if (axios.isAxiosError(error) && error.response) {
-        const detail = error.response.data?.detail;
-        const errors = error.response.data?.errors; 
-        let message = defaultMessage;
-        if (detail && typeof detail === 'string') {
-            message = detail;
-        } else if (errors && typeof errors === 'object') {
-            message = Object.values(errors).flat().join(' ');
-        }
-        return new Error(message);
-    }
-    return new Error('An unexpected error occurred.');
+// Helper to create consistent error messages using shared utility
+const createApiError = (error: unknown, fallbackKey: string = 'general.unexpected_error'): Error => {
+    const message = extractApiErrorMessage(error, fallbackKey);
+    return new Error(message);
 };
 
 /**
@@ -142,12 +138,9 @@ export const AuthService = {
       
       return authData;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        // Extract error message from response
-        const message = error.response?.data?.message || error.response?.data?.detail || 'Login failed';
-        throw new Error(message);
-      }
-      throw new Error('Login failed. Please try again.');
+      // Use shared error utility to extract user-friendly message
+      const message = extractApiErrorMessage(error, 'auth.login_failed');
+      throw new Error(message);
     }
   },
 
@@ -163,12 +156,9 @@ export const AuthService = {
       
       return authData;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        // Extract error message from response
-        const message = error.response?.data?.message || error.response?.data?.detail || 'Registration failed';
-        throw new Error(message);
-      }
-      throw new Error('Registration failed. Please try again.');
+      // Use shared error utility to extract user-friendly message
+      const message = extractApiErrorMessage(error, 'auth.registration_failed');
+      throw new Error(message);
     }
   },
 
@@ -276,11 +266,9 @@ export const AuthService = {
            // Fallback in case the response structure is different
            return response.data;
        } catch (error) {
-           if (error instanceof AxiosError) {
-               const message = error.response?.data?.message || error.response?.data?.detail || 'Failed to get user data';
-               throw new Error(message);
-           }
-           throw new Error('Failed to get user data');
+           // Use shared error utility to extract user-friendly message
+           const message = extractApiErrorMessage(error, 'api.fetch_failed');
+           throw new Error(message);
        }
    },
 
@@ -316,7 +304,7 @@ export const AuthService = {
        });
        return response.data;
      } catch (error) {
-       throw createApiError(error, 'Failed to send OTP');
+       throw createApiError(error, 'auth.otp_send_error');
      }
    },
 
@@ -332,7 +320,7 @@ export const AuthService = {
        });
        return response.data;
      } catch (error) {
-       throw createApiError(error, 'Failed to verify OTP');
+       throw createApiError(error, 'auth.otp_verify_error');
      }
    },
 
@@ -347,7 +335,7 @@ export const AuthService = {
       });
       return response.data;
     } catch (error) {
-      throw createApiError(error, 'Failed to resend verification OTP');
+      throw createApiError(error, 'auth.otp_resend_error');
     }
   },
 
@@ -359,7 +347,7 @@ export const AuthService = {
       const response = await api.post('/api/v1/otp/password-reset/request', data);
       return response.data;
     } catch (error) {
-      throw createApiError(error, 'Failed to request password reset');
+      throw createApiError(error, 'auth.password_reset_request_failed');
     }
   },
 
@@ -371,7 +359,7 @@ export const AuthService = {
       const response = await api.post('/api/v1/otp/password-reset/complete', data);
       return response.data;
     } catch (error) {
-      throw createApiError(error, 'Failed to complete password reset');
+      throw createApiError(error, 'auth.password_reset_failed');
     }
   },
 

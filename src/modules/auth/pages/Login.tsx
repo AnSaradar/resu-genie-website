@@ -69,9 +69,14 @@ export function Login() {
     } catch (err: any) {
       console.error("Login error:", err);
       
+      // The error message is already extracted and formatted by the auth hook
+      // using extractApiErrorMessage, so it should be user-friendly
+      const errorMessage = error || err.message || "Login failed. Please try again.";
+      
       // Check if the error is due to unverified email
-      if (err.message && err.message.includes("Please verify your email")) {
-        toast.error("Please verify your email before logging in.");
+      if (errorMessage.toLowerCase().includes("verify") || 
+          errorMessage.toLowerCase().includes("verification")) {
+        toast.error(errorMessage);
         navigate('/verify-otp', { 
           state: { 
             email: email,
@@ -82,7 +87,7 @@ export function Login() {
         return;
       }
       
-      toast.error(error || err.message || "Login failed. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

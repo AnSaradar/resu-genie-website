@@ -1,7 +1,10 @@
 /**
  * Shared utilities for parsing and extracting error messages from API responses.
  * Handles FastAPI validation errors, custom error formats, and provides fallback messages.
+ * Uses i18n error messages from JSON files.
  */
+
+import { mapAuthError, mapValidationError, mapApiError, getErrorMessage } from './error-messages';
 
 export interface ValidationError {
   field: string;
@@ -12,60 +15,87 @@ export interface ValidationError {
 /**
  * Extracts a user-friendly error message from an API error response.
  * Handles FastAPI 422 validation errors, custom error formats, and generic errors.
+ * Uses i18n error messages from JSON files.
  * 
  * @param error - The error object from an API call (typically from axios/react-query)
- * @param fallback - Optional fallback message if no error message can be extracted
+ * @param fallback - Optional fallback message key (defaults to 'general.unexpected_error')
+ * @param resource - Optional resource name for API error messages (e.g., 'education', 'experience')
  * @returns A user-friendly error message string
  */
 export function extractApiErrorMessage(
   error: any,
-  fallback: string = 'An unexpected error occurred. Please try again.'
+  fallback?: string,
+  resource?: string
 ): string {
-  // Check for FastAPI validation errors (422 with detail array)
-  if (error?.response?.status === 422 && error?.response?.data?.detail) {
-    const detail = error.response.data.detail;
-    
-    if (Array.isArray(detail)) {
-      // FastAPI validation errors format: [{loc: [...], msg: "...", type: "..."}]
-      const messages = detail.map((err: any) => {
-        const fieldPath = err.loc?.join('.') || '';
-        const message = err.msg || 'Field is required';
-        
-        // Map to user-friendly field names
-        let fieldName = fieldPath.split('.').pop() || 'field';
-        fieldName = fieldName.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
-        
-        return `${fieldName}: ${message}`;
-      });
-      
-      return messages.length === 1 ? messages[0] : `Validation errors: ${messages.join('; ')}`;
-    } else if (typeof detail === 'string') {
+  const status = error?.response?.status;
+  
+  // Handle authentication errors (401, 403)
+  if (status === 401 || status === 403) {
+    return mapAuthError(error);
+  }
+  
+  // Handle validation errors (422)
+  if (status === 422) {
+    const validationErrors = mapValidationError(error);
+    if (validationErrors.length > 0) {
+      // For single validation error, return it directly
+      if (validationErrors.length === 1) {
+        return validationErrors[0];
+      }
+      // For multiple errors, return formatted message
+      return getErrorMessage('validation.multiple_errors') + ': ' + validationErrors.join('; ');
+    }
+    // Fallback if validation mapping didn't work
+    const detail = error?.response?.data?.detail;
+    if (typeof detail === 'string') {
       return detail;
     }
   }
   
-  // Check for controller validation errors (critical_errors array)
-  if (error?.response?.data?.critical_errors && Array.isArray(error.response.data.critical_errors)) {
-    const errors = error.response.data.critical_errors;
-    return errors.length === 1 ? errors[0] : `Multiple errors: ${errors.join('; ')}`;
+  // Handle other API errors
+  if (status) {
+    const apiError = mapApiError(error, resource);
+    if (apiError) {
+      return apiError;
+    }
   }
   
-  // Check for message field
+  // Check for message field (backward compatibility)
   if (error?.response?.data?.message) {
-    return error.response.data.message;
+    const message = error.response.data.message;
+    // If it's a known auth error message, map it
+    if (typeof message === 'string' && 
+        (message.toLowerCase().includes('invalid') || 
+         message.toLowerCase().includes('incorrect') ||
+         message.toLowerCase().includes('email or password'))) {
+      return mapAuthError(error);
+    }
+    return message;
   }
   
-  // Check for detail as string (non-array)
+  // Check for detail as string (non-array) - backward compatibility
   if (error?.response?.data?.detail && typeof error.response.data.detail === 'string') {
     return error.response.data.detail;
   }
   
   // Check for generic error message
   if (error?.message) {
-    return error.message;
+    // If it's already a user-friendly message, return it
+    if (typeof error.message === 'string') {
+      return error.message;
+    }
   }
   
-  return fallback;
+  // Use fallback or default
+  if (fallback) {
+    // If fallback is a key path, get the message
+    if (fallback.includes('.')) {
+      return getErrorMessage(fallback);
+    }
+    return fallback;
+  }
+  
+  return getErrorMessage('general.unexpected_error');
 }
 
 /**
@@ -112,11 +142,20 @@ export function extractValidationMessages(error: any): ValidationError[] {
 /**
  * Formats validation errors into a user-friendly string array.
  * Useful for displaying errors in UI components.
+ * Uses i18n error messages from JSON files.
  * 
  * @param error - The error object from an API call
  * @returns Array of formatted error message strings
  */
 export function formatValidationErrors(error: any): string[] {
+  // Use the mapping function which returns properly formatted messages
+  const mappedErrors = mapValidationError(error);
+  
+  if (mappedErrors.length > 0) {
+    return mappedErrors;
+  }
+  
+  // Fallback to extracting validation messages (backward compatibility)
   const validationErrors = extractValidationMessages(error);
   
   return validationErrors.map((err) => {

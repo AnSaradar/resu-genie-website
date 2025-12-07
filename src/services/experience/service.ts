@@ -9,6 +9,7 @@ import {
   WorkType,
   WorkModel
 } from './types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Convert ExperienceResponse (with location object) to flat Experience (with city/country)
@@ -63,10 +64,8 @@ export const addExperiences = async (experiences: ExperienceData[]): Promise<Exp
     const response = await apiClient.post<ExperienceApiResponse>('/api/v1/experience/', experiences);
     return response.data.experiences || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to add experiences');
+    const message = extractApiErrorMessage(error, 'api.create_failed', 'experiences');
+    throw new Error(message);
   }
 };
 
@@ -82,10 +81,8 @@ export const updateExperience = async (
     const response = await apiClient.put<ExperienceApiResponse>(`/api/v1/experience/${experienceId}`, updateData);
     return response.data.experience!;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to update experience');
+    const message = extractApiErrorMessage(error, 'api.update_failed', 'experience');
+    throw new Error(message);
   }
 };
 
@@ -97,10 +94,8 @@ export const deleteExperience = async (experienceId: string): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/experience/${experienceId}`);
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to delete experience');
+    const message = extractApiErrorMessage(error, 'api.delete_failed', 'experience');
+    throw new Error(message);
   }
 };
 
@@ -113,10 +108,8 @@ export const getAllExperiences = async (): Promise<ExperienceResponse[]> => {
     const response = await apiClient.get<ExperienceApiResponse>('/api/v1/experience/');
     return response.data.experiences || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get experiences');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'experiences');
+    throw new Error(message);
   }
 };
 
@@ -129,10 +122,8 @@ export const getExperience = async (experienceId: string): Promise<ExperienceRes
     const response = await apiClient.get<ExperienceApiResponse>(`/api/v1/experience/${experienceId}`);
     return response.data.experience!;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get experience');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'experience');
+    throw new Error(message);
   }
 };
 

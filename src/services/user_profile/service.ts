@@ -1,5 +1,6 @@
 import apiClient from '@/lib/axios'; // Import the configured client
 import { UserProfileData, UserProfileResponse, ProfileExistsResponse, WorkField, ApiResponse, WorkFieldsResponse, CountriesResponse } from './types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 // getAuthToken and Authorization header are handled by the interceptor
 
 /**
@@ -27,11 +28,8 @@ export const createUserProfile = async (
     const response = await apiClient.post('/api/v1/user_profile', profileData);
     return response.data.profile_data; // Based on the backend JSONResponse structure
   } catch (error: any) {
-    // Handle error response
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to create user profile');
+    const message = extractApiErrorMessage(error, 'api.create_failed', 'profile');
+    throw new Error(message);
   }
 };
 
@@ -42,11 +40,8 @@ export const updateUserProfile = async (
     const response = await apiClient.post('/api/v1/user_profile', profileData);
     return response.data.profile_data; // Same endpoint for create/update
   } catch (error: any) {
-    // Handle error response
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to update user profile');
+    const message = extractApiErrorMessage(error, 'api.update_failed', 'profile');
+    throw new Error(message);
   }
 };
 
@@ -55,10 +50,8 @@ export const getUserProfile = async (): Promise<UserProfileResponse> => {
     const response = await apiClient.get('/api/v1/user_profile');
     return response.data;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get user profile');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'profile');
+    throw new Error(message);
   }
 };
 
@@ -68,16 +61,8 @@ export const getWorkFields = async (): Promise<string[]> => {
     // Extract the work_fields array from the response data structure
     return response.data.data.work_fields;
   } catch (error: any) {
-    if (error.response?.data?.errors && error.response.data.errors.length > 0) {
-      throw new Error(error.response.data.errors[0]);
-    }
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get work fields');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed');
+    throw new Error(message);
   }
 };
 
@@ -87,15 +72,7 @@ export const getCountries = async (): Promise<string[]> => {
     // Extract the countries array from the response data structure
     return response.data.data.countries;
   } catch (error: any) {
-    if (error.response?.data?.errors && error.response.data.errors.length > 0) {
-      throw new Error(error.response.data.errors[0]);
-    }
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get countries');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed');
+    throw new Error(message);
   }
 };

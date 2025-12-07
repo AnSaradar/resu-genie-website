@@ -7,6 +7,7 @@ import {
   Education,
   Degree
 } from './types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Convert EducationResponse to frontend Education interface
@@ -49,10 +50,8 @@ export const addEducations = async (educations: EducationData[]): Promise<Educat
     const response = await apiClient.post<EducationApiResponse>('/api/v1/education/', educations);
     return response.data.educations || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to add education entries');
+    const message = extractApiErrorMessage(error, 'api.create_failed', 'educations');
+    throw new Error(message);
   }
 };
 
@@ -68,10 +67,8 @@ export const updateEducation = async (
     const response = await apiClient.put<EducationApiResponse>(`/api/v1/education/${educationId}`, updateData);
     return response.data.education!;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to update education');
+    const message = extractApiErrorMessage(error, 'api.update_failed', 'education');
+    throw new Error(message);
   }
 };
 
@@ -83,10 +80,8 @@ export const deleteEducation = async (educationId: string): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/education/${educationId}`);
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to delete education');
+    const message = extractApiErrorMessage(error, 'api.delete_failed', 'education');
+    throw new Error(message);
   }
 };
 
@@ -99,10 +94,8 @@ export const getAllEducations = async (): Promise<EducationResponse[]> => {
     const response = await apiClient.get<EducationApiResponse>('/api/v1/education/');
     return response.data.educations || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get education entries');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'educations');
+    throw new Error(message);
   }
 };
 
@@ -115,10 +108,8 @@ export const getEducation = async (educationId: string): Promise<EducationRespon
     const response = await apiClient.get<EducationApiResponse>(`/api/v1/education/${educationId}`);
     return response.data.education!;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get education');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'education');
+    throw new Error(message);
   }
 };
 

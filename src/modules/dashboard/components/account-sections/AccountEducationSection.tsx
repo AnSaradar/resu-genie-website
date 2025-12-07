@@ -26,7 +26,7 @@ import {
 } from '@/services/education/hook';
 import { Education } from '@/services/education/types';
 import { normalizeMonthValue, toDisplayMonth, monthToIsoDate } from '@/utils/date';
-import { extractApiErrorMessage } from '@/utils/error-utils';
+import { extractApiErrorMessage, formatValidationErrors } from '@/utils/error-utils';
 
 interface AccountEducationSectionProps {
   data: any;
@@ -156,10 +156,14 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
         });
       } else {
         // Create new (mutation accepts array of one item)
+        // Convert YYYY-MM format to YYYY-MM-DD format (backend expects full date)
+        const normalizedStart = monthToIsoDate(editingItem.start_date) as string;
+        const normalizedEnd = editingItem.currently_studying ? undefined : monthToIsoDate(editingItem.end_date);
+        
         const normalizedItem: Education = {
           ...editingItem,
-          start_date: normalizeMonthValue(editingItem.start_date),
-          end_date: editingItem.currently_studying ? '' : normalizeMonthValue(editingItem.end_date),
+          start_date: normalizedStart,
+          end_date: normalizedEnd || '',
           description: editingItem.description || ''
         } as Education;
         await addEducationsMutation.mutateAsync([normalizedItem]);
@@ -169,12 +173,32 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
       setEditingItem(null);
       setValidationErrors([]);
     } catch (err: any) {
-      // Use shared error utility
-      const errorMessage = extractApiErrorMessage(
-        err,
-        'Failed to save education. Please try again.'
-      );
-      setError(errorMessage);
+      // Check if it's a validation error (422)
+      if (err?.response?.status === 422) {
+        // Format validation errors for display
+        const validationErrorsList = formatValidationErrors(err);
+        if (validationErrorsList.length > 0) {
+          setValidationErrors(validationErrorsList);
+          setError(null); // Clear general error when we have validation errors
+        } else {
+          // Fallback to general error message
+          const errorMessage = extractApiErrorMessage(
+            err,
+            'api.save_failed',
+            'education'
+          );
+          setError(errorMessage);
+        }
+      } else {
+        // Use shared error utility for non-validation errors
+        const errorMessage = extractApiErrorMessage(
+          err,
+          'api.save_failed',
+          'education'
+        );
+        setError(errorMessage);
+        setValidationErrors([]); // Clear validation errors
+      }
     } finally {
       setSaving(false);
     }

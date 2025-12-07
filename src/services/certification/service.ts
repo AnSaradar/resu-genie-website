@@ -6,6 +6,7 @@ import {
   CertificationApiResponse,
   Certification,
 } from './types';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Convert CertificationResponse to frontend Certification interface
@@ -40,10 +41,8 @@ export const addCertifications = async (certs: CertificationData[]): Promise<Cer
     const response = await apiClient.post<CertificationApiResponse>('/api/v1/certification/', certs);
     return response.data.certifications || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to add certifications');
+    const message = extractApiErrorMessage(error, 'api.create_failed', 'certifications');
+    throw new Error(message);
   }
 };
 
@@ -56,10 +55,8 @@ export const updateCertification = async (
     const response = await apiClient.put<CertificationApiResponse>(`/api/v1/certification/${certId}`, updateData);
     return response.data.certification!;
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to update certification');
+    const message = extractApiErrorMessage(error, 'api.update_failed', 'certification');
+    throw new Error(message);
   }
 };
 
@@ -68,10 +65,8 @@ export const deleteCertification = async (certId: string): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/certification/${certId}`);
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to delete certification');
+    const message = extractApiErrorMessage(error, 'api.delete_failed', 'certification');
+    throw new Error(message);
   }
 };
 
@@ -81,9 +76,7 @@ export const getAllCertifications = async (): Promise<CertificationResponse[]> =
     const response = await apiClient.get<CertificationApiResponse>('/api/v1/certification/');
     return response.data.certifications || [];
   } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
-    }
-    throw new Error('Failed to get certifications');
+    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'certifications');
+    throw new Error(message);
   }
 }; 

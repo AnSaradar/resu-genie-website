@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from './service';
 import { AuthContextType, LoginRequest, RegisterRequest, User, AuthResponse } from './types';
 import { checkProfileExists } from '@/services/user_profile/service';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 // Create Auth Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,35 +86,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuth();
   }, [navigate]);
 
-  // Parse API error
+  // Parse API error using shared error utility
   const parseApiError = (err: any): string => {
-    // Handle error object from fetch API
-    if (err instanceof Error) {
-      return err.message;
-    }
-    
-    // Handle error responses from the server
-    if (err && typeof err === 'object') {
-      // Check for standard error format
-      if (err.message) {
-        return err.message;
-      }
-      
-      // Check for validation errors
-      if (err.errors) {
-        if (Array.isArray(err.errors)) {
-          return err.errors.join(', ');
-        }
-        
-        if (typeof err.errors === 'object') {
-          const errorMessages = Object.values(err.errors).flat();
-          return errorMessages.join(', ');
-        }
-      }
-    }
-    
-    // Default error message
-    return 'An unexpected error occurred. Please try again.';
+    return extractApiErrorMessage(err, 'general.unexpected_error');
   };
 
   // Login function
