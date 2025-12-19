@@ -50,7 +50,7 @@ api.interceptors.response.use(
     // Don't attempt token refresh for auth endpoints (login, register, refresh)
     // These endpoints should handle 401 errors directly
     const authEndpoints = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/refresh'];
-    const isAuthEndpoint = original?.url && authEndpoints.some(endpoint => original.url.includes(endpoint));
+    const isAuthEndpoint = original?.url && authEndpoints.some(endpoint => original.url?.includes(endpoint));
     
     if (error.response?.status === 401 && original && !original._retry && !isAuthEndpoint) {
       original._retry = true;
