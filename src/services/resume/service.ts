@@ -35,6 +35,42 @@ export const exportResumePdf = async ({ resumeId, templateName }: ResumeExportPa
 };
 
 /**
+ * Export resume PDF directly from account data with template selection.
+ * The backend returns the PDF file (blob).
+ * Endpoint: POST /api/v1/resume/export-from-account?template={templateName}
+ * 
+ * Maps frontend template IDs (lowercase) to backend template filenames.
+ * Uses the same mapping as ResumeGenerator.tsx for consistency.
+ */
+export const exportResumeFromAccount = async (templateId: string): Promise<Blob> => {
+  try {
+    // Map frontend template IDs to backend template filenames (same as ResumeGenerator.tsx)
+    const templateMap: Record<string, string> = {
+      'moey': 'moey_template.html',
+      'imagine': 'imagine_template.html',
+      'jobscan': 'jobscan_template.html',
+      'new': 'new_template.html',
+      'simple': 'simple_template.html',
+    };
+    
+    // Get the template filename, defaulting to moey if not found
+    const templateName = templateMap[templateId.toLowerCase()] || 'moey_template.html';
+    
+    const response = await apiClient.post(
+      `/api/v1/resume/export-from-account?template=${templateName}`,
+      {},
+      {
+        responseType: 'blob',
+      }
+    );
+    return response.data as Blob;
+  } catch (error: any) {
+    const message = error.response?.data?.message || 'Failed to export resume from account data';
+    throw new Error(message);
+  }
+};
+
+/**
  * Fetch list of resumes for current user.
  * Endpoint: GET /api/v1/resume/list
  */

@@ -144,9 +144,15 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
   };
 
   // Transform experiences (combine career and volunteering) - Convert dates to frontend format
+  // Flatten location object (location.city, location.country) to flat fields (city, country)
   const experience = [
     ...(backendResume.career_experiences || []).map((exp: any) => ({
       ...exp,
+      // Extract location fields to flat city/country for frontend form
+      city: exp.location?.city || exp.city || '',
+      country: exp.location?.country || exp.country || '',
+      // Remove the nested location object to avoid confusion
+      location: undefined,
       start_date: convertBackendDateToFrontend(exp.start_date),
       end_date: convertBackendDateToFrontend(exp.end_date),
       is_volunteer: false,
@@ -156,6 +162,11 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
     })),
     ...(backendResume.volunteering_experiences || []).map((exp: any) => ({
       ...exp,
+      // Extract location fields to flat city/country for frontend form
+      city: exp.location?.city || exp.city || '',
+      country: exp.location?.country || exp.country || '',
+      // Remove the nested location object to avoid confusion
+      location: undefined,
       start_date: convertBackendDateToFrontend(exp.start_date),
       end_date: convertBackendDateToFrontend(exp.end_date),
       is_volunteer: true,

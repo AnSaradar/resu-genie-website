@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { createResume, exportResumePdf, fetchMyResumes, getResumeDetails, renameResume, updateResume } from './service';
+import { createResume, exportResumePdf, exportResumeFromAccount, fetchMyResumes, getResumeDetails, renameResume, updateResume } from './service';
 import { ResumeCreateRequest, ResumeExportParams, ResumeCreateResponse, ResumeListResponse, ResumeDetailsResponse, ResumeRenameRequest, ResumeRenameResponse } from './types';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/services/auth/hook';
 
 /**
  * Hook to create a resume (from scratch)
@@ -148,6 +149,50 @@ export const useRenameResume = () => {
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+  });
+};
+
+/**
+ * Hook to export resume PDF directly from account data with template selection.
+ * Handles the download automatically after PDF generation.
+ */
+export const useExportResumeFromAccount = () => {
+  const { user } = useAuth();
+  
+  return useMutation<unknown, Error, string>({
+    mutationFn: async (templateId: string) => {
+      // Step 1: Export PDF from account data
+      const blob = await exportResumeFromAccount(templateId);
+
+      // Step 2: Generate filename based on user's name
+      // Format: "FirstName LastName - Resume.pdf"
+      const userName = user 
+        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+        : 'Resume';
+      const fileName = userName 
+        ? `${userName} - Resume.pdf`
+        : 'Resume.pdf';
+
+      // Step 3: Trigger download in browser
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return true;
+    },
+    onSuccess: () => {
+      toast.success('Resume exported successfully!');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to export resume');
     },
   });
 }; 

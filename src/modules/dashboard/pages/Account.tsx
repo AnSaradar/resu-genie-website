@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AccountPersonalInfoSection } from '../components/account-sections/AccountPersonalInfoSection';
 import { AccountExperienceSection } from '../components/account-sections/AccountExperienceSection';
 import { AccountEducationSection } from '../components/account-sections/AccountEducationSection';
@@ -6,11 +6,17 @@ import { AccountSkillsSection } from '../components/account-sections/AccountSkil
 import { AccountLanguagesSection } from '../components/account-sections/AccountLanguagesSection';
 import { AccountCertificationsSection } from '../components/account-sections/AccountCertificationsSection';
 import { AccountPersonalProjectsSection } from '../components/account-sections/AccountPersonalProjectsSection';
+import { ExportResumeDialog } from '../components/account-sections/ExportResumeDialog';
 import { useTour } from '@/modules/tour/TourProvider';
 import { getProfileSteps } from '@/modules/tour/steps';
+import { useExportResumeFromAccount } from '@/services/resume/hook';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
 
 export default function Account() {
   const { startTour, enabled, language } = useTour();
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const exportResumeMutation = useExportResumeFromAccount();
 
   // Start profile tour when component mounts
   useEffect(() => {
@@ -20,9 +26,29 @@ export default function Account() {
     }
   }, [enabled, language, startTour]);
 
+  const handleExport = async (templateId: string) => {
+    try {
+      await exportResumeMutation.mutateAsync(templateId);
+      // Close dialog after successful export
+      setIsExportDialogOpen(false);
+    } catch (error) {
+      // Error is already handled by the hook (toast)
+      // Dialog stays open so user can try again
+    }
+  };
+
   return (
     <div className="w-full space-y-8 py-8" data-tour="profile-nav">
-      <h1 className="text-3xl font-bold mb-6">My Account Data</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">My Account Data</h1>
+        <Button
+          onClick={() => setIsExportDialogOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" />
+          Export Resume / CV
+        </Button>
+      </div>
       
       {/* Personal Info Section */}
       <div data-tour="personal-info">
@@ -58,6 +84,14 @@ export default function Account() {
       <div data-tour="personal-projects">
         <AccountPersonalProjectsSection data={null} onDataUpdate={() => {}} />
       </div>
+
+      {/* Export Resume Dialog */}
+      <ExportResumeDialog
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        onExport={handleExport}
+        isExporting={exportResumeMutation.isPending}
+      />
     </div>
   );
 } 

@@ -7,11 +7,17 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { toast } from "react-hot-toast";
+import { getMessage } from "@/utils/messages";
 import imagineTemplate from "@/assets/images/imagine_template.jpg";
 import jobscanTemplate from "@/assets/images/jobscan_template.jpg";
 import moeyTemplate from "@/assets/images/moey_template.jpg";
 
-export function Templates() {
+interface TemplatesProps {
+  onRegisterClick?: () => void;
+}
+
+export function Templates({ onRegisterClick }: TemplatesProps) {
   const templates = [
     {
       name: "MOEY",
@@ -84,22 +90,32 @@ export function Templates() {
                           alt={template.name}
                           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                          <div className="p-4 w-full">
-                            <Button
-                              className="w-full"
-                              variant="secondary"
-                            >
-                              Use This Template
-                            </Button>
-                          </div>
-                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-lg">{template.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {template.description}
-                        </p>
+                      <div className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-lg">{template.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {template.description}
+                          </p>
+                        </div>
+                        <Button
+                          className="w-full"
+                          variant="secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onRegisterClick) {
+                              const message = getMessage('toast.register_required');
+                              toast(message, {
+                                duration: 4000,
+                                icon: 'ℹ️',
+                              });
+                              onRegisterClick();
+                            }
+                          }}
+                        >
+                          Use This Template
+                        </Button>
                       </div>
                     </motion.div>
                   </div>
@@ -111,18 +127,6 @@ export function Templates() {
               <CarouselNext className="right-0 translate-x-1/2" />
             </div>
           </Carousel>
-        </motion.div>
-
-        <motion.div
-          className="text-center mt-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Button size="lg" className="text-base">
-            View All Templates
-          </Button>
         </motion.div>
       </div>
     </section>

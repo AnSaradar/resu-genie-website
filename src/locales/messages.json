@@ -1,0 +1,15 @@
+{
+  "en": {
+    "toast": {
+      "register_required": "Please register to create a resume and choose a template",
+      "register_required_description": "You need to be registered to create a resume and choose a template"
+    }
+  },
+  "ar": {
+    "toast": {
+      "register_required": "يرجى التسجيل لإنشاء سيرة ذاتية واختيار قالب",
+      "register_required_description": "تحتاج إلى التسجيل لإنشاء سيرة ذاتية واختيار قالب"
+    }
+  }
+}
+

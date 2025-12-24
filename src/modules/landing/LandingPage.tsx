@@ -26,7 +26,7 @@ export function LandingPage() {
     <>
       <Hero onLoginClick={handleLoginClick} onRegisterClick={handleRegisterClick} />
       <Features />
-      <Templates />
+      <Templates onRegisterClick={handleRegisterClick} />
       {/* <Testimonials /> */}
       <CTA onRegisterClick={handleRegisterClick} />
     </>
