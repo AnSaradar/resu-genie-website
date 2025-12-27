@@ -23,6 +23,7 @@ import {
   useDeleteCertification
 } from '@/services/certification/hook';
 import { Certification as CertificationType } from '@/services/certification/types';
+import { formatDate } from '@/utils/date';
 
 interface Certificate {
   id: string;
@@ -154,12 +155,6 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
     setEditingItem({ ...editingItem, [field]: value });
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString + '-01');
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-  };
-
   return (
     <div className="w-full border-b border-gray-200 dark:border-gray-700 pb-8">
       {/* Section Header */}
@@ -206,7 +201,7 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      Issued: {formatDate(certificate.issueDate)}
+                      Issued: {formatDate(certificate.issueDate, { year: 'numeric', month: 'long' })}
                     </div>
                     {certificate.certificateUrl && (
                       <div>
