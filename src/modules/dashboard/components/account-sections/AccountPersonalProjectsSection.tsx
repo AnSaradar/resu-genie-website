@@ -9,7 +9,6 @@ import {
   Code, 
   Calendar,
   ExternalLink,
-  Target,
   Edit2,
   Save,
   X,
@@ -26,19 +25,6 @@ import {
 import { PersonalProject as PersonalProjectType } from '@/services/personal_project/types';
 import { extractApiErrorMessage } from '@/utils/error-utils';
 
-interface PersonalProject {
-  id: string;
-  name: string;
-  description: string;
-  technologies: string[];
-  startDate: string;
-  endDate: string;
-  isOngoing: boolean;
-  liveUrl?: string;
-  projectUrl?: string;
-  achievements?: string;
-}
-
 interface AccountPersonalProjectsSectionProps {
   data: any;
   onDataUpdate: () => void;
@@ -49,7 +35,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
   const addPersonalProjectsMutation = useAddPersonalProjects();
   const updatePersonalProjectMutation = useUpdatePersonalProject();
   const deletePersonalProjectMutation = useDeletePersonalProject();
-  const [editingItem, setEditingItem] = useState<PersonalProject | null>(null);
+  const [editingItem, setEditingItem] = useState<PersonalProjectType | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [techInput, setTechInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -57,7 +43,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Validation helper
-  const validateProject = (project: PersonalProject | null): { isValid: boolean; errors: string[] } => {
+  const validateProject = (project: PersonalProjectType | null): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
     if (!project) {
@@ -65,7 +51,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
       return { isValid: false, errors };
     }
     
-    if (!project.name?.trim()) {
+    if (!project.title?.trim()) {
       errors.push('Project name is required');
     }
     
@@ -88,11 +74,25 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
   };
 
   // Prefer React Query data; fallback to provided data for initial render
-  const projects = (projectsData && Array.isArray(projectsData)) ? projectsData : (data?.personal_projects || []);
+  // Map fallback data to match PersonalProjectType structure
+  const projects = (projectsData && Array.isArray(projectsData)) 
+    ? projectsData 
+    : (data?.personal_projects || []).map((proj: any) => ({
+        id: proj.id || proj._id || '',
+        title: proj.title || proj.name || '',
+        description: proj.description || '',
+        technologies: proj.technologies || [],
+        startDate: proj.startDate || proj.start_date || '',
+        endDate: proj.endDate || proj.end_date || '',
+        isOngoing: proj.isOngoing ?? proj.is_ongoing ?? false,
+        liveUrl: proj.liveUrl || proj.live_url || proj.url || '',
+        projectUrl: proj.projectUrl || proj.project_url || proj.repository_url || '',
+        duration: proj.duration || ''
+      }));
 
-  const emptyProject: PersonalProject = {
+  const emptyProject: PersonalProjectType = {
     id: '',
-    name: '',
+    title: '',
     description: '',
     technologies: [],
     startDate: '',
@@ -100,7 +100,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
     isOngoing: false,
     liveUrl: '',
     projectUrl: '',
-    achievements: ''
+    duration: ''
   };
 
   const handleAdd = () => {
@@ -111,7 +111,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (project: PersonalProject) => {
+  const handleEdit = (project: PersonalProjectType) => {
     setEditingItem(project);
     setIsDialogOpen(true);
   };
@@ -143,12 +143,12 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
     }
     
     try {
-      if (editingItem.id && projects.some((proj: PersonalProject) => proj.id === editingItem.id)) {
+      if (editingItem.id && projects.some((proj: PersonalProjectType) => proj.id === editingItem.id)) {
         // Update existing
         await updatePersonalProjectMutation.mutateAsync({
           projectId: editingItem.id,
           updateData: {
-            title: editingItem.name,
+            title: editingItem.title,
             description: editingItem.description,
             technologies: editingItem.technologies,
             start_date: editingItem.startDate,
@@ -162,7 +162,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
         // Create new (mutation accepts array of one item)
         const projectToAdd: PersonalProjectType = {
           id: editingItem.id,
-          title: editingItem.name,
+          title: editingItem.title,
           description: editingItem.description,
           technologies: editingItem.technologies,
           startDate: editingItem.startDate,
@@ -197,7 +197,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
     setValidationErrors([]);
   };
 
-  const updateEditingItem = (field: keyof PersonalProject, value: any) => {
+  const updateEditingItem = (field: keyof PersonalProjectType, value: any) => {
     if (editingItem) {
       setEditingItem({ ...editingItem, [field]: value });
     }
@@ -257,13 +257,13 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
             <p className="text-sm">Click "Add Project" to get started.</p>
           </div>
         ) : (
-          projects.map((project: PersonalProject) => (
+          projects.map((project: PersonalProjectType) => (
             <div key={project.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <Code className="h-4 w-4 text-blue-600" />
-                    <h3 className="text-lg font-semibold">{project.name}</h3>
+                    <h3 className="text-lg font-semibold">{project.title}</h3>
                     {project.isOngoing && (
                       <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
                         Ongoing
@@ -292,16 +292,6 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
                             </span>
                           ))}
                         </div>
-                      </div>
-                    )}
-
-                    {project.achievements && (
-                      <div className="mt-3">
-                        <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
-                          <Target className="h-3 w-3" />
-                          Key Achievements:
-                        </h4>
-                        <p className="text-sm">{project.achievements}</p>
                       </div>
                     )}
 
@@ -354,7 +344,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
         <DialogContent className="w-[98vw] max-w-none max-h-[98vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
-              {editingItem?.id && projects.some((proj: PersonalProject) => proj.id === editingItem.id) 
+              {editingItem?.id && projects.some((proj: PersonalProjectType) => proj.id === editingItem.id) 
                 ? 'Edit Personal Project' 
                 : 'Add Personal Project'
               }
@@ -365,11 +355,11 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
             <div className="space-y-8 py-4">
               {/* Project Name */}
               <div className="space-y-3">
-                <Label htmlFor="name" className="text-sm font-semibold">Project Name *</Label>
+                <Label htmlFor="title" className="text-sm font-semibold">Project Name *</Label>
                 <Input
-                  id="name"
-                  value={editingItem.name}
-                  onChange={(e) => updateEditingItem('name', e.target.value)}
+                  id="title"
+                  value={editingItem.title}
+                  onChange={(e) => updateEditingItem('title', e.target.value)}
                   placeholder="My Awesome Project"
                   className="h-12 text-base"
                 />
@@ -476,18 +466,6 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
                 </div>
               </div>
 
-              {/* Achievements */}
-              <div className="space-y-3">
-                <Label htmlFor="achievements" className="text-sm font-semibold">Key Achievements</Label>
-                <Textarea
-                  id="achievements"
-                  value={editingItem.achievements || ''}
-                  onChange={(e) => updateEditingItem('achievements', e.target.value)}
-                  placeholder="Highlight specific achievements, metrics, or notable features..."
-                  rows={2}
-                  className="text-base"
-                />
-              </div>
             </div>
           )}
 
@@ -520,7 +498,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
             </Button>
             <Button 
               onClick={handleSave} 
-              disabled={saving || !editingItem?.name?.trim() || !editingItem?.description?.trim() || !editingItem?.startDate?.trim()}
+              disabled={saving || !editingItem?.title?.trim() || !editingItem?.description?.trim() || !editingItem?.startDate?.trim()}
               className="h-12 px-8"
             >
               {saving ? (
@@ -531,7 +509,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  {editingItem?.id && projects.some((proj: PersonalProject) => proj.id === editingItem.id) 
+                  {editingItem?.id && projects.some((proj: PersonalProjectType) => proj.id === editingItem.id) 
                     ? 'Update Project' 
                     : 'Save Project'
                   }
