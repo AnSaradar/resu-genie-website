@@ -7,7 +7,7 @@ import {
   Education,
   Degree
 } from './types';
-import { handleServiceError } from '@/utils/error-utils';
+import { handleServiceError, extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Convert EducationResponse to frontend Education interface

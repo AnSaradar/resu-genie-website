@@ -9,7 +9,7 @@ import {
   WorkType,
   WorkModel
 } from './types';
-import { handleServiceError } from '@/utils/error-utils';
+import { handleServiceError, extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Convert ExperienceResponse (with location object) to flat Experience (with city/country)

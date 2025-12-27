@@ -220,7 +220,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
     setEditingItem({ ...editingItem, technologies: newTechs });
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
