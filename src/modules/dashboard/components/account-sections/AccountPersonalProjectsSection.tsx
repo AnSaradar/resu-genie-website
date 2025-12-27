@@ -75,6 +75,7 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
 
   // Prefer React Query data; fallback to provided data for initial render
   // Map fallback data to match PersonalProjectType structure
+  // Handles both old field names (live_url, project_url) and new backend names (url, repository_url)
   const projects = (projectsData && Array.isArray(projectsData)) 
     ? projectsData 
     : (data?.personal_projects || []).map((proj: any) => ({
@@ -85,8 +86,8 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
         startDate: proj.startDate || proj.start_date || '',
         endDate: proj.endDate || proj.end_date || '',
         isOngoing: proj.isOngoing ?? proj.is_ongoing ?? false,
-        liveUrl: proj.liveUrl || proj.live_url || proj.url || '',
-        projectUrl: proj.projectUrl || proj.project_url || proj.repository_url || '',
+        liveUrl: proj.liveUrl || proj.live_url || proj.url || '', // Support both old and new field names
+        projectUrl: proj.projectUrl || proj.project_url || proj.repository_url || '', // Support both old and new field names
         duration: proj.duration || ''
       }));
 
@@ -154,8 +155,8 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
             start_date: editingItem.startDate,
             end_date: editingItem.endDate || undefined,
             is_ongoing: editingItem.isOngoing,
-            live_url: editingItem.liveUrl || undefined,
-            project_url: editingItem.projectUrl || undefined,
+            url: editingItem.liveUrl || undefined, // Frontend 'liveUrl' -> Backend 'url'
+            repository_url: editingItem.projectUrl || undefined, // Frontend 'projectUrl' -> Backend 'repository_url'
           }
         });
       } else {

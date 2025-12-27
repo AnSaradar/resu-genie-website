@@ -5,8 +5,8 @@ export interface PersonalProjectData {
   start_date?: string; // ISO date
   end_date?: string; // ISO date
   is_ongoing: boolean;
-  live_url?: string;
-  project_url?: string;
+  url?: string; // Live URL - matches backend field name
+  repository_url?: string; // Repository URL - matches backend field name
 }
 
 export interface PersonalProjectUpdateData {
@@ -16,8 +16,8 @@ export interface PersonalProjectUpdateData {
   start_date?: string;
   end_date?: string;
   is_ongoing?: boolean;
-  live_url?: string;
-  project_url?: string;
+  url?: string; // Live URL - matches backend field name
+  repository_url?: string; // Repository URL - matches backend field name
 }
 
 export interface PersonalProjectResponse {
@@ -28,8 +28,8 @@ export interface PersonalProjectResponse {
   start_date?: string;
   end_date?: string;
   is_ongoing: boolean;
-  live_url?: string;
-  project_url?: string;
+  url?: string; // Live URL - matches backend field name
+  repository_url?: string; // Repository URL - matches backend field name
   duration?: string;
 }
 

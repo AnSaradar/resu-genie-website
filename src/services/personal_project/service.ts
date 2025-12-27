@@ -10,6 +10,7 @@ import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Convert PersonalProjectResponse from API to frontend PersonalProject structure
+ * Maps backend snake_case (url, repository_url) to frontend camelCase (liveUrl, projectUrl)
  */
 export const flattenPersonalProject = (project: PersonalProjectResponse): PersonalProject => {
   return {
@@ -20,8 +21,8 @@ export const flattenPersonalProject = (project: PersonalProjectResponse): Person
     startDate: project.start_date || '',
     endDate: project.end_date || '',
     isOngoing: project.is_ongoing,
-    liveUrl: project.live_url || '',
-    projectUrl: project.project_url || '',
+    liveUrl: project.url || '', // Backend sends 'url', we map to 'liveUrl' for frontend
+    projectUrl: project.repository_url || '', // Backend sends 'repository_url', we map to 'projectUrl' for frontend
     duration: project.duration,
   };
 };

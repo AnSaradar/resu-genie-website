@@ -31,6 +31,7 @@ export const useGetAllPersonalProjects = () => {
 
 /**
  * Hook to add multiple personal projects
+ * Maps frontend camelCase (liveUrl, projectUrl) to backend snake_case (url, repository_url)
  */
 export const useAddPersonalProjects = () => {
   const queryClient = useQueryClient();
@@ -43,8 +44,8 @@ export const useAddPersonalProjects = () => {
         start_date: p.startDate,
         end_date: p.endDate || undefined,
         is_ongoing: p.isOngoing,
-        live_url: p.liveUrl || undefined,
-        project_url: p.projectUrl || undefined,
+        url: p.liveUrl || undefined, // Frontend 'liveUrl' -> Backend 'url'
+        repository_url: p.projectUrl || undefined, // Frontend 'projectUrl' -> Backend 'repository_url'
       }));
       return addPersonalProjects(apiData);
     },
