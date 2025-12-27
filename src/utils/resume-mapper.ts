@@ -239,17 +239,20 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     first_name: p.firstName,
     last_name: p.lastName,
     email: p.email,
-    phone: p.phone,
+    phone: p.phone && p.phone.trim() !== '' ? p.phone : null, // Normalize empty strings to null
     birth_date: ensureValidISODate(p.birthDate),
-    linkedin_url: p.linkedinUrl,
-    website_url: p.websiteUrl,
-    profile_summary: p.profileSummary,
-    country_of_residence: p.country,
-    address: p.city || p.country ? { city: p.city, country: p.country } : undefined,
-    current_position: p.currentPosition,
-    work_field: p.workField,
+    linkedin_url: p.linkedinUrl && p.linkedinUrl.trim() !== '' ? p.linkedinUrl : null, // Normalize empty strings to null
+    website_url: p.websiteUrl && p.websiteUrl.trim() !== '' ? p.websiteUrl : null, // Normalize empty strings to null
+    profile_summary: p.profileSummary && p.profileSummary.trim() !== '' ? p.profileSummary : null, // Normalize empty strings to null
+    country_of_residence: p.country && p.country.trim() !== '' ? p.country : null, // Normalize empty strings to null
+    address: p.city || p.country ? { 
+      city: p.city && p.city.trim() !== '' ? p.city : null, 
+      country: p.country && p.country.trim() !== '' ? p.country : null 
+    } : undefined,
+    current_position: p.currentPosition && p.currentPosition.trim() !== '' ? p.currentPosition : null, // Normalize empty strings to null
+    work_field: p.workField && p.workField.trim() !== '' ? p.workField : null, // Normalize empty strings to null
     years_of_experience: typeof p.yearsOfExperience === 'number' ? p.yearsOfExperience : undefined,
-    current_seniority_level: p.seniorityLevel,
+    current_seniority_level: p.seniorityLevel && p.seniorityLevel.trim() !== '' ? p.seniorityLevel : null, // Normalize empty strings to null
   };
 
   // Helper function to map experience data with proper field handling
@@ -263,7 +266,7 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
       start_date: ensureValidISODate(e.start_date),
       end_date: ensureValidISODate(e.end_date),
       currently_working: e.currently_working,
-      description: e.description,
+      description: e.description && e.description.trim() !== '' ? e.description : null, // Normalize empty strings to null
       is_volunteer: e.is_volunteer,
       // Convert empty strings to undefined so Pydantic treats them as None
       work_type: e.work_type && e.work_type.trim() !== '' ? e.work_type : undefined,
@@ -288,7 +291,7 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     start_date: ensureValidISODate(edu.start_date),
     end_date: ensureValidISODate(edu.end_date),
     currently_studying: edu.currently_studying,
-    description: edu.description,
+    description: edu.description && edu.description.trim() !== '' ? edu.description : null, // Normalize empty strings to null
   }));
 
   // Skills
@@ -299,8 +302,8 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     name: c.name,
     issuing_organization: c.organization,
     issue_date: ensureValidISODate(c.issueDate),
-    certificate_url: c.certificateUrl,
-    description: c.description,
+    certificate_url: c.certificateUrl && c.certificateUrl.trim() !== '' ? c.certificateUrl : null, // Normalize empty strings to null
+    description: c.description && c.description.trim() !== '' ? c.description : null, // Normalize empty strings to null
   }));
 
   // Languages - Map to correct CEFR levels
@@ -313,13 +316,13 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
   // Personal projects - Fix field mapping (title vs name)
   const personal_projects = (data.personalProjects || []).map((p: any) => ({
     title: p.title || p.name, // Support both title and name for backward compatibility
-    description: p.description,
+    description: p.description && p.description.trim() !== '' ? p.description : null, // Normalize empty strings to null
     technologies: p.technologies,
     start_date: ensureValidISODate(p.startDate),
     end_date: ensureValidISODate(p.endDate),
     is_ongoing: p.isOngoing,
-    url: p.liveUrl,
-    repository_url: p.projectUrl,
+    url: p.liveUrl && p.liveUrl.trim() !== '' ? p.liveUrl : null, // Normalize empty strings to null
+    repository_url: p.projectUrl && p.projectUrl.trim() !== '' ? p.projectUrl : null, // Normalize empty strings to null
   }));
 
   const result: ResumeCreateRequest = {

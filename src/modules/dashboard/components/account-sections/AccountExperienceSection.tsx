@@ -190,7 +190,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
             start_date: normalizedStart,
             end_date: normalizedEnd,
             currently_working: editingItem.currently_working,
-            description: editingItem.description || undefined,
+            description: editingItem.description ?? null, // Send null for empty strings to clear the field
             is_volunteer: editingItem.is_volunteer,
             work_type: editingItem.work_type || undefined,
             work_model: editingItem.work_model || undefined,
