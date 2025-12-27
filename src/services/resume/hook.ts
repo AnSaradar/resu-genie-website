@@ -4,6 +4,7 @@ import { createResume, exportResumePdf, exportResumeFromAccount, fetchMyResumes,
 import { ResumeCreateRequest, ResumeExportParams, ResumeCreateResponse, ResumeListResponse, ResumeDetailsResponse, ResumeRenameRequest, ResumeRenameResponse } from './types';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/services/auth/hook';
+import { extractApiErrorMessage } from '@/utils/error-utils';
 
 /**
  * Hook to create a resume (from scratch)
@@ -192,7 +193,8 @@ export const useExportResumeFromAccount = () => {
       toast.success('Resume exported successfully!');
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to export resume');
+      const errorMessage = extractApiErrorMessage(error, 'Failed to export resume from account data');
+      toast.error(errorMessage);
     },
   });
 }; 

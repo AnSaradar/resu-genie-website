@@ -1,5 +1,6 @@
 import apiClient from '@/lib/axios';
 import { TokenBalanceApiResponse } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Get the current user's token balance
@@ -10,8 +11,7 @@ export const getTokenBalance = async (): Promise<TokenBalanceApiResponse> => {
     const res = await apiClient.get<TokenBalanceApiResponse>('/api/v1/tokens/balance');
     return res.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || error.response?.data?.message || 'Failed to fetch token balance';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'token');
   }
 };
 

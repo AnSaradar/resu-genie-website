@@ -6,7 +6,7 @@ import {
   CertificationApiResponse,
   Certification,
 } from './types';
-import { extractApiErrorMessage } from '@/utils/error-utils';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Convert CertificationResponse to frontend Certification interface
@@ -41,8 +41,7 @@ export const addCertifications = async (certs: CertificationData[]): Promise<Cer
     const response = await apiClient.post<CertificationApiResponse>('/api/v1/certification/', certs);
     return response.data.certifications || [];
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.create_failed', 'certifications');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.create_failed', 'certification');
   }
 };
 
@@ -55,8 +54,7 @@ export const updateCertification = async (
     const response = await apiClient.put<CertificationApiResponse>(`/api/v1/certification/${certId}`, updateData);
     return response.data.certification!;
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.update_failed', 'certification');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'certification');
   }
 };
 
@@ -65,8 +63,7 @@ export const deleteCertification = async (certId: string): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/certification/${certId}`);
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.delete_failed', 'certification');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.delete_failed', 'certification');
   }
 };
 
@@ -76,7 +73,6 @@ export const getAllCertifications = async (): Promise<CertificationResponse[]> =
     const response = await apiClient.get<CertificationApiResponse>('/api/v1/certification/');
     return response.data.certifications || [];
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'certifications');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'certification');
   }
 }; 

@@ -7,6 +7,7 @@ import {
   Skill,
   SkillProficiency,
 } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Mapping helpers between backend proficiency and UI numeric level
@@ -56,29 +57,49 @@ export const prepareSkillData = (skill: Skill): SkillData => {
 
 // Add multiple skills for the authenticated user
 export const addSkills = async (skills: SkillData[]): Promise<SkillResponse[]> => {
-  const response = await apiClient.post<SkillApiResponse>('/api/v1/skill/', skills);
-  return response.data.skills || [];
+  try {
+    const response = await apiClient.post<SkillApiResponse>('/api/v1/skill/', skills);
+    return response.data.skills || [];
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.create_failed', 'skill');
+  }
 };
 
 // Update a specific skill
 export const updateSkill = async (skillId: string, updateData: SkillUpdateData): Promise<SkillResponse> => {
-  const response = await apiClient.put<SkillApiResponse>(`/api/v1/skill/${skillId}`, updateData);
-  return response.data.skill!;
+  try {
+    const response = await apiClient.put<SkillApiResponse>(`/api/v1/skill/${skillId}`, updateData);
+    return response.data.skill!;
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.update_failed', 'skill');
+  }
 };
 
 // Delete a specific skill
 export const deleteSkill = async (skillId: string): Promise<void> => {
-  await apiClient.delete(`/api/v1/skill/${skillId}`);
+  try {
+    await apiClient.delete(`/api/v1/skill/${skillId}`);
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.delete_failed', 'skill');
+  }
 };
 
 // Get all skills for the authenticated user
 export const getAllSkills = async (): Promise<SkillResponse[]> => {
-  const response = await apiClient.get<SkillApiResponse>('/api/v1/skill/');
-  return response.data.skills || [];
+  try {
+    const response = await apiClient.get<SkillApiResponse>('/api/v1/skill/');
+    return response.data.skills || [];
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.fetch_failed', 'skill');
+  }
 };
 
 // Get a single skill by id
 export const getSkill = async (skillId: string): Promise<SkillResponse> => {
-  const response = await apiClient.get<SkillApiResponse>(`/api/v1/skill/${skillId}`);
-  return response.data.skill!;
+  try {
+    const response = await apiClient.get<SkillApiResponse>(`/api/v1/skill/${skillId}`);
+    return response.data.skill!;
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.fetch_failed', 'skill');
+  }
 }; 

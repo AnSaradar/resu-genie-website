@@ -11,6 +11,7 @@ import {
   AdminUserCompleteData,
   ApiResponse,
 } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 const ADMIN_BASE_URL = '/api/v1/admin';
 
@@ -32,8 +33,7 @@ export const getAdminUsers = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to fetch users';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'user');
   }
 };
 
@@ -54,8 +54,7 @@ export const searchAdminUsers = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to search users';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'user');
   }
 };
 
@@ -83,8 +82,7 @@ export const filterAdminUsers = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to filter users';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'user');
   }
 };
 
@@ -98,8 +96,7 @@ export const getAdminUserById = async (userId: string): Promise<AdminUser> => {
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to fetch user';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'user');
   }
 };
 
@@ -115,8 +112,7 @@ export const getAdminUserCompleteData = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to fetch user data';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'user');
   }
 };
 
@@ -134,8 +130,7 @@ export const updateAdminUserStatus = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to update user status';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'user');
   }
 };
 
@@ -153,8 +148,7 @@ export const updateAdminUserRole = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to update user role';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'user');
   }
 };
 
@@ -168,8 +162,7 @@ export const getAdminUserStats = async (): Promise<AdminUserStats> => {
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to fetch statistics';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed');
   }
 };
 
@@ -185,8 +178,7 @@ export const getAdminUserTokenBalance = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to fetch token balance';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'token');
   }
 };
 
@@ -204,8 +196,7 @@ export const addAdminUserTokens = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to add tokens';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.operation_failed', 'token');
   }
 };
 
@@ -221,8 +212,7 @@ export const resetAdminUserTokens = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to reset tokens';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.operation_failed', 'token');
   }
 };
 
@@ -239,8 +229,7 @@ export const createAdminUser = async (
     );
     return response.data.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || 'Failed to create admin user';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.create_failed', 'user');
   }
 };
 

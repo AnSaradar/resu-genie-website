@@ -6,7 +6,7 @@ import {
   PersonalProjectApiResponse, 
   PersonalProject 
 } from './types';
-import { extractApiErrorMessage } from '@/utils/error-utils';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Convert PersonalProjectResponse from API to frontend PersonalProject structure
@@ -35,8 +35,7 @@ export const getAllPersonalProjects = async (): Promise<PersonalProjectResponse[
     const response = await apiClient.get<PersonalProjectApiResponse>('/api/v1/personal-project/');
     return response.data.personal_projects || [];
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'projects');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'project');
   }
 };
 
@@ -51,8 +50,7 @@ export const addPersonalProjects = async (
     const response = await apiClient.post<PersonalProjectApiResponse>('/api/v1/personal-project/', projects);
     return response.data.personal_projects || [];
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.create_failed', 'projects');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.create_failed', 'project');
   }
 };
 
@@ -68,8 +66,7 @@ export const updatePersonalProject = async (
     const response = await apiClient.put<PersonalProjectApiResponse>(`/api/v1/personal-project/${projectId}`, updateData);
     return response.data.personal_project!;
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.update_failed', 'project');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'project');
   }
 };
 
@@ -81,7 +78,6 @@ export const deletePersonalProject = async (projectId: string): Promise<void> =>
   try {
     await apiClient.delete(`/api/v1/personal-project/${projectId}`);
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.delete_failed', 'project');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.delete_failed', 'project');
   }
 }; 

@@ -9,7 +9,7 @@ import {
     getRefreshToken, 
     removeRefreshToken 
 } from './utils';
-import { extractApiErrorMessage } from '@/utils/error-utils'; 
+import { handleServiceError } from '@/utils/error-utils'; 
 
 // Extend AxiosRequestConfig to include retry property
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -108,11 +108,7 @@ const parseErrorResponse = async (response: Response) => {
   }
 };
 
-// Helper to create consistent error messages using shared utility
-const createApiError = (error: unknown, fallbackKey: string = 'general.unexpected_error'): Error => {
-    const message = extractApiErrorMessage(error, fallbackKey);
-    return new Error(message);
-};
+// Note: Using handleServiceError directly instead of createApiError for consistency
 
 /**
  * Authentication service for handling login, register, and token management using Axios
@@ -137,10 +133,8 @@ export const AuthService = {
       }
       
       return authData;
-    } catch (error) {
-      // Use shared error utility to extract user-friendly message
-      const message = extractApiErrorMessage(error, 'auth.login_failed');
-      throw new Error(message);
+    } catch (error: any) {
+      throw handleServiceError(error, 'auth.login_failed');
     }
   },
 
@@ -155,10 +149,8 @@ export const AuthService = {
       const authData: AuthResponse = response.data;
       
       return authData;
-    } catch (error) {
-      // Use shared error utility to extract user-friendly message
-      const message = extractApiErrorMessage(error, 'auth.registration_failed');
-      throw new Error(message);
+    } catch (error: any) {
+      throw handleServiceError(error, 'auth.registration_failed');
     }
   },
 
@@ -265,10 +257,8 @@ export const AuthService = {
            
            // Fallback in case the response structure is different
            return response.data;
-       } catch (error) {
-           // Use shared error utility to extract user-friendly message
-           const message = extractApiErrorMessage(error, 'api.fetch_failed');
-           throw new Error(message);
+       } catch (error: any) {
+           throw handleServiceError(error, 'api.fetch_failed');
        }
    },
 
@@ -303,8 +293,8 @@ export const AuthService = {
          purpose
        });
        return response.data;
-     } catch (error) {
-       throw createApiError(error, 'auth.otp_send_error');
+     } catch (error: any) {
+       throw handleServiceError(error, 'auth.otp_send_error');
      }
    },
 
@@ -319,8 +309,8 @@ export const AuthService = {
          purpose
        });
        return response.data;
-     } catch (error) {
-       throw createApiError(error, 'auth.otp_verify_error');
+     } catch (error: any) {
+       throw handleServiceError(error, 'auth.otp_verify_error');
      }
    },
 
@@ -334,8 +324,8 @@ export const AuthService = {
         purpose: 'verification'
       });
       return response.data;
-    } catch (error) {
-      throw createApiError(error, 'auth.otp_resend_error');
+    } catch (error: any) {
+      throw handleServiceError(error, 'auth.otp_resend_error');
     }
   },
 
@@ -346,8 +336,8 @@ export const AuthService = {
     try {
       const response = await api.post('/api/v1/otp/password-reset/request', data);
       return response.data;
-    } catch (error) {
-      throw createApiError(error, 'auth.password_reset_request_failed');
+    } catch (error: any) {
+      throw handleServiceError(error, 'auth.password_reset_request_failed');
     }
   },
 
@@ -358,8 +348,8 @@ export const AuthService = {
     try {
       const response = await api.post('/api/v1/otp/password-reset/complete', data);
       return response.data;
-    } catch (error) {
-      throw createApiError(error, 'auth.password_reset_failed');
+    } catch (error: any) {
+      throw handleServiceError(error, 'auth.password_reset_failed');
     }
   },
 

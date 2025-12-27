@@ -6,6 +6,7 @@ import {
   LanguageData,
   LanguageUpdateData,
 } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Convert backend LanguageResponse (snake_case) to frontend Language interface (camelCase)
@@ -24,8 +25,12 @@ export const flattenLanguage = (lang: LanguageResponse): Language => {
  * GET /api/v1/language/
  */
 export const getAllLanguages = async (): Promise<LanguageResponse[]> => {
-  const response = await apiClient.get<LanguageApiResponse>('/api/v1/language/');
-  return response.data.languages || [];
+  try {
+    const response = await apiClient.get<LanguageApiResponse>('/api/v1/language/');
+    return response.data.languages || [];
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.fetch_failed', 'language');
+  }
 };
 
 /**
@@ -35,8 +40,12 @@ export const getAllLanguages = async (): Promise<LanguageResponse[]> => {
 export const addLanguages = async (
   languages: LanguageData[]
 ): Promise<LanguageResponse[]> => {
-  const response = await apiClient.post<LanguageApiResponse>('/api/v1/language/', languages);
-  return response.data.languages || [];
+  try {
+    const response = await apiClient.post<LanguageApiResponse>('/api/v1/language/', languages);
+    return response.data.languages || [];
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.create_failed', 'language');
+  }
 };
 
 /**
@@ -47,8 +56,12 @@ export const updateLanguage = async (
   languageId: string,
   updateData: LanguageUpdateData
 ): Promise<LanguageResponse> => {
-  const response = await apiClient.put<LanguageApiResponse>(`/api/v1/language/${languageId}`, updateData);
-  return response.data.language as LanguageResponse;
+  try {
+    const response = await apiClient.put<LanguageApiResponse>(`/api/v1/language/${languageId}`, updateData);
+    return response.data.language as LanguageResponse;
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.update_failed', 'language');
+  }
 };
 
 /**
@@ -56,5 +69,9 @@ export const updateLanguage = async (
  * DELETE /api/v1/language/{language_id}
  */
 export const deleteLanguage = async (languageId: string): Promise<void> => {
-  await apiClient.delete(`/api/v1/language/${languageId}`);
+  try {
+    await apiClient.delete(`/api/v1/language/${languageId}`);
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.delete_failed', 'language');
+  }
 }; 

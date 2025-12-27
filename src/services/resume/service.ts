@@ -2,6 +2,7 @@ import apiClient from '@/lib/axios';
 import { ResumeCreateRequest, ResumeCreateResponse, ResumeExportParams, ResumeRenameRequest, ResumeRenameResponse } from './types';
 import { ResumeListResponse } from './types';
 import { ResumeDetailsResponse } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Create a new resume record (from scratch) for the authenticated user.
@@ -12,9 +13,7 @@ export const createResume = async (payload: ResumeCreateRequest): Promise<Resume
     const response = await apiClient.post<ResumeCreateResponse>('/api/v1/resume/create-from-scratch', payload);
     return response.data;
   } catch (error: any) {
-    // Forward backend error message if available
-    const message = error.response?.data?.message || 'Failed to create resume';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.create_failed', 'resume');
   }
 };
 
@@ -29,8 +28,7 @@ export const exportResumePdf = async ({ resumeId, templateName }: ResumeExportPa
     });
     return response.data as Blob;
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Failed to export resume PDF';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.operation_failed', 'resume');
   }
 };
 
@@ -65,8 +63,22 @@ export const exportResumeFromAccount = async (templateId: string): Promise<Blob>
     );
     return response.data as Blob;
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Failed to export resume from account data';
-    throw new Error(message);
+    // When responseType is 'blob', axios treats JSON error responses as Blobs
+    // We need to parse the blob as JSON to extract error details
+    if (error.response?.data instanceof Blob && error.response?.status === 422) {
+      try {
+        const text = await error.response.data.text();
+        const errorData = JSON.parse(text);
+        // Replace the blob with parsed JSON so error utilities can process it
+        error.response.data = errorData;
+      } catch (parseError) {
+        // If parsing fails, fall through to default error handling
+        console.error('Failed to parse blob error response as JSON:', parseError);
+      }
+    }
+    
+    // Use handleServiceError for consistent error handling
+    throw handleServiceError(error, 'api.operation_failed', 'resume');
   }
 };
 
@@ -79,8 +91,7 @@ export const fetchMyResumes = async (): Promise<ResumeListResponse> => {
     const response = await apiClient.get<ResumeListResponse>('/api/v1/resume/list');
     return response.data;
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Failed to fetch resumes';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'resume');
   }
 };
 
@@ -93,8 +104,7 @@ export const getResumeDetails = async (resumeId: string): Promise<ResumeDetailsR
     const response = await apiClient.get<ResumeDetailsResponse>(`/api/v1/resume/${resumeId}`);
     return response.data;
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Failed to fetch resume details';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'resume');
   }
 };
 
@@ -107,8 +117,7 @@ export const updateResume = async (resumeId: string, payload: any): Promise<any>
     const response = await apiClient.put(`/api/v1/resume/${resumeId}`, payload);
     return response.data;
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Failed to update resume';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'resume');
   }
 };
 
@@ -121,7 +130,6 @@ export const renameResume = async (resumeId: string, payload: ResumeRenameReques
     const response = await apiClient.patch<ResumeRenameResponse>(`/api/v1/resume/${resumeId}/rename`, payload);
     return response.data;
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Failed to rename resume';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'resume');
   }
 }; 

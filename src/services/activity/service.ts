@@ -1,4 +1,5 @@
 import apiClient from '@/lib/axios';
+import { handleServiceError } from '@/utils/error-utils';
 
 export type ActivityItem = {
   _id: string;
@@ -11,8 +12,12 @@ export type ActivityItem = {
 };
 
 export const getMyActivityFeed = async (limit = 10): Promise<ActivityItem[]> => {
-  const res = await apiClient.get('/api/v1/activity/feed', { params: { limit } });
-  return res.data.data;
+  try {
+    const res = await apiClient.get('/api/v1/activity/feed', { params: { limit } });
+    return res.data.data;
+  } catch (error: any) {
+    throw handleServiceError(error, 'api.fetch_failed', 'activity');
+  }
 };
 
 

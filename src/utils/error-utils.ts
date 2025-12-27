@@ -53,6 +53,11 @@ export function extractApiErrorMessage(
     return "You don't have enough tokens to use this feature. Please check your token balance.";
   }
   
+  // Handle 500 server errors immediately - return generic message without exposing error details
+  if (status === 500) {
+    return getErrorMessage('general.server_error');
+  }
+  
   // Handle authentication errors (401, 403)
   if (status === 401 || status === 403) {
     return mapAuthError(error);
@@ -191,5 +196,35 @@ export function formatValidationErrors(error: any): string[] {
     }
     return err.message;
   });
+}
+
+/**
+ * Generic service error handler that provides consistent error handling across all services.
+ * Wraps service calls with standardized error extraction and formatting.
+ * 
+ * For 500 errors, automatically returns a generic user-friendly message without exposing technical details.
+ * 
+ * @param error - The error object from an API call (typically from axios)
+ * @param fallback - Optional fallback message key (defaults to 'general.unexpected_error')
+ * @param resource - Optional resource name for API error messages (e.g., 'resume', 'cover_letter')
+ * @returns Error object with user-friendly message
+ * 
+ * @example
+ * ```typescript
+ * try {
+ *   const response = await apiClient.post('/api/v1/resume/create', data);
+ *   return response.data;
+ * } catch (error: any) {
+ *   throw handleServiceError(error, 'api.create_failed', 'resume');
+ * }
+ * ```
+ */
+export function handleServiceError(
+  error: any,
+  fallback?: string,
+  resource?: string
+): Error {
+  const message = extractApiErrorMessage(error, fallback, resource);
+  return new Error(message);
 }
 

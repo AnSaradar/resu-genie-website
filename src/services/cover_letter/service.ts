@@ -1,5 +1,6 @@
 import apiClient from '@/lib/axios';
 import { CreateCoverLetterResponse, CoverLetterHistoryResponse, CoverLetterRequest, GetCoverLetterResponse, CoverLetter, stringToCoverLetterTone } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 export const createCoverLetter = async (payload: CoverLetterRequest): Promise<CreateCoverLetterResponse> => {
   try {
@@ -10,8 +11,7 @@ export const createCoverLetter = async (payload: CoverLetterRequest): Promise<Cr
     }
     return res.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || error.response?.data?.message || 'Failed to create cover letter';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.create_failed', 'cover_letter');
   }
 };
 
@@ -25,8 +25,7 @@ export const getCoverLetterHistory = async (params: { page?: number; page_size?:
     }));
     return res.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || error.response?.data?.message || 'Failed to fetch cover letter history';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'cover_letter');
   }
 };
 
@@ -39,7 +38,6 @@ export const getCoverLetterById = async (id: string): Promise<GetCoverLetterResp
     }
     return res.data;
   } catch (error: any) {
-    const message = error.response?.data?.detail || error.response?.data?.message || 'Failed to fetch cover letter';
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'cover_letter');
   }
 };

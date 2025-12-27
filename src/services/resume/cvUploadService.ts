@@ -1,6 +1,7 @@
 import api from '@/lib/axios';
 import { AxiosProgressEvent } from 'axios';
 import { ResumeCreateRequest } from './types';
+import { handleServiceError } from '@/utils/error-utils';
 
 export interface UploadResponse {
   signal: string;
@@ -34,21 +35,25 @@ const cvUploadService = {
     llmModel?: string,
     onUploadProgress?: (progressEvent: AxiosProgressEvent) => void
   ): Promise<ExtractResponse> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    if (llmModel) {
-      formData.append('llm_model', llmModel);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      if (llmModel) {
+        formData.append('llm_model', llmModel);
+      }
+      
+      const response = await api.post<ExtractResponse>('/api/v1/cv-upload/upload-and-extract', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress,
+      });
+      
+      return response.data;
+    } catch (error: any) {
+      throw handleServiceError(error, 'api.operation_failed', 'cv_upload');
     }
-    
-    const response = await api.post<ExtractResponse>('/api/v1/cv-upload/upload-and-extract', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress,
-    });
-    
-    return response.data;
   },
   
   /**
@@ -57,8 +62,12 @@ const cvUploadService = {
    * @returns Promise with created resume ID
    */
   createResumeFromCV: async (resumeData: ResumeCreateRequest): Promise<CreateFromCVResponse> => {
-    const response = await api.post<CreateFromCVResponse>('/api/v1/cv-upload/create-resume', resumeData);
-    return response.data;
+    try {
+      const response = await api.post<CreateFromCVResponse>('/api/v1/cv-upload/create-resume', resumeData);
+      return response.data;
+    } catch (error: any) {
+      throw handleServiceError(error, 'api.create_failed', 'resume');
+    }
   }
 };
 

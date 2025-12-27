@@ -9,7 +9,7 @@ import {
   WorkType,
   WorkModel
 } from './types';
-import { extractApiErrorMessage } from '@/utils/error-utils';
+import { handleServiceError } from '@/utils/error-utils';
 
 /**
  * Convert ExperienceResponse (with location object) to flat Experience (with city/country)
@@ -64,8 +64,7 @@ export const addExperiences = async (experiences: ExperienceData[]): Promise<Exp
     const response = await apiClient.post<ExperienceApiResponse>('/api/v1/experience/', experiences);
     return response.data.experiences || [];
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.create_failed', 'experiences');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.create_failed', 'experience');
   }
 };
 
@@ -81,8 +80,7 @@ export const updateExperience = async (
     const response = await apiClient.put<ExperienceApiResponse>(`/api/v1/experience/${experienceId}`, updateData);
     return response.data.experience!;
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.update_failed', 'experience');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.update_failed', 'experience');
   }
 };
 
@@ -94,8 +92,7 @@ export const deleteExperience = async (experienceId: string): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/experience/${experienceId}`);
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.delete_failed', 'experience');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.delete_failed', 'experience');
   }
 };
 
@@ -108,8 +105,7 @@ export const getAllExperiences = async (): Promise<ExperienceResponse[]> => {
     const response = await apiClient.get<ExperienceApiResponse>('/api/v1/experience/');
     return response.data.experiences || [];
   } catch (error: any) {
-    const message = extractApiErrorMessage(error, 'api.fetch_failed', 'experiences');
-    throw new Error(message);
+    throw handleServiceError(error, 'api.fetch_failed', 'experience');
   }
 };
 
