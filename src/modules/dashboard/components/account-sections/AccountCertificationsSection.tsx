@@ -118,8 +118,8 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
             name: editingItem.name,
             issuing_organization: editingItem.organization,
             issue_date: normalizedIssueDate,
-            certificate_url: editingItem.certificateUrl ?? null, // Send null for empty strings to clear the field
-            description: editingItem.description ?? null, // Send null for empty strings to clear the field
+            certificate_url: editingItem.certificateUrl?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
+            description: editingItem.description?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
           }
         });
       } else {

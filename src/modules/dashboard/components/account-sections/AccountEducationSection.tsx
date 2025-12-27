@@ -151,7 +151,7 @@ export function AccountEducationSection({ data, onDataUpdate }: AccountEducation
             start_date: normalizedStart,
             end_date: normalizedEnd,
             currently_studying: editingItem.currently_studying,
-            description: editingItem.description ?? null, // Send null for empty strings to clear the field
+            description: editingItem.description?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
           }
         });
       } else {

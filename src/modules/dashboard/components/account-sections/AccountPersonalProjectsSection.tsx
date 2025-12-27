@@ -150,13 +150,13 @@ export function AccountPersonalProjectsSection({ data, onDataUpdate }: AccountPe
           projectId: editingItem.id,
           updateData: {
             title: editingItem.title,
-            description: editingItem.description ?? null, // Send null for empty strings to clear the field
+            description: editingItem.description?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
             technologies: editingItem.technologies,
             start_date: editingItem.startDate,
             end_date: editingItem.endDate || undefined,
             is_ongoing: editingItem.isOngoing,
-            url: editingItem.liveUrl ?? null, // Send null for empty strings to clear the field
-            repository_url: editingItem.projectUrl ?? null, // Send null for empty strings to clear the field
+            url: editingItem.liveUrl?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
+            repository_url: editingItem.projectUrl?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
           }
         });
       } else {
