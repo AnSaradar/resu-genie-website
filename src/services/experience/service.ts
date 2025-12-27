@@ -10,9 +10,11 @@ import {
   WorkModel
 } from './types';
 import { handleServiceError, extractApiErrorMessage } from '@/utils/error-utils';
+import { normalizeMonthValue } from '@/utils/date';
 
 /**
  * Convert ExperienceResponse (with location object) to flat Experience (with city/country)
+ * Normalizes dates from YYYY-MM-DD to YYYY-MM for month input compatibility
  */
 export const flattenExperience = (experience: ExperienceResponse): Experience => {
   return {
@@ -22,9 +24,9 @@ export const flattenExperience = (experience: ExperienceResponse): Experience =>
     company: experience.company,
     city: experience.location?.city || '',
     country: experience.location?.country || '',
-    start_date: experience.start_date,
+    start_date: normalizeMonthValue(experience.start_date),
     currently_working: experience.currently_working,
-    end_date: experience.end_date || '',
+    end_date: normalizeMonthValue(experience.end_date || ''),
     description: experience.description || '',
     is_volunteer: experience.is_volunteer,
     work_type: experience.work_type,

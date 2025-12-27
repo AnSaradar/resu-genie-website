@@ -7,16 +7,18 @@ import {
   Certification,
 } from './types';
 import { handleServiceError } from '@/utils/error-utils';
+import { normalizeMonthValue } from '@/utils/date';
 
 /**
  * Convert CertificationResponse to frontend Certification interface
+ * Normalizes issue_date from YYYY-MM-DD to YYYY-MM for month input compatibility
  */
 export const flattenCertification = (cert: CertificationResponse): Certification => {
   return {
     id: cert.id,
     name: cert.name,
     organization: cert.issuing_organization,
-    issueDate: cert.issue_date,
+    issueDate: normalizeMonthValue(cert.issue_date),
     certificateUrl: cert.certificate_url || '',
     description: cert.description || ''
   };

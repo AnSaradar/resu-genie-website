@@ -23,7 +23,7 @@ import {
   useDeleteCertification
 } from '@/services/certification/hook';
 import { Certification as CertificationType } from '@/services/certification/types';
-import { formatDate } from '@/utils/date';
+import { formatDate, normalizeMonthValue } from '@/utils/date';
 
 interface Certificate {
   id: string;
@@ -50,7 +50,15 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
   const [error, setError] = useState<string | null>(null);
 
   // Prefer React Query data; fallback to provided data for initial render
-  const certifications = (certificationsData && Array.isArray(certificationsData)) ? certificationsData : (data?.certifications || []);
+  // Normalize dates for month inputs (convert YYYY-MM-DD to YYYY-MM)
+  const certifications = (certificationsData && Array.isArray(certificationsData)) 
+    ? certificationsData 
+    : (data?.certifications || []).map((cert: any) => ({
+        ...cert,
+        issueDate: normalizeMonthValue(cert.issue_date || cert.issueDate || ''),
+        organization: cert.issuing_organization || cert.organization || '',
+        certificateUrl: cert.certificate_url || cert.certificateUrl || ''
+      }));
 
   const defaultCertificate: Omit<Certificate, 'id'> = {
     name: '',
@@ -69,7 +77,11 @@ export function AccountCertificationsSection({ data, onDataUpdate }: AccountCert
   };
 
   const handleEdit = (certificate: Certificate) => {
-    setEditingItem(certificate);
+    // Ensure issueDate is normalized to YYYY-MM format for month input
+    setEditingItem({
+      ...certificate,
+      issueDate: normalizeMonthValue(certificate.issueDate)
+    });
     setIsDialogOpen(true);
   };
 

@@ -29,6 +29,7 @@ import {
 } from '@/services/experience/hook';
 import { Experience } from '@/services/experience/types';
 import { extractApiErrorMessage } from '@/utils/error-utils';
+import { normalizeMonthValue } from '@/utils/date';
 
 interface AccountExperienceSectionProps {
   data: any;
@@ -93,7 +94,16 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const maxMonth = new Date().toISOString().slice(0, 7);
 
   // Prefer React Query data; fallback to provided data for initial render
-  const experiences = (experiencesData && Array.isArray(experiencesData)) ? experiencesData : (data?.experience?.career || []);
+  // Normalize dates for month inputs (convert YYYY-MM-DD to YYYY-MM)
+  const experiences = (experiencesData && Array.isArray(experiencesData)) 
+    ? experiencesData 
+    : (data?.experience?.career || []).map((exp: any) => ({
+        ...exp,
+        start_date: normalizeMonthValue(exp.start_date || exp.startDate || ''),
+        end_date: normalizeMonthValue(exp.end_date || exp.endDate || ''),
+        city: exp.location?.city || exp.city || '',
+        country: exp.location?.country || exp.country || ''
+      }));
 
   const defaultExperience: Omit<Experience, 'id'> = {
     title: '',
@@ -120,7 +130,12 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   };
 
   const handleEdit = (experience: Experience) => {
-    setEditingItem(experience);
+    // Ensure dates are normalized to YYYY-MM format for month inputs
+    setEditingItem({
+      ...experience,
+      start_date: normalizeMonthValue(experience.start_date),
+      end_date: normalizeMonthValue(experience.end_date)
+    });
     setIsDialogOpen(true);
   };
 
@@ -217,21 +232,6 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const updateEditingItem = (field: keyof Experience, value: any) => {
     if (!editingItem) return;
     setEditingItem({ ...editingItem, [field]: value });
-  };
-
-  const normalizeMonthValue = (value: string | undefined | null) => {
-    if (!value) return '';
-    // Accept both YYYY-MM and YYYY-MM-DD, always output YYYY-MM for month inputs
-    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value.slice(0, 7);
-    if (/^\d{4}-\d{2}$/.test(value)) return value;
-    // Fallback: try Date parse and return YYYY-MM
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      return `${y}-${m}`;
-    }
-    return '';
   };
 
   const toDisplayMonth = (value: string | undefined | null) => {
@@ -490,7 +490,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                   <Input
                     id="start_date"
                     type="month"
-                    value={editingItem.start_date}
+                    value={normalizeMonthValue(editingItem.start_date)}
                     onChange={(e) => updateEditingItem('start_date', e.target.value)}
                     className="h-12 text-base"
                   />
@@ -501,7 +501,7 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
                   <Input
                     id="end_date"
                     type="month"
-                    value={editingItem.end_date}
+                    value={normalizeMonthValue(editingItem.end_date)}
                     onChange={(e) => updateEditingItem('end_date', e.target.value)}
                     max={maxMonth}
                     disabled={editingItem.currently_working}
