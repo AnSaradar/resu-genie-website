@@ -5,6 +5,7 @@ import { AccountEducationSection } from '../components/account-sections/AccountE
 import { AccountSkillsSection } from '../components/account-sections/AccountSkillsSection';
 import { AccountLanguagesSection } from '../components/account-sections/AccountLanguagesSection';
 import { AccountCertificationsSection } from '../components/account-sections/AccountCertificationsSection';
+import { AccountLinksSection } from '../components/account-sections/AccountLinksSection';
 import { AccountPersonalProjectsSection } from '../components/account-sections/AccountPersonalProjectsSection';
 import { ExportResumeDialog } from '../components/account-sections/ExportResumeDialog';
 import { useTour } from '@/modules/tour/TourProvider';
@@ -78,6 +79,11 @@ export default function Account() {
       {/* Certifications Section */}
       <div data-tour="certifications">
         <AccountCertificationsSection data={null} onDataUpdate={() => {}} />
+      </div>
+      
+      {/* Links Section */}
+      <div data-tour="links">
+        <AccountLinksSection data={null} onDataUpdate={() => {}} />
       </div>
       
       {/* Personal Projects Section */}

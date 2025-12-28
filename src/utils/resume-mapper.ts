@@ -210,6 +210,13 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
     certificateUrl: cert.certificate_url || cert.certificateUrl || '',
   }));
   
+  // Transform links - Map backend field names to frontend field names
+  const links = (backendResume.personal_links || []).map((link: any) => ({
+    id: link.id || link._id,
+    websiteName: link.website_name || link.websiteName || '',
+    websiteUrl: link.website_url || link.websiteUrl || '',
+  }));
+  
   // Transform personal projects - Convert dates to frontend format and map URL fields
   const personalProjects = (backendResume.personal_projects || []).map((project: any) => ({
     ...project,
@@ -226,6 +233,7 @@ export function mapBackendResumeToFrontend(backendResume: any): ResumeData {
     skills,
     languages,
     certificates,
+    links,
     personalProjects,
     selectedTemplate: undefined, // Not stored in backend
     resumeName: backendResume.resume_name, // Add resume name mapping
@@ -313,6 +321,12 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     is_native: l.isNative,
   }));
 
+  // Links - Map frontend camelCase to backend snake_case
+  const personal_links = (data.links || []).map((link: any) => ({
+    website_name: link.websiteName,
+    website_url: link.websiteUrl,
+  }));
+
   // Personal projects - Fix field mapping (title vs name)
   const personal_projects = (data.personalProjects || []).map((p: any) => ({
     title: p.title || p.name, // Support both title and name for backward compatibility
@@ -335,6 +349,7 @@ export function mapResumeDataToCreateRequest(data: ResumeData): ResumeCreateRequ
     soft_skills: soft,
     certifications,
     languages,
+    personal_links,
     personal_projects,
   } as ResumeCreateRequest;
 

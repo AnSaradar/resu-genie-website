@@ -15,7 +15,8 @@ import {
   Code,
   FileText,
   Sparkles,
-  Loader2
+  Loader2,
+  Link
 } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useGetResumeDetails, useUpdateAndDownloadResume } from '@/services/resume/hook';
@@ -32,6 +33,7 @@ import { EducationStep } from '../components/resume-generator/EducationStep';
 import { SkillsStep } from '../components/resume-generator/SkillsStep';
 import { LanguagesStep } from '../components/resume-generator/LanguagesStep';
 import { CertificatesStep } from '../components/resume-generator/CertificatesStep';
+import { LinksStep } from '../components/resume-generator/LinksStep';
 import { PersonalProjectsStep } from '../components/resume-generator/PersonalProjectsStep';
 import { TemplateSelectionStep } from '../components/resume-generator/TemplateSelectionStep';
 import { ResumePreview } from '../components/resume-generator/ResumePreview';
@@ -43,6 +45,7 @@ import { mapBackendResumeToFrontend } from '@/utils/resume-mapper';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ResumeNamingDialog } from '@/components/resume/ResumeNamingDialog';
 import { extractApiErrorMessage, formatValidationErrors } from '@/utils/error-utils';
+import { Link as LinkType } from '@/services/link/types';
 
 export interface PersonalInfo {
   firstName: string;
@@ -68,6 +71,7 @@ export interface ResumeData {
   skills?: any[];
   languages?: any[];
   certificates?: any[];
+  links?: LinkType[];
   personalProjects?: any[];
   selectedTemplate?: string;
   resumeName?: string;
@@ -117,6 +121,13 @@ const STEPS = [
     component: CertificatesStep
   },
   {
+    id: 'links',
+    title: 'Links',
+    description: 'Add your personal links',
+    icon: Link,
+    component: LinksStep
+  },
+  {
     id: 'personalProjects',
     title: 'Personal Projects',
     description: 'Showcase your projects',
@@ -156,6 +167,7 @@ export function ResumeGenerator() {
     skills: [],
     languages: [],
     certificates: [],
+    links: [],
     personalProjects: [],
   });
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -190,6 +202,7 @@ export function ResumeGenerator() {
             skills: stateData.skills || prevData.skills || [],
             languages: stateData.languages || prevData.languages || [],
             certificates: stateData.certificates || prevData.certificates || [],
+            links: stateData.links || prevData.links || [],
             personalProjects: stateData.personalProjects || prevData.personalProjects || [],
           }));
           setCompletedSteps(new Set([0, 1, 2, 3, 4, 5, 6]));
@@ -221,6 +234,7 @@ export function ResumeGenerator() {
               skills: parsedData.skills || prevData.skills || [],
               languages: parsedData.languages || prevData.languages || [],
               certificates: parsedData.certificates || prevData.certificates || [],
+              links: parsedData.links || prevData.links || [],
               personalProjects: parsedData.personalProjects || prevData.personalProjects || [],
             };
             
@@ -331,6 +345,14 @@ export function ResumeGenerator() {
         if (!cert.name?.trim()) errors.push(`Certificate ${index + 1}: Certificate name is required`);
         if (!cert.organization?.trim()) errors.push(`Certificate ${index + 1}: Issuing organization is required`);
         if (!cert.issueDate?.trim()) errors.push(`Certificate ${index + 1}: Issue date is required`);
+      });
+    }
+
+    // Validate Links (optional but if present, validate required fields)
+    if (data.links && data.links.length > 0) {
+      data.links.forEach((link, index) => {
+        if (!link.websiteName?.trim()) errors.push(`Link ${index + 1}: Website name is required`);
+        if (!link.websiteUrl?.trim()) errors.push(`Link ${index + 1}: Website URL is required`);
       });
     }
 
@@ -537,6 +559,12 @@ export function ResumeGenerator() {
       return 'certificates';
     }
     
+    // Links fields
+    if (path.includes('personal_links') || path.includes('link') || path.includes('website_name') ||
+        path.includes('website_url')) {
+      return 'links';
+    }
+    
     // Personal projects fields
     if (path.includes('personal_projects') || path.includes('project') || path.includes('title') ||
         path.includes('description') || path.includes('url')) {
@@ -705,6 +733,13 @@ export function ResumeGenerator() {
                  errorLowercase.includes('organization') ||
                  errorLowercase.includes('issue date') ||
                  errorLowercase.includes('issue_date');
+        case 'links':
+          return errorLowercase.includes('link') || 
+                 errorLowercase.includes('personal_links') ||
+                 errorLowercase.includes('website name') ||
+                 errorLowercase.includes('website_name') ||
+                 errorLowercase.includes('website url') ||
+                 errorLowercase.includes('website_url');
         case 'personalProjects':
           return errorLowercase.includes('project') || 
                  errorLowercase.includes('personal_projects') ||

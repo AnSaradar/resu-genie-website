@@ -23,6 +23,7 @@ import {
   Languages,
   Award,
   Code,
+  Link,
   Loader2,
   X,
 } from 'lucide-react';
@@ -90,6 +91,13 @@ export function ResumePreview({
       icon: Award,
       count: data.certificates?.length || 0,
       items: data.certificates || []
+    },
+    {
+      id: 'links',
+      title: 'Links',
+      icon: Link,
+      count: data.links?.length || 0,
+      items: data.links || []
     },
     {
       id: 'personalProjects',
