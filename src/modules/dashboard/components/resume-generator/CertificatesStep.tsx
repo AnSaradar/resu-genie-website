@@ -143,14 +143,16 @@ export function CertificatesStep({ data, onUpdate, onNext, onPrevious, isFirstSt
   };
 
   // Auto-fill functionality - loads ALL user certification entries
+  // Note: userCertifications is already flattened by the hook (useGetAllCertifications)
+  // from CertificationResponse format to Certification format, so we use frontend field names
   const handleAutoFillAll = () => {
     if (userCertifications.length > 0) {
       const convertedCerts: Certificate[] = userCertifications.map((cert: any) => ({
         id: cert.id,
         name: cert.name,
-        organization: cert.issuing_organization,
-        issueDate: cert.issue_date,
-        certificateUrl: cert.certificate_url || '',
+        organization: cert.organization, // Already flattened from issuing_organization
+        issueDate: cert.issueDate, // Already flattened from issue_date (and normalized to YYYY-MM)
+        certificateUrl: cert.certificateUrl || '', // Already flattened from certificate_url
         description: cert.description || ''
       }));
 

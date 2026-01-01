@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ import {
 import {
   ArrowLeft,
   Loader2,
-  User,
   Mail,
   Phone,
   Calendar,
@@ -209,31 +207,77 @@ export default function AdminUserDetailPage() {
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4 border-t">
-                <div className="flex-1 flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Tokens to add"
-                    value={tokensToAdd}
-                    onChange={(e) => setTokensToAdd(e.target.value)}
-                    min="1"
-                  />
+              <div className="space-y-4 pt-4 border-t">
+                {/* Quick Add Buttons */}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Quick Add:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[10, 50, 100, 500, 1000].map((amount) => (
+                      <Button
+                        key={amount}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setTokensToAdd(amount.toString());
+                        }}
+                        disabled={tokenTopUpMutation.isPending}
+                      >
+                        +{amount}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Manual Add */}
+                <div className="flex gap-2">
+                  <div className="flex-1 flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Enter custom amount"
+                      value={tokensToAdd}
+                      onChange={(e) => setTokensToAdd(e.target.value)}
+                      min="1"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && tokensToAdd && parseInt(tokensToAdd) > 0) {
+                          handleAddTokens();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={handleAddTokens}
+                      disabled={tokenTopUpMutation.isPending || !tokensToAdd || parseInt(tokensToAdd) <= 0}
+                    >
+                      {tokenTopUpMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Tokens
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <Button
-                    onClick={handleAddTokens}
-                    disabled={tokenTopUpMutation.isPending || !tokensToAdd}
+                    variant="outline"
+                    onClick={handleResetTokens}
+                    disabled={tokenResetMutation.isPending}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Tokens
+                    {tokenResetMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Resetting...
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Reset Tokens
+                      </>
+                    )}
                   </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={handleResetTokens}
-                  disabled={tokenResetMutation.isPending}
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset Tokens
-                </Button>
               </div>
             </div>
           ) : (
