@@ -20,9 +20,14 @@ import {
 } from 'lucide-react';
 import { SeniorityLevel, WorkField } from '@/services/user_profile/types';
 import { useGetUserProfile, useUpdateUserProfile, useGetWorkFields } from '@/services/user_profile/hook';
+import { useUpdateUser } from '@/services/user/hook';
+import { useAuth } from '@/services/auth/hook';
 import { extractApiErrorMessage } from '@/utils/error-utils';
 
 interface PersonalInfo {
+  firstName: string;
+  lastName: string;
+  phone: string;
   city: string;
   country: string;
   linkedinUrl: string;
@@ -41,12 +46,18 @@ interface AccountPersonalInfoSectionProps {
 }
 
 export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPersonalInfoSectionProps) {
-  const { data: userProfile, isLoading } = useGetUserProfile();
+  const { user, isLoading: userLoading, refreshUser } = useAuth();
+  const { data: userProfile, isLoading: profileLoading } = useGetUserProfile();
   const updateProfileMutation = useUpdateUserProfile();
+  const updateUserMutation = useUpdateUser();
   const { data: workFields = [] } = useGetWorkFields();
   const PROFILE_SUMMARY_MAX = 500;
+  const isLoading = userLoading || profileLoading;
   const [isEditing, setIsEditing] = useState(false);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    firstName: '',
+    lastName: '',
+    phone: '',
     city: '',
     country: '',
     linkedinUrl: '',
@@ -70,6 +81,14 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
       errors.push('Birth date is required');
     }
     
+    // Phone validation (8-15 digits)
+    if (info.phone && info.phone.trim()) {
+      const digitsOnly = info.phone.replace(/\D/g, '');
+      if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+        errors.push('Phone number must be between 8 and 15 digits');
+      }
+    }
+    
     // Profile summary length validation
     if (info.profileSummary && info.profileSummary.length > PROFILE_SUMMARY_MAX) {
       errors.push(`Professional summary must be at most ${PROFILE_SUMMARY_MAX} characters`);
@@ -81,10 +100,22 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
     };
   };
 
-  // Update local state when user profile data changes
+  // Update local state when user and user profile data changes
+  useEffect(() => {
+    if (user) {
+      setPersonalInfo(prev => ({
+        ...prev,
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        phone: user.phone || '',
+      }));
+    }
+  }, [user]);
+
   useEffect(() => {
     if (userProfile) {
-      setPersonalInfo({
+      setPersonalInfo(prev => ({
+        ...prev,
         city: userProfile.address?.city || '',
         country: userProfile.address?.country || userProfile.country_of_residence || '',
         linkedinUrl: userProfile.linkedin_url || '',
@@ -95,7 +126,7 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
         workField: userProfile.work_field || '',
         yearsOfExperience: userProfile.years_of_experience || '',
         birthDate: userProfile.birth_date || '',
-      });
+      }));
     }
   }, [userProfile]);
 
@@ -118,8 +149,22 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
     }
 
     try {
-      // Transform data to match backend format
-      const payload = {
+      // Prepare user update payload (only if changed)
+      const userUpdatePayload: { first_name?: string; last_name?: string; phone?: string } = {};
+      if (user) {
+        if (personalInfo.firstName !== user.first_name) {
+          userUpdatePayload.first_name = personalInfo.firstName;
+        }
+        if (personalInfo.lastName !== user.last_name) {
+          userUpdatePayload.last_name = personalInfo.lastName;
+        }
+        if (personalInfo.phone !== (user.phone || '')) {
+          userUpdatePayload.phone = personalInfo.phone || undefined;
+        }
+      }
+
+      // Prepare profile update payload
+      const profilePayload = {
         address: {
           city: personalInfo.city,
           country: personalInfo.country,
@@ -134,9 +179,26 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
         birth_date: personalInfo.birthDate,
       };
 
-      await updateProfileMutation.mutateAsync(payload);
+      // Update user data if there are changes
+      if (Object.keys(userUpdatePayload).length > 0) {
+        await updateUserMutation.mutateAsync(userUpdatePayload);
+        // Refresh user data in auth context
+        if (refreshUser) {
+          try {
+            await refreshUser();
+          } catch (refreshError) {
+            console.error('Failed to refresh user data:', refreshError);
+            // Continue even if refresh fails
+          }
+        }
+      }
+
+      // Update profile data
+      await updateProfileMutation.mutateAsync(profilePayload);
+      
       setIsEditing(false);
       setValidationErrors([]);
+      onDataUpdate(); // Notify parent of data update
     } catch (err: any) {
       // Use shared error utility
       const errorMessage = extractApiErrorMessage(
@@ -151,8 +213,17 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
 
   const handleCancel = () => {
     // Reset to original data
+    if (user) {
+      setPersonalInfo(prev => ({
+        ...prev,
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        phone: user.phone || '',
+      }));
+    }
     if (userProfile) {
-      setPersonalInfo({
+      setPersonalInfo(prev => ({
+        ...prev,
         city: userProfile.address?.city || '',
         country: userProfile.address?.country || userProfile.country_of_residence || '',
         linkedinUrl: userProfile.linkedin_url || '',
@@ -163,7 +234,7 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
         workField: userProfile.work_field || '',
         yearsOfExperience: userProfile.years_of_experience || '',
         birthDate: userProfile.birth_date || '',
-      });
+      }));
     }
     setIsEditing(false);
     setError(null);
@@ -202,10 +273,31 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
                 {/* Personal Details & Location */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <MapPin className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Location & Personal</h3>
+                    <User className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Personal Details</h3>
                   </div>
                   <div className="space-y-4">
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
+                        <User className="h-4 w-4" />
+                        Full Name
+                      </span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.firstName || personalInfo.lastName
+                          ? `${personalInfo.firstName} ${personalInfo.lastName}`.trim()
+                          : <span className="text-gray-400 italic">Not provided</span>
+                        }
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
+                        <Phone className="h-4 w-4" />
+                        Phone
+                      </span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">
+                        {personalInfo.phone || <span className="text-gray-400 italic">Not provided</span>}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
                       <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-[120px]">
                         <MapPin className="h-4 w-4" />
@@ -350,6 +442,49 @@ export function AccountPersonalInfoSection({ data, onDataUpdate }: AccountPerson
           </DialogHeader>
           
           <div className="space-y-8 py-4">
+            {/* User Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <User className="h-5 w-5 text-blue-600" />
+                User Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={personalInfo.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    placeholder="John"
+                    className="h-12 text-base"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={personalInfo.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    placeholder="Doe"
+                    className="h-12 text-base"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      value={personalInfo.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      placeholder="+1 (555) 123-4567"
+                      className="pl-10 h-12 text-base"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Birth Date */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">

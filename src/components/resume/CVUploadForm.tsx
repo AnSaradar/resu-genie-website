@@ -112,6 +112,7 @@ export const CVUploadForm: React.FC<CVUploadFormProps> = () => {
     // toast.success('Data saved! Redirecting to resume builder...');
   };
 
+
   const resetForm = () => {
     setFile(null);
     setUploadProgress(0);

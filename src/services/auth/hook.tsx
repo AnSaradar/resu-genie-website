@@ -170,6 +170,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
   };
 
+  // Refresh user data
+  const refreshUser = async () => {
+    try {
+      const userData = await AuthService.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      // If refresh fails, user might be logged out, so clear user state
+      setUser(null);
+    }
+  };
+
   // Context value
   const value: AuthContextType = {
     user,
@@ -179,7 +191,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     logout,
     error,
-    clearError
+    clearError,
+    refreshUser
   };
 
   return (

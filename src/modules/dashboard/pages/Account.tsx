@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AccountPersonalInfoSection } from '../components/account-sections/AccountPersonalInfoSection';
 import { AccountExperienceSection } from '../components/account-sections/AccountExperienceSection';
 import { AccountEducationSection } from '../components/account-sections/AccountEducationSection';
@@ -8,15 +9,18 @@ import { AccountCertificationsSection } from '../components/account-sections/Acc
 import { AccountLinksSection } from '../components/account-sections/AccountLinksSection';
 import { AccountPersonalProjectsSection } from '../components/account-sections/AccountPersonalProjectsSection';
 import { ExportResumeDialog } from '../components/account-sections/ExportResumeDialog';
+import { FillAccountDataDialog } from '../components/account-sections/FillAccountDataDialog';
 import { useTour } from '@/modules/tour/TourProvider';
 import { getProfileSteps } from '@/modules/tour/steps';
 import { useExportResumeFromAccount } from '@/services/resume/hook';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 
 export default function Account() {
   const { startTour, enabled, language } = useTour();
+  const queryClient = useQueryClient();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isFillAccountDataDialogOpen, setIsFillAccountDataDialogOpen] = useState(false);
   const exportResumeMutation = useExportResumeFromAccount();
 
   // Start profile tour when component mounts
@@ -38,17 +42,46 @@ export default function Account() {
     }
   };
 
+  /**
+   * Handler for when account data is successfully filled from CV.
+   * Invalidates all relevant query caches to trigger automatic refetch
+   * of account data sections, ensuring the UI displays the newly filled data.
+   */
+  const handleAccountDataFilled = () => {
+    // Invalidate all account data query keys to trigger refetch
+    queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    queryClient.invalidateQueries({ queryKey: ['user'] });
+    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    queryClient.invalidateQueries({ queryKey: ['experiences'] });
+    queryClient.invalidateQueries({ queryKey: ['educations'] });
+    queryClient.invalidateQueries({ queryKey: ['skills'] });
+    queryClient.invalidateQueries({ queryKey: ['languages'] });
+    queryClient.invalidateQueries({ queryKey: ['certifications'] });
+    queryClient.invalidateQueries({ queryKey: ['links'] });
+    queryClient.invalidateQueries({ queryKey: ['personalProjects'] });
+  };
+
   return (
     <div className="w-full space-y-8 py-8" data-tour="profile-nav">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">My Account Data</h1>
-        <Button
-          onClick={() => setIsExportDialogOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <Download className="h-4 w-4" />
-          Export Resume / CV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setIsFillAccountDataDialogOpen(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            Fill from CV
+          </Button>
+          <Button
+            onClick={() => setIsExportDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Export Resume / CV
+          </Button>
+        </div>
       </div>
       
       {/* Personal Info Section */}
@@ -97,6 +130,13 @@ export default function Account() {
         onOpenChange={setIsExportDialogOpen}
         onExport={handleExport}
         isExporting={exportResumeMutation.isPending}
+      />
+
+      {/* Fill Account Data Dialog */}
+      <FillAccountDataDialog
+        open={isFillAccountDataDialogOpen}
+        onOpenChange={setIsFillAccountDataDialogOpen}
+        onSuccess={handleAccountDataFilled}
       />
     </div>
   );
