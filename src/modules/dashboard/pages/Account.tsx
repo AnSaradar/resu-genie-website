@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { AccountPersonalInfoSection } from '../components/account-sections/AccountPersonalInfoSection';
 import { AccountExperienceSection } from '../components/account-sections/AccountExperienceSection';
 import { AccountEducationSection } from '../components/account-sections/AccountEducationSection';
@@ -18,7 +17,6 @@ import { Download, Upload } from 'lucide-react';
 
 export default function Account() {
   const { startTour, enabled, language } = useTour();
-  const queryClient = useQueryClient();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isFillAccountDataDialogOpen, setIsFillAccountDataDialogOpen] = useState(false);
   const exportResumeMutation = useExportResumeFromAccount();
@@ -40,25 +38,6 @@ export default function Account() {
       // Error is already handled by the hook (toast)
       // Dialog stays open so user can try again
     }
-  };
-
-  /**
-   * Handler for when account data is successfully filled from CV.
-   * Invalidates all relevant query caches to trigger automatic refetch
-   * of account data sections, ensuring the UI displays the newly filled data.
-   */
-  const handleAccountDataFilled = () => {
-    // Invalidate all account data query keys to trigger refetch
-    queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-    queryClient.invalidateQueries({ queryKey: ['user'] });
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    queryClient.invalidateQueries({ queryKey: ['experiences'] });
-    queryClient.invalidateQueries({ queryKey: ['educations'] });
-    queryClient.invalidateQueries({ queryKey: ['skills'] });
-    queryClient.invalidateQueries({ queryKey: ['languages'] });
-    queryClient.invalidateQueries({ queryKey: ['certifications'] });
-    queryClient.invalidateQueries({ queryKey: ['links'] });
-    queryClient.invalidateQueries({ queryKey: ['personalProjects'] });
   };
 
   return (
@@ -136,7 +115,10 @@ export default function Account() {
       <FillAccountDataDialog
         open={isFillAccountDataDialogOpen}
         onOpenChange={setIsFillAccountDataDialogOpen}
-        onSuccess={handleAccountDataFilled}
+        onSuccess={() => {
+          // Optionally refresh account data or show success message
+          // The dialog already shows success, so we can just close it
+        }}
       />
     </div>
   );
