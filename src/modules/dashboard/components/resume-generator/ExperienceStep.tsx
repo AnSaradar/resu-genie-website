@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,6 +44,12 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
   const [editingItem, setEditingItem] = useState<Experience | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAutoFilled, setIsAutoFilled] = useState(false);
+  
+  // State for interactive bullet points
+  const [bulletPoints, setBulletPoints] = useState<string[]>([]);
+  const [currentInput, setCurrentInput] = useState<string>('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState<string>('');
 
   const experiences = data.experience || [];
 
@@ -77,12 +82,24 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
       id: crypto.randomUUID(),
       ...defaultExperience
     });
+    setBulletPoints([]);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setIsAutoFilled(false);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (experience: Experience) => {
     setEditingItem(experience);
+    // Convert description string to bullet points array
+    const points = experience.description 
+      ? experience.description.split('\n').filter(line => line.trim())
+      : [];
+    setBulletPoints(points);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setIsAutoFilled(false);
     setIsDialogOpen(true);
   };
@@ -95,33 +112,80 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
   const handleSave = () => {
     if (!editingItem) return;
 
-    const existingIndex = experiences.findIndex((exp: Experience) => exp.id === editingItem.id);
+    // Convert bullet points array to description string
+    const descriptionString = bulletPoints.join('\n');
+    const itemWithDescription = {
+      ...editingItem,
+      description: descriptionString
+    };
+
+    const existingIndex = experiences.findIndex((exp: Experience) => exp.id === itemWithDescription.id);
     let updatedExperiences;
 
     if (existingIndex >= 0) {
       // Update existing
       updatedExperiences = [...experiences];
-      updatedExperiences[existingIndex] = editingItem;
+      updatedExperiences[existingIndex] = itemWithDescription;
     } else {
       // Add new
-      updatedExperiences = [...experiences, editingItem];
+      updatedExperiences = [...experiences, itemWithDescription];
     }
 
     onUpdate({ experience: updatedExperiences });
     setIsDialogOpen(false);
     setEditingItem(null);
+    setBulletPoints([]);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setIsAutoFilled(false);
   };
 
   const handleCancel = () => {
     setIsDialogOpen(false);
     setEditingItem(null);
+    setBulletPoints([]);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setIsAutoFilled(false);
   };
 
   const updateEditingItem = (field: keyof Experience, value: any) => {
     if (!editingItem) return;
     setEditingItem({ ...editingItem, [field]: value });
+  };
+
+  // Bullet point handlers
+  const handleAddBulletPoint = () => {
+    if (currentInput.trim()) {
+      setBulletPoints([...bulletPoints, currentInput.trim()]);
+      setCurrentInput('');
+    }
+  };
+
+  const handleEditBulletPoint = (index: number) => {
+    setEditingIndex(index);
+    setEditingValue(bulletPoints[index]);
+  };
+
+  const handleSaveEdit = (index: number) => {
+    if (editingValue.trim()) {
+      const updated = [...bulletPoints];
+      updated[index] = editingValue.trim();
+      setBulletPoints(updated);
+    }
+    setEditingIndex(null);
+    setEditingValue('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditingValue('');
+  };
+
+  const handleDeleteBulletPoint = (index: number) => {
+    setBulletPoints(bulletPoints.filter((_, i) => i !== index));
   };
 
   // Auto-fill functionality - loads ALL user experiences
@@ -546,14 +610,92 @@ export function ExperienceStep({ data, onUpdate, onNext, onPrevious, isFirstStep
               {/* Fourth Row - Description - Full Width */}
               <div className="space-y-4">
                 <Label htmlFor="description" className="text-sm font-semibold">Job Description & Achievements</Label>
-                <Textarea
-                  id="description"
-                  value={editingItem.description}
-                  onChange={(e) => updateEditingItem('description', e.target.value)}
-                  placeholder="• Led a team of 5 developers to build a customer portal that increased user engagement by 40%&#10;• Developed microservices architecture reducing system downtime from 2% to 0.1%&#10;• Implemented automated testing pipeline reducing deployment time by 60%&#10;• Collaborated with design team to improve user experience"
-                  rows={6}
-                  className="min-h-[140px] resize-none text-base"
-                />
+                <div className="space-y-2 border rounded-md p-4 min-h-[200px]">
+                  {/* Existing bullet points */}
+                  {bulletPoints.map((point, index) => (
+                    <div key={index} className="flex items-center gap-2 group">
+                      <span className="text-muted-foreground flex-shrink-0">•</span>
+                      {editingIndex === index ? (
+                        <div className="flex-1 flex items-center gap-2">
+                          <Input
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveEdit(index);
+                              } else if (e.key === 'Escape') {
+                                handleCancelEdit();
+                              }
+                            }}
+                            className="flex-1 h-9 text-base"
+                            autoFocus
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSaveEdit(index)}
+                            className="h-9 px-2"
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCancelEdit}
+                            className="h-9 px-2"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="flex-1 text-base">{point}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditBulletPoint(index)}
+                            className="h-8 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteBulletPoint(index)}
+                            className="h-8 px-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Add new input */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground flex-shrink-0">•</span>
+                    <Input
+                      id="description-input"
+                      value={currentInput}
+                      onChange={(e) => setCurrentInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddBulletPoint();
+                        }
+                      }}
+                      placeholder="Type a bullet point and press Enter..."
+                      className="flex-1 h-9 text-base"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Press Enter to add a bullet point. Hover over existing items to edit or delete.
+                </p>
               </div>
 
               {/* Action Buttons */}

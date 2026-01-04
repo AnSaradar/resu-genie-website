@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -50,6 +49,12 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // State for interactive bullet points
+  const [bulletPoints, setBulletPoints] = useState<string[]>([]);
+  const [currentInput, setCurrentInput] = useState<string>('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState<string>('');
 
   // Validation helper
   const validateExperience = (exp: Experience | null): { isValid: boolean; errors: string[] } => {
@@ -126,6 +131,10 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
       id: crypto.randomUUID(),
       ...defaultExperience
     });
+    setBulletPoints([]);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setIsDialogOpen(true);
   };
 
@@ -136,6 +145,14 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
       start_date: normalizeMonthValue(experience.start_date),
       end_date: normalizeMonthValue(experience.end_date)
     });
+    // Convert description string to bullet points array
+    const points = experience.description 
+      ? experience.description.split('\n').filter(line => line.trim())
+      : [];
+    setBulletPoints(points);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setIsDialogOpen(true);
   };
 
@@ -156,8 +173,15 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
     setError(null);
     setValidationErrors([]);
     
+    // Convert bullet points array to description string
+    const descriptionString = bulletPoints.join('\n');
+    const itemWithDescription = {
+      ...editingItem,
+      description: descriptionString
+    };
+    
     // Client-side validation
-    const validation = validateExperience(editingItem);
+    const validation = validateExperience(itemWithDescription);
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
       setError(validation.errors.join('; '));
@@ -172,43 +196,47 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
         return monthValue.length === 7 ? `${monthValue}-01` : monthValue;
       };
 
-      const normalizedStart = toIsoDate(editingItem.start_date) as string;
-      const normalizedEnd = editingItem.currently_working ? undefined : toIsoDate(editingItem.end_date);
+      const normalizedStart = toIsoDate(itemWithDescription.start_date) as string;
+      const normalizedEnd = itemWithDescription.currently_working ? undefined : toIsoDate(itemWithDescription.end_date);
 
-      if (editingItem.id && experiences.some((exp: Experience) => exp.id === editingItem.id)) {
+      if (itemWithDescription.id && experiences.some((exp: Experience) => exp.id === itemWithDescription.id)) {
         // Update existing
         await updateExperienceMutation.mutateAsync({
-          experienceId: editingItem.id,
+          experienceId: itemWithDescription.id,
           updateData: {
-            title: editingItem.title,
-            seniority_level: editingItem.seniority_level,
-            company: editingItem.company,
-            location: (editingItem.city || editingItem.country) ? {
-              city: editingItem.city,
-              country: editingItem.country
+            title: itemWithDescription.title,
+            seniority_level: itemWithDescription.seniority_level,
+            company: itemWithDescription.company,
+            location: (itemWithDescription.city || itemWithDescription.country) ? {
+              city: itemWithDescription.city,
+              country: itemWithDescription.country
             } : undefined,
             start_date: normalizedStart,
             end_date: normalizedEnd,
-            currently_working: editingItem.currently_working,
-            description: editingItem.description?.trim() ?? '', // Send empty string for clearing, backend will normalize to null
-            is_volunteer: editingItem.is_volunteer,
-            work_type: editingItem.work_type || undefined,
-            work_model: editingItem.work_model || undefined,
+            currently_working: itemWithDescription.currently_working,
+            description: descriptionString.trim() || '', // Send empty string for clearing, backend will normalize to null
+            is_volunteer: itemWithDescription.is_volunteer,
+            work_type: itemWithDescription.work_type || undefined,
+            work_model: itemWithDescription.work_model || undefined,
           }
         });
       } else {
         // Create new (mutation accepts array of one item)
         const normalizedItem: Experience = {
-          ...editingItem,
+          ...itemWithDescription,
           start_date: normalizedStart,
           end_date: normalizedEnd || '',
-          description: editingItem.description || ''
+          description: descriptionString
         } as Experience;
         await addExperiencesMutation.mutateAsync([normalizedItem]);
       }
 
       setIsDialogOpen(false);
       setEditingItem(null);
+      setBulletPoints([]);
+      setCurrentInput('');
+      setEditingIndex(null);
+      setEditingValue('');
       setValidationErrors([]);
     } catch (err: any) {
       // Use shared error utility
@@ -225,6 +253,10 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const handleCancel = () => {
     setIsDialogOpen(false);
     setEditingItem(null);
+    setBulletPoints([]);
+    setCurrentInput('');
+    setEditingIndex(null);
+    setEditingValue('');
     setError(null);
     setValidationErrors([]);
   };
@@ -232,6 +264,38 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
   const updateEditingItem = (field: keyof Experience, value: any) => {
     if (!editingItem) return;
     setEditingItem({ ...editingItem, [field]: value });
+  };
+
+  // Bullet point handlers
+  const handleAddBulletPoint = () => {
+    if (currentInput.trim()) {
+      setBulletPoints([...bulletPoints, currentInput.trim()]);
+      setCurrentInput('');
+    }
+  };
+
+  const handleEditBulletPoint = (index: number) => {
+    setEditingIndex(index);
+    setEditingValue(bulletPoints[index]);
+  };
+
+  const handleSaveEdit = (index: number) => {
+    if (editingValue.trim()) {
+      const updated = [...bulletPoints];
+      updated[index] = editingValue.trim();
+      setBulletPoints(updated);
+    }
+    setEditingIndex(null);
+    setEditingValue('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditingValue('');
+  };
+
+  const handleDeleteBulletPoint = (index: number) => {
+    setBulletPoints(bulletPoints.filter((_, i) => i !== index));
   };
 
   const toDisplayMonth = (value: string | undefined | null) => {
@@ -547,14 +611,92 @@ export function AccountExperienceSection({ data, onDataUpdate }: AccountExperien
               {/* Fifth Row - Description - Full Width */}
               <div className="space-y-4">
                 <Label htmlFor="description" className="text-sm font-semibold">Job Description & Achievements</Label>
-                <Textarea
-                  id="description"
-                  value={editingItem.description}
-                  onChange={(e) => updateEditingItem('description', e.target.value)}
-                  placeholder="• Led a team of 5 developers to build a customer portal that increased user engagement by 40%&#10;• Developed microservices architecture reducing system downtime from 2% to 0.1%&#10;• Implemented automated testing pipeline reducing deployment time by 60%&#10;• Collaborated with design team to improve user experience"
-                  rows={6}
-                  className="min-h-[140px] resize-none text-base"
-                />
+                <div className="space-y-2 border rounded-md p-4 min-h-[200px]">
+                  {/* Existing bullet points */}
+                  {bulletPoints.map((point, index) => (
+                    <div key={index} className="flex items-center gap-2 group">
+                      <span className="text-muted-foreground flex-shrink-0">•</span>
+                      {editingIndex === index ? (
+                        <div className="flex-1 flex items-center gap-2">
+                          <Input
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveEdit(index);
+                              } else if (e.key === 'Escape') {
+                                handleCancelEdit();
+                              }
+                            }}
+                            className="flex-1 h-9 text-base"
+                            autoFocus
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSaveEdit(index)}
+                            className="h-9 px-2"
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCancelEdit}
+                            className="h-9 px-2"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="flex-1 text-base">{point}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditBulletPoint(index)}
+                            className="h-8 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteBulletPoint(index)}
+                            className="h-8 px-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Add new input */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground flex-shrink-0">•</span>
+                    <Input
+                      id="description-input"
+                      value={currentInput}
+                      onChange={(e) => setCurrentInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddBulletPoint();
+                        }
+                      }}
+                      placeholder="Type a bullet point and press Enter..."
+                      className="flex-1 h-9 text-base"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Press Enter to add a bullet point. Hover over existing items to edit or delete.
+                </p>
               </div>
             </div>
           )}
