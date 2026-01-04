@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent, useEffect } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,50 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/services/auth/hook";
 import { RegisterRequest } from "@/services/auth/types";
 import { toast } from "react-hot-toast";
+import PhoneInput from "react-phone-number-input";
+import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
+import "react-phone-number-input/style.css";
+
+// LocalStorage keys for form data persistence
+const REGISTER_FORM_CACHE_KEY = "resu-genie-register-form-cache";
+
+interface RegisterFormCache {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  agreeTerms: boolean;
+}
 
 export function Register() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  // Load cached form data on mount
+  const loadCachedFormData = (): RegisterFormCache => {
+    try {
+      const cached = localStorage.getItem(REGISTER_FORM_CACHE_KEY);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      console.error("Error loading cached form data:", error);
+    }
+    return {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      agreeTerms: false,
+    };
+  };
+
+  const cachedData = loadCachedFormData();
+  
+  const [firstName, setFirstName] = useState(cachedData.firstName);
+  const [lastName, setLastName] = useState(cachedData.lastName);
+  const [email, setEmail] = useState(cachedData.email);
+  const [phone, setPhone] = useState(cachedData.phone);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(cachedData.agreeTerms);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -30,6 +65,40 @@ export function Register() {
   
   const { register, error, clearError } = useAuth();
   const navigate = useNavigate();
+
+  // Cache form data to localStorage (excluding passwords for security)
+  const cacheFormData = useCallback(() => {
+    try {
+      const formData: RegisterFormCache = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        agreeTerms,
+      };
+      localStorage.setItem(REGISTER_FORM_CACHE_KEY, JSON.stringify(formData));
+    } catch (error) {
+      console.error("Error caching form data:", error);
+    }
+  }, [firstName, lastName, email, phone, agreeTerms]);
+
+  // Clear cached form data
+  const clearCachedFormData = useCallback(() => {
+    try {
+      localStorage.removeItem(REGISTER_FORM_CACHE_KEY);
+    } catch (error) {
+      console.error("Error clearing cached form data:", error);
+    }
+  }, []);
+
+  // Cache form data whenever it changes (debounced to avoid excessive writes)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      cacheFormData();
+    }, 300); // Debounce by 300ms
+
+    return () => clearTimeout(timeoutId);
+  }, [cacheFormData]);
 
   // Clear API error when form changes
   useEffect(() => {
@@ -52,22 +121,38 @@ export function Register() {
     return isValid;
   };
 
-  // Phone validation
-  const validatePhone = (phone: string): boolean => {
-    // If phone is empty, it's optional
-    if (!phone) return true;
-    
-    // Basic international phone regex
-    const phoneRegex = /^\+[1-9]\d{1,14}$/;
-    const isValid = phoneRegex.test(phone);
-    
-    if (!isValid && phone.length > 0) {
-      setPhoneError("Please enter a valid phone number (e.g., +1234567890)");
-    } else {
-      setPhoneError(null);
+  // Phone validation - must be exactly 9 digits in the national number
+  const validatePhone = (phone: string | undefined): boolean => {
+    // Phone is now required
+    if (!phone) {
+      setPhoneError("Phone number is required");
+      return false;
     }
     
-    return isValid;
+    try {
+      // Parse the phone number to get national number
+      const phoneNumber = parsePhoneNumber(phone);
+      
+      if (!phoneNumber || !isValidPhoneNumber(phone)) {
+        setPhoneError("Please enter a valid phone number");
+        return false;
+      }
+      
+      // Get the national number (digits only, without country code)
+      const nationalNumber = phoneNumber.nationalNumber;
+      
+      // Validate that national number is exactly 9 digits
+      if (nationalNumber.length !== 9) {
+        setPhoneError("Phone number must contain exactly 9 digits");
+        return false;
+      }
+      
+      setPhoneError(null);
+      return true;
+    } catch (error) {
+      setPhoneError("Please enter a valid phone number");
+      return false;
+    }
   };
 
   // Password validation
@@ -149,7 +234,7 @@ export function Register() {
     const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword);
     
     // Check required fields
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -173,10 +258,13 @@ export function Register() {
         last_name: lastName,
         email,
         password,
-        phone: phone || "" // Send empty string if no phone provided
+        phone: phone // Phone is now required
       };
       
       const response = await register(registerData);
+      
+      // Clear cached form data on successful registration
+      clearCachedFormData();
       
       // Check if registration requires email verification
       if (response && response.requires_verification) {
@@ -328,18 +416,28 @@ export function Register() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm md:text-base">Phone (optional)</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+1234567890"
-                    value={phone}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                    className={`h-10 md:h-11 text-sm md:text-base ${phoneError ? "border-red-500" : ""}`}
-                  />
+                  <Label htmlFor="phone" className="text-sm md:text-base">Phone *</Label>
+                  <div className={`flex h-10 md:h-11 w-full rounded-md border ${
+                    phoneError ? "border-red-500" : "border-input"
+                  } bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2`}>
+                    <PhoneInput
+                      international
+                      defaultCountry="SY"
+                      value={phone}
+                      onChange={(value: string | undefined) => setPhone(value || "")}
+                      className="phone-input-container flex-1"
+                      numberInputProps={{
+                        id: "phone",
+                        className: "flex-1 bg-transparent border-0 outline-none px-3 py-2 text-sm md:text-base placeholder:text-muted-foreground",
+                      }}
+                    />
+                  </div>
                   {phoneError && (
                     <p className="text-red-500 text-xs md:text-sm mt-1">{phoneError}</p>
                   )}
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                    Phone number must contain exactly 9 digits (excluding country code)
+                  </p>
                 </div>
 
                 <div className="space-y-2">

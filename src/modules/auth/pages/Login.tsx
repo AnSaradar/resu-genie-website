@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,15 +10,72 @@ import { useAuth } from "@/services/auth/hook";
 import { LoginRequest } from "@/services/auth/types";
 import { toast } from "react-hot-toast";
 
+// LocalStorage keys for form data persistence
+const LOGIN_FORM_CACHE_KEY = "resu-genie-login-form-cache";
+
+interface LoginFormCache {
+  email: string;
+  rememberMe: boolean;
+}
+
 export function Login() {
-  const [email, setEmail] = useState("");
+  // Load cached form data on mount
+  const loadCachedFormData = (): LoginFormCache => {
+    try {
+      const cached = localStorage.getItem(LOGIN_FORM_CACHE_KEY);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      console.error("Error loading cached form data:", error);
+    }
+    return {
+      email: "",
+      rememberMe: false,
+    };
+  };
+
+  const cachedData = loadCachedFormData();
+  
+  const [email, setEmail] = useState(cachedData.email);
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(cachedData.rememberMe);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const { login, error } = useAuth();
   const navigate = useNavigate();
+
+  // Cache form data to localStorage (excluding password for security)
+  const cacheFormData = useCallback(() => {
+    try {
+      const formData: LoginFormCache = {
+        email,
+        rememberMe,
+      };
+      localStorage.setItem(LOGIN_FORM_CACHE_KEY, JSON.stringify(formData));
+    } catch (error) {
+      console.error("Error caching form data:", error);
+    }
+  }, [email, rememberMe]);
+
+  // Clear cached form data
+  const clearCachedFormData = useCallback(() => {
+    try {
+      localStorage.removeItem(LOGIN_FORM_CACHE_KEY);
+    } catch (error) {
+      console.error("Error clearing cached form data:", error);
+    }
+  }, []);
+
+  // Cache form data whenever it changes (debounced to avoid excessive writes)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      cacheFormData();
+    }, 300); // Debounce by 300ms
+
+    return () => clearTimeout(timeoutId);
+  }, [cacheFormData]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -60,6 +117,9 @@ export function Login() {
       };
       
       await login(loginData);
+      
+      // Clear cached form data on successful login
+      clearCachedFormData();
       
       // If remember me is checked, we could set a longer expiration for the token
       // This would typically be handled on the backend
