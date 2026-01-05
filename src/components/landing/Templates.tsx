@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,9 +8,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "react-hot-toast";
 import { getMessage } from "@/utils/messages";
-import imagineTemplate from "@/assets/images/imagine_template.jpg";
+import simpleTemplate from "@/assets/images/simple_template.jpg";
 import jobscanTemplate from "@/assets/images/jobscan_template.jpg";
 import moeyTemplate from "@/assets/images/moey_template.jpg";
 
@@ -18,6 +26,8 @@ interface TemplatesProps {
 }
 
 export function Templates({ onRegisterClick }: TemplatesProps) {
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
+
   const templates = [
     {
       name: "MOEY",
@@ -26,9 +36,9 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
       color: "blue",
     },
     {
-      name: "IMAGINE",
-      description: "A modern and visually engaging resume template with creative layout.",
-      image: imagineTemplate,
+      name: "SIMPLE",
+      description: "Single-column, print-friendly style with concise contact row and bold section titles.",
+      image: simpleTemplate,
       color: "purple",
     },
     {
@@ -80,9 +90,10 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-2 h-full">
                     <motion.div
-                      className="relative group rounded-xl overflow-hidden shadow-lg h-full bg-card"
+                      className="relative group rounded-xl overflow-hidden shadow-lg h-full bg-card cursor-pointer"
                       whileHover={{ y: -5 }}
                       transition={{ type: "spring", stiffness: 300 }}
+                      onClick={() => setSelectedTemplate(index)}
                     >
                       <div className="aspect-[3/4] relative overflow-hidden">
                         <img
@@ -95,7 +106,7 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
                       <div className="p-4 space-y-3">
                         <div>
                           <h3 className="font-semibold text-lg">{template.name}</h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
                             {template.description}
                           </p>
                         </div>
@@ -128,6 +139,46 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
             </div>
           </Carousel>
         </motion.div>
+
+        {/* Template Preview Dialog */}
+        <Dialog open={selectedTemplate !== null} onOpenChange={(open) => !open && setSelectedTemplate(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            {selectedTemplate !== null && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>{templates[selectedTemplate].name} Template</DialogTitle>
+                  <DialogDescription className="text-base">
+                    {templates[selectedTemplate].description}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  <img
+                    src={templates[selectedTemplate].image}
+                    alt={templates[selectedTemplate].name}
+                    className="w-full h-auto rounded-lg shadow-lg object-contain"
+                  />
+                </div>
+                <div className="flex justify-end mt-4">
+                  <Button
+                    onClick={() => {
+                      if (onRegisterClick) {
+                        const message = getMessage('toast.register_required');
+                        toast(message, {
+                          duration: 4000,
+                          icon: 'ℹ️',
+                        });
+                        onRegisterClick();
+                        setSelectedTemplate(null);
+                      }
+                    }}
+                  >
+                    Use This Template
+                  </Button>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </section>
   );

@@ -45,10 +45,9 @@ export const exportResumeFromAccount = async (templateId: string): Promise<Blob>
     // Map frontend template IDs to backend template filenames (same as ResumeGenerator.tsx)
     const templateMap: Record<string, string> = {
       'moey': 'moey_template.html',
-      'imagine': 'imagine_template.html',
+      'simple': 'simple_template.html',
       'jobscan': 'jobscan_template.html',
       'new': 'new_template.html',
-      'simple': 'simple_template.html',
     };
     
     // Get the template filename, defaulting to moey if not found

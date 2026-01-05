@@ -289,9 +289,6 @@ export default function MyResumes() {
             </span>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              Export Selected
-            </Button>
             <Button variant="destructive" size="sm">
               Delete Selected
             </Button>

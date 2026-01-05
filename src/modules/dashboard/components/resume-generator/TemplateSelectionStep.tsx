@@ -16,7 +16,7 @@ import {
   Palette
 } from 'lucide-react';
 import { ResumeData } from '../../pages/ResumeGenerator';
-import imagineTemplate from '@/assets/images/imagine_template.jpg';
+import simpleTemplate from '@/assets/images/simple_template.jpg';
 import jobscanTemplate from '@/assets/images/jobscan_template.jpg';
 import moeyTemplate from '@/assets/images/moey_template.jpg';
 
@@ -46,12 +46,12 @@ const TEMPLATES: Template[] = [
     isPremium: false,
   },
   {
-    id: 'imagine',
-    name: 'IMAGINE',
-    description: 'A modern and visually engaging resume template with creative layout.',
+    id: 'simple',
+    name: 'SIMPLE',
+    description: 'Single-column, print-friendly style with concise contact row, bold section titles, and ATS-safe typography.',
     category: 'Default',
-    thumbnail: imagineTemplate,
-    features: ['Creative Layout', 'Visual Appeal', 'Modern Design'],
+    thumbnail: simpleTemplate,
+    features: ['Print-Friendly', 'ATS-Optimized', 'Clean Design'],
     isPremium: false,
   },
   {

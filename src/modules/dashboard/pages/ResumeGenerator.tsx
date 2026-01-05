@@ -425,7 +425,7 @@ export function ResumeGenerator() {
     // Ensure a template is selected – default to moey if not
     const templateMap: Record<string, string> = {
       moey: 'moey_template.html',
-      imagine: 'imagine_template.html',
+      simple: 'simple_template.html',
       jobscan: 'jobscan_template.html',
     };
 
