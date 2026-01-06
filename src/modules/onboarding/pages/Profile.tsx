@@ -218,7 +218,10 @@ export function Profile() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Country *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value || "Syria"}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select your country" />
@@ -265,7 +268,10 @@ export function Profile() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Country of Residence</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value || "Syria"}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="If different from above" />

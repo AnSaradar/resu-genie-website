@@ -23,6 +23,23 @@ export function Navbar() {
     await logout();
   };
 
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    const element = document.getElementById(targetId);
+    if (element) {
+      const headerOffset = 80; // Account for sticky navbar height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+    // Close mobile menu if open
+    setIsMenuOpen(false);
+  };
+
   return (
     <motion.header
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -33,11 +50,23 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <motion.div
           className="flex items-center gap-2"
-          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Link to="/">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+          <Link to="/" className="group relative">
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent relative z-10 transition-all duration-300">
+              ResuGenie
+            </span>
+            {/* Glazing glow effect */}
+            <span 
+              className="absolute inset-0 text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent blur-sm opacity-0 group-hover:opacity-60 transition-opacity duration-300 -z-0"
+              aria-hidden="true"
+            >
+              ResuGenie
+            </span>
+            <span 
+              className="absolute inset-0 text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent blur-md opacity-0 group-hover:opacity-40 transition-opacity duration-300 -z-0"
+              aria-hidden="true"
+            >
               ResuGenie
             </span>
           </Link>
@@ -47,7 +76,8 @@ export function Navbar() {
         <nav className="hidden md:flex items-center gap-6">
           <motion.a
             href="#cover-letter"
-            className="text-sm font-medium hover:text-primary"
+            onClick={(e) => handleSmoothScroll(e, "cover-letter")}
+            className="text-sm font-medium hover:text-primary cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -55,7 +85,8 @@ export function Navbar() {
           </motion.a>
           <motion.a
             href="#job-matcher"
-            className="text-sm font-medium hover:text-primary"
+            onClick={(e) => handleSmoothScroll(e, "job-matcher")}
+            className="text-sm font-medium hover:text-primary cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -63,7 +94,8 @@ export function Navbar() {
           </motion.a>
           <motion.a
             href="#resume-evaluator"
-            className="text-sm font-medium hover:text-primary"
+            onClick={(e) => handleSmoothScroll(e, "resume-evaluator")}
+            className="text-sm font-medium hover:text-primary cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -71,11 +103,12 @@ export function Navbar() {
           </motion.a>
           <motion.a
             href="#templates"
-            className="text-sm font-medium hover:text-primary"
+            onClick={(e) => handleSmoothScroll(e, "templates")}
+            className="text-sm font-medium hover:text-primary cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Templates
+            ATS-Templates
           </motion.a>
           {isAuthenticated && (
             <motion.div
@@ -186,17 +219,33 @@ export function Navbar() {
         transition={{ duration: 0.3 }}
       >
         <div className="container py-4 space-y-4">
-          <a href="#cover-letter" className="block text-sm font-medium">
+          <a
+            href="#cover-letter"
+            onClick={(e) => handleSmoothScroll(e, "cover-letter")}
+            className="block text-sm font-medium cursor-pointer"
+          >
             Cover Letter
           </a>
-          <a href="#job-matcher" className="block text-sm font-medium">
+          <a
+            href="#job-matcher"
+            onClick={(e) => handleSmoothScroll(e, "job-matcher")}
+            className="block text-sm font-medium cursor-pointer"
+          >
             Job Matcher
           </a>
-          <a href="#resume-evaluator" className="block text-sm font-medium">
+          <a
+            href="#resume-evaluator"
+            onClick={(e) => handleSmoothScroll(e, "resume-evaluator")}
+            className="block text-sm font-medium cursor-pointer"
+          >
             Resume Evaluator
           </a>
-          <a href="#templates" className="block text-sm font-medium">
-            Templates
+          <a
+            href="#templates"
+            onClick={(e) => handleSmoothScroll(e, "templates")}
+            className="block text-sm font-medium cursor-pointer"
+          >
+            ATS-Templates
           </a>
           {isAuthenticated && (
             <Link 

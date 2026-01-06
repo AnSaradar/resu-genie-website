@@ -24,7 +24,10 @@ export function LandingPage() {
 
   return (
     <>
-      <Hero onLoginClick={handleLoginClick} onRegisterClick={handleRegisterClick} />
+      <Hero
+        onLoginClick={handleLoginClick}
+        onRegisterClick={handleRegisterClick}
+      />
       <Features />
       <Templates onRegisterClick={handleRegisterClick} />
       {/* <Testimonials /> */}

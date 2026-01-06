@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -96,20 +97,20 @@ export function Footer() {
             <h3 className="text-sm font-medium">Company</h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#about"
+                <Link
+                  to="/about"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#contact"
+                <Link
+                  to="/about#contact"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact
-                </a>
+                </Link>
               </li>
               <li>
                 <a
