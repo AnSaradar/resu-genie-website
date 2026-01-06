@@ -37,6 +37,11 @@ interface ExportResumeDialogProps {
   onOpenChange: (open: boolean) => void;
   onExport: (templateId: string) => void;
   isExporting?: boolean;
+  // Optional props for customization
+  title?: string;
+  description?: string;
+  buttonText?: string;
+  selectionMessage?: string;
 }
 
 const TEMPLATES: Template[] = [
@@ -73,7 +78,11 @@ export function ExportResumeDialog({
   open, 
   onOpenChange, 
   onExport,
-  isExporting = false 
+  isExporting = false,
+  title = "Export Resume / CV",
+  description = "Select a template for your resume. Your current account data will be used to generate the PDF.",
+  buttonText = "Export Resume",
+  selectionMessage = "Click Export to generate your resume."
 }: ExportResumeDialogProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
@@ -132,10 +141,10 @@ export function ExportResumeDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5" />
-              Export Resume / CV
+              {title}
             </DialogTitle>
             <DialogDescription>
-              Select a template for your resume. Your current account data will be used to generate the PDF.
+              {description}
             </DialogDescription>
           </DialogHeader>
 
@@ -244,7 +253,7 @@ export function ExportResumeDialog({
                   <strong>
                     {TEMPLATES.find(t => t.id === selectedTemplate)?.name}
                   </strong>
-                  . Click Export to generate your resume.
+                  . {selectionMessage}
                 </p>
               </motion.div>
             )}
@@ -297,7 +306,7 @@ export function ExportResumeDialog({
               ) : (
                 <>
                   <Download className="h-4 w-4 mr-2" />
-                  Export Resume
+                  {buttonText}
                 </>
               )}
             </Button>

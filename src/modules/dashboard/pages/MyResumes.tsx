@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useGetMyResumes, useRenameResume } from '@/services/resume/hook';
+import { useGetMyResumes, useRenameResume, useExportResumePdf } from '@/services/resume/hook';
 import { ResumeListItem } from '@/services/resume/types';
 import { 
   FileText, 
@@ -38,6 +38,8 @@ import {
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { ExportResumeDialog } from '../components/account-sections/ExportResumeDialog';
+import { toast } from 'react-hot-toast';
 
 export default function MyResumes() {
   const navigate = useNavigate();
@@ -53,6 +55,8 @@ export default function MyResumes() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
   const [renameError, setRenameError] = useState<string | null>(null);
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
+  const [downloadingResumeId, setDownloadingResumeId] = useState<string | null>(null);
   const {
     data: previewData,
     isLoading: previewLoading,
@@ -60,6 +64,7 @@ export default function MyResumes() {
   } = useGetResumeDetails(previewId ?? '', !!previewId);
   
   const renameResumeMutation = useRenameResume();
+  const exportResumeMutation = useExportResumePdf();
 
   // Helper functions
   const getResumeStatus = (resume: ResumeListItem) => {
@@ -136,6 +141,58 @@ export default function MyResumes() {
     setRenamingId(resume.id);
     setNewName(resume.resume_name);
     setRenameError(null);
+  };
+
+  // Map template IDs to backend template filenames
+  const templateIdToFilename = (templateId: string): string => {
+    const templateMap: Record<string, string> = {
+      'moey': 'moey_template.html',
+      'simple': 'simple_template.html',
+      'jobscan': 'jobscan_template.html',
+    };
+    return templateMap[templateId.toLowerCase()] || 'moey_template.html';
+  };
+
+  const handleDownloadResume = async (templateId: string) => {
+    if (!downloadingResumeId) return;
+
+    try {
+      const templateName = templateIdToFilename(templateId);
+      const blob = await exportResumeMutation.mutateAsync({
+        resumeId: downloadingResumeId,
+        templateName: templateName,
+      });
+
+      // Get resume name for filename
+      const resume = data?.data.resumes.find((r: ResumeListItem) => r.id === downloadingResumeId);
+      const resumeName = resume?.resume_name || 'resume';
+      const fileName = `${resumeName.replace(/\s+/g, '_')}.pdf`;
+
+      // Trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Close dialog
+      setDownloadDialogOpen(false);
+      setDownloadingResumeId(null);
+      toast.success('Resume downloaded successfully!');
+    } catch (error: any) {
+      // Error is handled by the hook's onError callback
+      console.error('Error downloading resume:', error);
+    }
+  };
+
+  const openDownloadDialog = (resumeId: string) => {
+    setDownloadingResumeId(resumeId);
+    setDownloadDialogOpen(true);
   };
 
   const handleSelectAll = () => {
@@ -358,13 +415,6 @@ export default function MyResumes() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onSelect={() => {
-                        setPreviewId(resume.id);
-                        setModalOpen(true);
-                      }}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Preview
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => {
                         navigate(`/dashboard/resume/${resume.id}`);
                       }}>
                         <Download className="h-4 w-4 mr-2" />
@@ -451,10 +501,10 @@ export default function MyResumes() {
                   <Button
                     size="sm"
                     className="flex-1 gap-1"
-                    onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
+                    onClick={() => openDownloadDialog(resume.id)}
                   >
                     <Download className="h-4 w-4" />
-                          Edit
+                    Download
                   </Button>
                 </div>
               </CardContent>
@@ -494,10 +544,10 @@ export default function MyResumes() {
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
+                        onClick={() => openDownloadDialog(resume.id)}
                       >
                         <Download className="h-4 w-4 mr-1" />
-                        Edit
+                        Download
                       </Button>
                     </div>
                   </div>
@@ -693,6 +743,23 @@ export default function MyResumes() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Resume Download Dialog */}
+      <ExportResumeDialog
+        open={downloadDialogOpen}
+        onOpenChange={(open) => {
+          setDownloadDialogOpen(open);
+          if (!open) {
+            setDownloadingResumeId(null);
+          }
+        }}
+        onExport={handleDownloadResume}
+        isExporting={exportResumeMutation.isPending}
+        title="Download Resume"
+        description="Select a template to download your resume as PDF."
+        buttonText="Download Resume"
+        selectionMessage="Click Download to generate your resume PDF."
+      />
     </div>
   );
 } 

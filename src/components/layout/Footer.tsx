@@ -1,7 +1,16 @@
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const handleSocialMediaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    toast("Coming Soon", {
+      duration: 3000,
+      icon: "ℹ️",
+    });
+  };
 
   return (
     <footer className="bg-background border-t">
@@ -128,8 +137,10 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="#twitter"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              href="#"
+              onClick={handleSocialMediaClick}
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              aria-label="Follow us on Twitter"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -146,8 +157,10 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="#facebook"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              href="#"
+              onClick={handleSocialMediaClick}
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              aria-label="Follow us on Facebook"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -164,8 +177,10 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="#instagram"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              href="#"
+              onClick={handleSocialMediaClick}
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              aria-label="Follow us on Instagram"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -184,8 +199,10 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="#linkedin"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              href="#"
+              onClick={handleSocialMediaClick}
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              aria-label="Follow us on LinkedIn"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

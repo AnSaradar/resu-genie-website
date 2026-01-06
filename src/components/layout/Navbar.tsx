@@ -46,12 +46,28 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <motion.a
-            href="#features"
+            href="#cover-letter"
             className="text-sm font-medium hover:text-primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Features
+            Cover Letter
+          </motion.a>
+          <motion.a
+            href="#job-matcher"
+            className="text-sm font-medium hover:text-primary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Job Matcher
+          </motion.a>
+          <motion.a
+            href="#resume-evaluator"
+            className="text-sm font-medium hover:text-primary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Resume Evaluator
           </motion.a>
           <motion.a
             href="#templates"
@@ -60,14 +76,6 @@ export function Navbar() {
             whileTap={{ scale: 0.95 }}
           >
             Templates
-          </motion.a>
-          <motion.a
-            href="#testimonials"
-            className="text-sm font-medium hover:text-primary"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Testimonials
           </motion.a>
           {isAuthenticated && (
             <motion.div
@@ -178,14 +186,17 @@ export function Navbar() {
         transition={{ duration: 0.3 }}
       >
         <div className="container py-4 space-y-4">
-          <a href="#features" className="block text-sm font-medium">
-            Features
+          <a href="#cover-letter" className="block text-sm font-medium">
+            Cover Letter
+          </a>
+          <a href="#job-matcher" className="block text-sm font-medium">
+            Job Matcher
+          </a>
+          <a href="#resume-evaluator" className="block text-sm font-medium">
+            Resume Evaluator
           </a>
           <a href="#templates" className="block text-sm font-medium">
             Templates
-          </a>
-          <a href="#testimonials" className="block text-sm font-medium">
-            Testimonials
           </a>
           {isAuthenticated && (
             <Link 

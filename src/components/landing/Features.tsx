@@ -1,141 +1,28 @@
 import { motion } from "framer-motion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, SearchCheck, ClipboardList } from "lucide-react";
 
 export function Features() {
   const features = [
     {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-blue-500"
-        >
-          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
-      ),
-      title: "ATS-Optimized Templates",
+      id: "cover-letter",
+      icon: FileText,
+      title: "Cover Letter",
       description:
-        "Our templates are designed to pass through Applicant Tracking Systems with ease, ensuring your resume gets seen by human recruiters.",
+        "Generate tailored cover letters that mirror the job description and your experience so you can apply in minutes, not hours.",
     },
     {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-blue-500"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      ),
-      title: "AI Content Suggestions",
+      id: "job-matcher",
+      icon: SearchCheck,
+      title: "Job Matcher",
       description:
-        "Get intelligent suggestions for skills, achievements, and job descriptions based on your industry and experience level.",
+        "Paste any job description and instantly see how well you match, with concrete suggestions to tweak your resume for a better fit.",
     },
     {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-blue-500"
-        >
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-        </svg>
-      ),
-      title: "Real-time Editor",
+      id: "resume-evaluator",
+      icon: ClipboardList,
+      title: "Resume Evaluator",
       description:
-        "See changes to your resume in real-time as you edit, with instant feedback on formatting and content.",
-    },
-    {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-blue-500"
-        >
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-      ),
-      title: "Multiple Export Formats",
-      description:
-        "Download your resume in PDF, DOCX, or TXT formats to suit different application requirements.",
-    },
-    {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-blue-500"
-        >
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-          <line x1="8" y1="21" x2="16" y2="21" />
-          <line x1="12" y1="17" x2="12" y2="21" />
-        </svg>
-      ),
-      title: "Cross-device Compatibility",
-      description:
-        "Create and edit your resume on any device - desktop, tablet, or mobile - with a seamless experience.",
-    },
-    {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-blue-500"
-        >
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
-      ),
-      title: "Privacy Protection",
-      description:
-        "Your data is secure with us. We use encryption to protect your personal information and never share it with third parties.",
+        "Get an instant, AI-powered score and actionable feedback on your resume’s clarity, impact, and ATS readiness.",
     },
   ];
 
@@ -173,9 +60,9 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            Powerful Features to Build Your{" "}
+            Your AI Toolkit for{" "}
             <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-              Perfect Resume
+              Smarter Applications
             </span>
           </motion.h2>
           <motion.p
@@ -185,35 +72,86 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Everything you need to create a professional, ATS-optimized resume
-            that gets you noticed by employers.
+            Three focused tools that work together to write stronger cover letters,
+            target roles more effectively, and continuously improve your resume.
           </motion.p>
         </div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          className="space-y-16 md:space-y-20"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {features.map((feature, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full border-none shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader>
-                  <div className="mb-4 w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                    {feature.icon}
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            const isReversed = index % 2 === 1;
+
+            return (
+              <motion.section
+                key={feature.id ?? index}
+                id={feature.id}
+                variants={itemVariants}
+                className="scroll-mt-32"
+              >
+                <div
+                  className={`grid items-center gap-8 md:gap-12 lg:gap-16 md:grid-cols-2 ${
+                    isReversed ? "md:[&>div:first-child]:order-2" : ""
+                  }`}
+                >
+                  {/* Text + icon */}
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/60 dark:border-blue-900/50 bg-blue-50/60 dark:bg-blue-900/20 px-4 py-2">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-md">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="text-xs font-medium uppercase tracking-wide text-blue-700 dark:text-blue-100">
+                        {feature.title}
+                      </span>
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-semibold">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+
+                  {/* Future media / demo placeholder */}
+                  <motion.div
+                    className="relative h-52 md:h-64 lg:h-72 rounded-2xl border border-dashed border-blue-200/70 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/70 via-cyan-50/40 to-transparent dark:from-blue-950/60 dark:via-slate-950/40 dark:to-transparent overflow-hidden flex items-center justify-center"
+                    initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                  >
+                    {/* Simple animated glow / motion placeholder */}
+                    <motion.div
+                      className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),transparent_55%),radial-gradient(circle_at_bottom,_rgba(34,211,238,0.25),transparent_55%)]"
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <motion.div
+                      className="relative z-10 flex flex-col items-center gap-2 text-center px-6"
+                      initial={{ opacity: 0, y: 12 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: 0.15 }}
+                    >
+                      <span className="text-xs md:text-sm font-medium text-blue-900/80 dark:text-blue-100/90">
+                        Coming soon
+                      </span>
+                      <p className="text-xs md:text-sm text-blue-900/70 dark:text-blue-100/80 max-w-xs">
+                        This area will showcase an animated {feature.title.toLowerCase()} demo
+                        with real interactions and live previews.
+                      </p>
+                    </motion.div>
+                  </motion.div>
+                </div>
+              </motion.section>
+            );
+          })}
         </motion.div>
       </div>
     </section>
