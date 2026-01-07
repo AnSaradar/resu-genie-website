@@ -84,10 +84,12 @@ export const exportResumeFromAccount = async (templateId: string): Promise<Blob>
 /**
  * Fetch list of resumes for current user.
  * Endpoint: GET /api/v1/resume/list
+ * @param limit Optional limit to restrict number of results (sorted by updated_at descending)
  */
-export const fetchMyResumes = async (): Promise<ResumeListResponse> => {
+export const fetchMyResumes = async (limit?: number): Promise<ResumeListResponse> => {
   try {
-    const response = await apiClient.get<ResumeListResponse>('/api/v1/resume/list');
+    const params = limit ? { limit } : {};
+    const response = await apiClient.get<ResumeListResponse>('/api/v1/resume/list', { params });
     return response.data;
   } catch (error: any) {
     throw handleServiceError(error, 'api.fetch_failed', 'resume');

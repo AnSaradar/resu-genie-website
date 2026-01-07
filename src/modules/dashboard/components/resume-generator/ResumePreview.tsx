@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { ResumeData } from '../../pages/ResumeGenerator';
+import { getFieldLabel, formatFieldValue } from '@/utils/field-labels';
 
 interface ResumePreviewProps {
   data: ResumeData;
@@ -387,21 +388,166 @@ export function ResumePreview({
           {data.personalInfo && (
             <section className="mb-6">
               <h4 className="font-semibold text-lg mb-2">Personal Information</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {Object.entries(data.personalInfo || {}).map(([key, value]) => {
-                  // Skip empty values and ID fields
-                  if (value === null || value === undefined || value === '' || key === 'id' || String(value).trim() === '') {
-                    return null;
-                  }
-                  return (
-                    <div key={key} className="flex flex-col">
-                      <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                      <span className="text-muted-foreground break-words">
-                        {String(value).trim()}
+              <div className="space-y-4">
+                {/* Full Name (combine firstName + lastName) */}
+                {(data.personalInfo.firstName || data.personalInfo.lastName) && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Full Name
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {`${data.personalInfo.firstName || ''} ${data.personalInfo.lastName || ''}`.trim() || 'Not provided'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Email */}
+                {data.personalInfo.email && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Email
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {data.personalInfo.email}
+                    </span>
+                  </div>
+                )}
+
+                {/* Phone */}
+                {data.personalInfo.phone && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Phone
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {data.personalInfo.phone}
+                    </span>
+                  </div>
+                )}
+
+                {/* Location (combine city + country) */}
+                {(data.personalInfo.city || data.personalInfo.country) && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Location
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {[data.personalInfo.city, data.personalInfo.country].filter(Boolean).join(', ') || 'Not provided'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Birth Date */}
+                {data.personalInfo.birthDate && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Birth Date
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {formatFieldValue('birthDate', data.personalInfo.birthDate, 'personalInfo')}
+                    </span>
+                  </div>
+                )}
+
+                {/* LinkedIn */}
+                {data.personalInfo.linkedinUrl && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      LinkedIn
+                    </span>
+                    <span className="text-sm">
+                      <a 
+                        href={data.personalInfo.linkedinUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                      >
+                        View Profile
+                      </a>
+                    </span>
+                  </div>
+                )}
+
+                {/* Website */}
+                {data.personalInfo.websiteUrl && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Website
+                    </span>
+                    <span className="text-sm">
+                      <a 
+                        href={data.personalInfo.websiteUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                      >
+                        Visit Site
+                      </a>
+                    </span>
+                  </div>
+                )}
+
+                {/* Current Position */}
+                {data.personalInfo.currentPosition && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Current Position
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {data.personalInfo.currentPosition}
+                    </span>
+                  </div>
+                )}
+
+                {/* Seniority Level */}
+                {data.personalInfo.seniorityLevel && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Seniority Level
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {data.personalInfo.seniorityLevel}
+                    </span>
+                  </div>
+                )}
+
+                {/* Work Field */}
+                {data.personalInfo.workField && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Work Field
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {data.personalInfo.workField}
+                    </span>
+                  </div>
+                )}
+
+                {/* Years of Experience */}
+                {data.personalInfo.yearsOfExperience && (
+                  <div className="flex items-center gap-6 py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[140px]">
+                      Years of Experience
+                    </span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {data.personalInfo.yearsOfExperience}
                       </span>
+                  </div>
+                )}
+
+                {/* Professional Summary */}
+                {data.personalInfo.profileSummary && (
+                  <div className="w-full mt-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Professional Summary</h5>
                     </div>
-                  );
-                })}
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {data.personalInfo.profileSummary}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           )}
@@ -416,29 +562,184 @@ export function ResumePreview({
                 <p className="text-sm text-muted-foreground">No data provided.</p>
               ) : (
                 <div className="space-y-4">
-                  {section.items.map((item: any, idx: number) => (
-                    <div
-                      key={idx}
-                      className="rounded-md border p-4 text-sm flex flex-col gap-1 bg-muted/50"
-                    >
-                      {Object.entries(item).map(([key, value]) => {
-                        // Skip empty values and ID fields
-                        if (value === null || value === undefined || value === '' || key === 'id' || String(value).trim() === '') {
-                          return null;
-                        }
-                        return (
-                          <div key={key} className="flex gap-2">
-                            <span className="font-medium capitalize">
-                              {key.replace(/([A-Z])/g, ' $1')}:&nbsp;
-                            </span>
-                            <span className="text-muted-foreground break-words">
-                              {String(value).trim()}
+                  {section.items.map((item: any, idx: number) => {
+                    // Track which fields we've already displayed to avoid duplicates
+                    const displayedFields = new Set<string>();
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className="rounded-md border p-4 text-sm space-y-2 bg-muted/50"
+                      >
+                        {/* Show volunteering badge for experience if applicable */}
+                        {section.id === 'experience' && item.is_volunteer && (
+                          <div className="mb-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                              Volunteer Experience
                             </span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                        )}
+                        
+                        {Object.entries(item).map(([key, value]) => {
+                          // Skip empty values, ID fields, and internal/backend-only fields
+                          const fieldsToSkip = [
+                            'id', '_id', 'is_active', 'isActive', 'Type', 'type',
+                            'user_id', 'created_at', 'updated_at', 'resume_name',
+                            'selectedTemplate', 'location', // location is handled separately
+                          ];
+                          
+                          // Skip is_volunteer as we show it as a badge above
+                          if (section.id === 'experience' && key === 'is_volunteer') {
+                            return null;
+                          }
+                          
+                          // Skip Native Speaker entirely (never show it)
+                          if ((section.id === 'languages') && (key === 'isNative' || key === 'is_native')) {
+                            return null;
+                          }
+                          
+                          // Skip duplicate date fields (prefer snake_case over camelCase)
+                          if (key.includes('date') || key.includes('Date')) {
+                            // Normalize to check for duplicates (e.g., startDate and start_date)
+                            const baseName = key.replace(/[Dd]ate$/, '').replace(/_date$/, '').toLowerCase();
+                            const normalizedKey = `${baseName}_date`;
+                            
+                            // If we've already shown this date field, skip
+                            if (displayedFields.has(normalizedKey)) {
+                              return null;
+                            }
+                            
+                            // For camelCase date fields, check if snake_case version exists
+                            if (key.includes('Date') && !key.includes('_')) {
+                              const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                              if (item[snakeCaseKey] !== undefined) {
+                                // Skip camelCase if snake_case exists
+                                return null;
+                              }
+                            }
+                            
+                            // Mark this date field as displayed
+                            displayedFields.add(normalizedKey);
+                          }
+                          
+                          if (
+                            value === null || 
+                            value === undefined || 
+                            value === '' || 
+                            fieldsToSkip.includes(key) ||
+                            String(value).trim() === ''
+                          ) {
+                            return null;
+                          }
+
+                          // Special handling for location (city + country)
+                          if (section.id === 'experience' && (key === 'city' || key === 'country')) {
+                            // Only show location once, when we encounter city
+                            if (key === 'city') {
+                              const location = [item.city, item.country].filter(Boolean).join(', ');
+                              if (location) {
+                                return (
+                                  <div key="location" className="flex items-center gap-6 py-1">
+                                    <span className="font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                      Location:
+                                    </span>
+                                    <span className="text-muted-foreground break-words">
+                                      {location}
+                                    </span>
+                                  </div>
+                                );
+                              }
+                            }
+                            return null; // Skip country as it's shown with city
+                          }
+
+                          // Special handling for personalProjects: Ongoing should be "Yes" if no end_date
+                          if (section.id === 'personalProjects' && (key === 'isOngoing' || key === 'is_ongoing')) {
+                            const hasEndDate = item.end_date || item.endDate;
+                            // If there's no end date, show "Yes" for ongoing
+                            if (!hasEndDate) {
+                              value = true;
+                            }
+                          }
+
+                          // Special handling for duration field: show "Present" if no end_date
+                          if (section.id === 'personalProjects' && key === 'duration') {
+                            const hasEndDate = item.end_date || item.endDate;
+                            if (!hasEndDate && value) {
+                              const durationStr = String(value);
+                              // If duration contains "Started on", replace with format that includes "Present"
+                              if (durationStr.includes('Started on')) {
+                                // Extract the date from "Started on YYYY-MM-DD" or similar
+                                const dateMatch = durationStr.match(/(\d{4}-\d{2}-\d{2})/);
+                                if (dateMatch) {
+                                  const dateValue = new Date(dateMatch[1]);
+                                  const formattedStart = dateValue.toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  });
+                                  value = `${formattedStart} - Present`;
+                                } else {
+                                  // Fallback: use the start_date from item
+                                  const startDate = item.start_date || item.startDate;
+                                  if (startDate) {
+                                    const formattedStart = formatFieldValue('start_date', startDate, section.id);
+                                    value = `${formattedStart} - Present`;
+                                  } else {
+                                    value = 'Present';
+                                  }
+                                }
+                              } else if (!durationStr.includes('Present') && !durationStr.includes('to Present')) {
+                                // If it doesn't already have "Present", add it
+                                const startDate = item.start_date || item.startDate;
+                                if (startDate) {
+                                  const formattedStart = formatFieldValue('start_date', startDate, section.id);
+                                  value = `${formattedStart} - Present`;
+                                } else {
+                                  value = 'Present';
+                                }
+                              }
+                            }
+                          }
+
+                          const label = getFieldLabel(key, section.id);
+                          const formattedValue = formatFieldValue(key, value, section.id);
+
+                          // Handle URLs
+                          if (key.includes('url') || key.includes('Url') || key.includes('URL')) {
+                            return (
+                              <div key={key} className="flex items-center gap-6 py-1">
+                                <span className="font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                  {label}:
+                                </span>
+                                <span className="text-sm">
+                                  <a 
+                                    href={String(value)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline break-words"
+                                  >
+                                    {formattedValue || 'View Link'}
+                                  </a>
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div key={key} className="flex items-center gap-6 py-1">
+                              <span className="font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                {label}:
+                              </span>
+                              <span className="text-muted-foreground break-words">
+                                {formattedValue}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </section>

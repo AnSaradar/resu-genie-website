@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from '@tanstack/react-query';
 import { 
   Wand2, 
   ArrowLeft,
@@ -21,8 +20,8 @@ import {
 } from 'lucide-react';
 import { useEvaluateUnified } from "@/services/evaluation/hook";
 import { UnifiedEvaluationResponse, getScoreColor, getStatusColor, getStatusBadgeVariant, SECTION_DISPLAY_CONFIG } from "@/services/evaluation/types";
-import { fetchMyResumes } from '@/services/resume/service';
-import { ResumeListResponse } from '@/services/resume/types';
+import { useGetMyResumes } from '@/services/resume/hook';
+import { ResumeListItem } from '@/services/resume/types';
 
 export function ResumeEvaluator() {
   const navigate = useNavigate();
@@ -31,13 +30,9 @@ export function ResumeEvaluator() {
 
   // Hooks
   const evaluateUnified = useEvaluateUnified();
-  const { data: resumes } = useQuery<ResumeListResponse>({
-    queryKey: ['my-resumes'],
-    queryFn: fetchMyResumes,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: resumes } = useGetMyResumes();
 
-  const resumeOptions = resumes?.data.resumes ?? [];
+  const resumeOptions = resumes?.data?.resumes ?? [];
 
   const handleEvaluate = async () => {
     try {
@@ -162,7 +157,7 @@ export function ResumeEvaluator() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="profile">Current Profile (Account Data)</SelectItem>
-                {resumeOptions.map((resume) => (
+                {resumeOptions.map((resume: ResumeListItem) => (
                   <SelectItem key={resume.id} value={resume.id}>{resume.resume_name}</SelectItem>
                 ))}
               </SelectContent>

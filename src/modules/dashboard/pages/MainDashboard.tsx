@@ -1,47 +1,29 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/services/auth/hook";
 import { useGetProfileCompletionData } from "@/services/profile_completion/hook";
-import { useGetMyActivityFeed } from "@/services/activity/hook";
+import { useGetDashboardStats } from "@/services/dashboard/hook";
 import { ProfileCompletionWidget } from "../components/ProfileCompletionWidget";
+import { RecentResumes } from "../components/RecentResumes";
 import { useTour } from "@/modules/tour/TourProvider";
 import { getDashboardSteps } from "@/modules/tour/steps";
 import { 
   FilePlus2, 
-  User, 
-  CheckCircle, 
-  AlertCircle, 
-  TrendingUp, 
   FileText, 
   Wand2, 
-  Star, 
   Rocket,
-  ArrowRight,
-  Download,
-  Calendar,
   Target,
   BarChart3,
-  Activity,
-  Shield,
-  Clock,
-  Eye,
-  EyeOff,
-  Zap,
-  Award,
-  Globe,
-  Code,
-  BookOpen,
+  Mail,
   Briefcase,
   GraduationCap,
-  Languages,
-  Link as LinkIcon,
-  FolderOpen,
-  Mail
+  Code,
+  Award,
+  Target as TargetIcon
 } from 'lucide-react';
 
 export function MainDashboard() {
@@ -51,7 +33,7 @@ export function MainDashboard() {
 
   // Single API call for all profile completion data
   const { data: profileData, isLoading } = useGetProfileCompletionData();
-  const { data: activityFeed } = useGetMyActivityFeed(5);
+  const { data: dashboardStats, isLoading: isLoadingStats } = useGetDashboardStats();
 
   // Start dashboard tour on component mount
   useEffect(() => {
@@ -142,53 +124,9 @@ export function MainDashboard() {
     }
   ];
 
-  const quickActions = [
-    {
-      title: 'Generate Resume',
-      description: 'Create a new resume from your profile data',
-      icon: FilePlus2,
-      action: () => navigate('/dashboard/generate'),
-      enabled: true
-    },
-    {
-      title: 'Complete Profile',
-      description: 'Finish setting up your profile information',
-      icon: User,
-      action: () => navigate('/dashboard/account'),
-      enabled: true
-    },
-    {
-      title: 'Browse Templates',
-      description: 'Explore professional resume templates',
-      icon: FileText,
-      action: () => navigate('/dashboard/templates'),
-      enabled: false // Not implemented yet
-    },
-    {
-      title: 'Get Evaluation',
-      description: 'Get AI feedback on your resume',
-      icon: BarChart3,
-      action: () => navigate('/dashboard/evaluator'),
-      enabled: true
-    },
-    {
-      title: 'Match Jobs',
-      description: 'Compare your resume with job postings',
-      icon: Target,
-      action: () => navigate('/dashboard/job-matcher'),
-      enabled: true
-    },
-    {
-      title: 'Generate Cover Letter',
-      description: 'Create tailored cover letters for applications',
-      icon: Mail,
-      action: () => navigate('/dashboard/cover-letter'),
-      enabled: true
-    }
-  ];
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || isLoadingStats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -201,12 +139,12 @@ export function MainDashboard() {
   }
 
   // If no data, show error state
-  if (!profileData) {
+  if (!profileData || !dashboardStats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-2">Error Loading Data</h2>
-          <p className="text-muted-foreground">Failed to load profile data. Please try again.</p>
+          <p className="text-muted-foreground">Failed to load dashboard data. Please try again.</p>
         </div>
       </div>
     );
@@ -214,7 +152,7 @@ export function MainDashboard() {
 
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -242,62 +180,25 @@ export function MainDashboard() {
       </motion.div>
 
       {/* Profile Overview */}
+      {profileData.data.completion_percentage < 100 && (
+        <motion.div variants={itemVariants}>
+          <div data-tour="profile-widget">
+            <ProfileCompletionWidget 
+              data={profileData.data} 
+              variant="detailed" 
+            />
+          </div>
+        </motion.div>
+      )}
+
+      {/* Recent Resumes */}
       <motion.div variants={itemVariants}>
-        <div data-tour="profile-widget">
-          <ProfileCompletionWidget 
-            data={profileData.data} 
-            variant="detailed" 
-          />
-        </div>
+        <RecentResumes />
       </motion.div>
 
-      {/* Quick Actions Panel */}
-      <motion.div variants={itemVariants} data-tour="quick-actions">
-        <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => {
-            const IconComponent = action.icon;
-            return (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ scale: action.enabled ? 1.02 : 1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Card 
-                  className={`transition-shadow ${
-                    action.enabled 
-                      ? 'cursor-pointer hover:shadow-md' 
-                      : 'opacity-60 cursor-not-allowed'
-                  }`}
-                  onClick={action.enabled ? action.action : undefined}
-                >
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3">
-                      <IconComponent className={`h-5 w-5 ${action.enabled ? 'text-blue-600' : 'text-gray-400'}`} />
-                      <div>
-                        <h3 className="font-medium">{action.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {action.description}
-                        </p>
-                        {!action.enabled && (
-                          <Badge variant="secondary" className="mt-1 text-xs">
-                            Coming Soon
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      </motion.div>
-
-      {/* Middle Row: Data Statistics & Platform Features */}
+      {/* Data Overview & Platform Features */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Data Statistics Overview */}
+        {/* Enhanced Data Statistics Overview */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -309,29 +210,50 @@ export function MainDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Briefcase className="h-4 w-4 text-blue-600 mr-1" />
-                  <span className="text-2xl font-bold">{profileData.data.stats.totalExperiences}</span>
+                  <FileText className="h-4 w-4 text-blue-600 mr-1" />
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_resumes}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Work Experience</p>
+                <p className="text-xs text-muted-foreground">Resumes</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <TargetIcon className="h-4 w-4 text-orange-600 mr-1" />
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_job_matches}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Job Matches</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Mail className="h-4 w-4 text-indigo-600 mr-1" />
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_cover_letters}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Cover Letters</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Briefcase className="h-4 w-4 text-blue-600 mr-1" />
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_experiences}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Experience</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <GraduationCap className="h-4 w-4 text-green-600 mr-1" />
-                  <span className="text-2xl font-bold">{profileData.data.stats.totalEducations}</span>
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_educations}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Education</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Code className="h-4 w-4 text-purple-600 mr-1" />
-                  <span className="text-2xl font-bold">{profileData.data.stats.totalTechnicalSkills + profileData.data.stats.totalSoftSkills}</span>
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_skills}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Skills</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Award className="h-4 w-4 text-orange-600 mr-1" />
-                  <span className="text-2xl font-bold">{profileData.data.stats.totalCertifications}</span>
+                  <span className="text-2xl font-bold">{dashboardStats.data.total_certifications}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Certifications</p>
               </div>
@@ -381,56 +303,6 @@ export function MainDashboard() {
         </Card>
       </motion.div>
 
-      {/* Bottom Row: Recent Activity */}
-      <motion.div variants={itemVariants}>
-        {/* Recent Activity Feed */}
-        <Card data-tour="recent-activity">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-blue-600" />
-              <CardTitle>Recent Activity</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>Last login</span>
-                  <span className="text-muted-foreground ml-auto">
-                    {user?.last_login_at ? new Date(user.last_login_at).toLocaleString() : '-'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Activity className="h-4 w-4 text-muted-foreground" />
-                  <span>Last activity</span>
-                  <span className="text-muted-foreground ml-auto">
-                    {user?.last_activity_at ? new Date(user.last_activity_at).toLocaleString() : '-'}
-                  </span>
-                </div>
-                {(activityFeed && activityFeed.length > 0) ? (
-                  activityFeed.map((item, idx) => (
-                    <div key={item._id} className="flex items-center gap-3 text-sm">
-                      <span className="text-muted-foreground">{item.type.replace(/_/g, ' ').toLowerCase()}</span>
-                      <span className="ml-auto text-muted-foreground">{new Date(item.created_at).toLocaleString()}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-muted-foreground text-sm">
-                    <EyeOff className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No recent activity</p>
-                  </div>
-                )}
-              </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Getting Started Guide (for new users) - Now using unified component */}
-      <ProfileCompletionWidget 
-        data={profileData.data} 
-        variant="checklist" 
-        showOnlyWhenIncomplete={true}
-      />
     </motion.div>
   );
 } 

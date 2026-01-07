@@ -1,6 +1,7 @@
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
 import { Templates } from "@/components/landing/Templates";
+import { Pricing } from "@/components/landing/Pricing";
 // import { Testimonials } from "@/components/landing/Testimonials";
 import { CTA } from "@/components/landing/CTA";
 import { useEffect } from "react";
@@ -31,6 +32,7 @@ export function LandingPage() {
       <Features />
       <Templates onRegisterClick={handleRegisterClick} />
       {/* <Testimonials /> */}
+      <Pricing />
       <CTA onRegisterClick={handleRegisterClick} />
     </>
   );

@@ -16,14 +16,14 @@ export interface ProfileCompletionData {
   custom_sections: any[];
   completion_percentage: number;
   section_status: {
-    profile_summary: boolean;
-    linkedin_url: boolean;
-    current_position: boolean;
-    work_field: boolean;
-    years_of_experience: boolean;
+    personal_info: boolean;
     experience: boolean;
     education: boolean;
     skills: boolean;
+    languages: boolean;
+    certifications: boolean;
+    links: boolean;
+    personal_projects: boolean;
   };
   stats: {
     totalExperiences: number;

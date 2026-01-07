@@ -8,9 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useCreateCoverLetter, useCoverLetterHistory } from '@/services/cover_letter/hook';
-import { useQuery } from '@tanstack/react-query';
-import { fetchMyResumes } from '@/services/resume/service';
-import { ResumeListResponse } from '@/services/resume/types';
+import { useGetMyResumes } from '@/services/resume/hook';
+import { ResumeListItem } from '@/services/resume/types';
 import { CoverLetter, CoverLetterTone } from '@/services/cover_letter/types';
 // import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 
@@ -36,13 +35,9 @@ export default function CoverLetterPage() {
 
   const createCoverLetter = useCreateCoverLetter();
   const { data: history, isLoading: historyLoading } = useCoverLetterHistory(page, 10);
-  const { data: resumes } = useQuery<ResumeListResponse>({
-    queryKey: ['my-resumes'],
-    queryFn: fetchMyResumes,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: resumes } = useGetMyResumes();
 
-  const resumeOptions = useMemo(() => resumes?.data.resumes ?? [], [resumes]);
+  const resumeOptions = useMemo(() => resumes?.data?.resumes ?? [], [resumes]);
 
   // Auto-open feedback dialog 10 seconds after successful generation
   useEffect(() => {
@@ -203,7 +198,7 @@ export default function CoverLetterPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="account-data">Use account data</SelectItem>
-                  {resumeOptions.map((r) => (
+                  {resumeOptions.map((r: ResumeListItem) => (
                     <SelectItem key={r.id} value={r.id}>{r.resume_name}</SelectItem>
                   ))}
                 </SelectContent>

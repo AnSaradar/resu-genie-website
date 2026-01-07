@@ -71,10 +71,10 @@ export const useGenerateAndDownloadResume = () => {
 /**
  * Hook to retrieve current user's resumes list
  */
-export const useGetMyResumes = () => {
+export const useGetMyResumes = (limit?: number) => {
   return useQuery<ResumeListResponse, Error>({
-    queryKey: ['my-resumes'],
-    queryFn: fetchMyResumes,
+    queryKey: ['my-resumes', limit],
+    queryFn: () => fetchMyResumes(limit),
   });
 };
 

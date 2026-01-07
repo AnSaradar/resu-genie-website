@@ -36,17 +36,23 @@ export function Features() {
     },
   };
 
+  // Each feature section will slide in horizontally:
+  // - Even index (0, 2, 4, ...) from the left
+  // - Odd index (1, 3, 5, ...) from the right
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
+    hidden: (custom: number) => ({
+      opacity: 0,
+      x: custom % 2 === 0 ? -60 : 60,
+    }),
+    visible: (custom: number) => ({
       opacity: 1,
+      x: 0,
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 10,
+        damping: 14,
       },
-    },
+    }),
   };
 
   return (
@@ -93,6 +99,7 @@ export function Features() {
                 key={feature.id ?? index}
                 id={feature.id}
                 variants={itemVariants}
+                custom={index}
                 className="scroll-mt-32"
               >
                 <div

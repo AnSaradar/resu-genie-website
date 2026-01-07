@@ -9,9 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { useCreateJobMatch, useJobMatchHistory } from '@/services/job_match/hook';
-import { useQuery } from '@tanstack/react-query';
-import { fetchMyResumes } from '@/services/resume/service';
-import { ResumeListResponse } from '@/services/resume/types';
+import { useGetMyResumes } from '@/services/resume/hook';
+import { ResumeListItem } from '@/services/resume/types';
 import { JobMatch } from '@/services/job_match/types';
 // import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 import { Sparkles, ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, ListChecks, Target, TrendingUp, Award, BookOpen, X } from 'lucide-react';
@@ -30,13 +29,9 @@ export default function JobMatcher() {
 
   const createJobMatch = useCreateJobMatch();
   const { data: history, isLoading: historyLoading } = useJobMatchHistory(page, 10);
-  const { data: resumes } = useQuery<ResumeListResponse>({
-    queryKey: ['my-resumes'],
-    queryFn: fetchMyResumes,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: resumes } = useGetMyResumes();
 
-  const resumeOptions = useMemo(() => resumes?.data.resumes ?? [], [resumes]);
+  const resumeOptions = useMemo(() => resumes?.data?.resumes ?? [], [resumes]);
 
   // Auto-open feedback dialog 10 seconds after successful match
   useEffect(() => {
@@ -130,7 +125,7 @@ export default function JobMatcher() {
                 <SelectValue placeholder="Select a resume" />
               </SelectTrigger>
               <SelectContent>
-                {resumeOptions.map((r) => (
+                {resumeOptions.map((r: ResumeListItem) => (
                   <SelectItem key={r.id} value={r.id}>{r.resume_name}</SelectItem>
                 ))}
               </SelectContent>

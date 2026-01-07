@@ -28,6 +28,11 @@ export function ProfileCompletionWidget({
 }: ProfileCompletionWidgetProps) {
   const { completion_percentage, section_status, stats } = data;
   
+  // Hide widget if profile is 100% complete
+  if (completion_percentage === 100) {
+    return null;
+  }
+  
   // Don't render if showOnlyWhenIncomplete is true and profile is complete
   if (showOnlyWhenIncomplete && completion_percentage >= 50) {
     return null;
@@ -83,12 +88,12 @@ export function ProfileCompletionWidget({
           <Progress value={completion_percentage} className="h-2" />
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-1">
-              {section_status.profile_summary ? (
+              {section_status.personal_info ? (
                 <CheckCircle className="h-3 w-3 text-green-600" />
               ) : (
                 <AlertCircle className="h-3 w-3 text-orange-600" />
               )}
-              <span>Profile Summary</span>
+              <span>Personal Info</span>
             </div>
             <div className="flex items-center gap-1">
               {section_status.experience ? (
@@ -114,6 +119,38 @@ export function ProfileCompletionWidget({
               )}
               <span>Skills</span>
             </div>
+            <div className="flex items-center gap-1">
+              {section_status.languages ? (
+                <CheckCircle className="h-3 w-3 text-green-600" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-orange-600" />
+              )}
+              <span>Languages</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {section_status.certifications ? (
+                <CheckCircle className="h-3 w-3 text-green-600" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-orange-600" />
+              )}
+              <span>Certifications</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {section_status.links ? (
+                <CheckCircle className="h-3 w-3 text-green-600" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-orange-600" />
+              )}
+              <span>Links</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {section_status.personal_projects ? (
+                <CheckCircle className="h-3 w-3 text-green-600" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-orange-600" />
+              )}
+              <span>Personal Projects</span>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -136,7 +173,7 @@ export function ProfileCompletionWidget({
       <CardContent>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            {section_status.profile_summary ? (
+            {section_status.personal_info ? (
               <CheckCircle className="h-5 w-5 text-green-600" />
             ) : (
               <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
@@ -166,6 +203,38 @@ export function ProfileCompletionWidget({
               <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
             )}
             <span>Add your skills</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {section_status.languages ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+            )}
+            <span>Add languages</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {section_status.certifications ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+            )}
+            <span>Add certifications</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {section_status.links ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+            )}
+            <span>Add links</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {section_status.personal_projects ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+            )}
+            <span>Add personal projects</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
