@@ -113,20 +113,20 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#privacy"
+                <Link
+                  to="/policy#policy"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#terms"
+                <Link
+                  to="/policy#terms"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Terms of Service
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

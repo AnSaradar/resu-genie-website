@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './services/auth/hook';
 import { LandingPage } from './modules/landing/LandingPage';
 import { AboutPage } from './modules/landing/pages/AboutPage';
+import { PolicyPage } from './modules/landing/pages/PolicyPage';
 import { Login } from './modules/auth/pages/Login';
 import { Register } from './modules/auth/pages/Register';
 import { OTPVerification } from './modules/auth/pages/OTPVerification';
@@ -241,6 +242,11 @@ function AppContent() {
         <Route path="/about" element={
           <PublicRoute>
             <Layout><AboutPage /></Layout>
+          </PublicRoute>
+        } />
+        <Route path="/policy" element={
+          <PublicRoute>
+            <Layout><PolicyPage /></Layout>
           </PublicRoute>
         } />
         
