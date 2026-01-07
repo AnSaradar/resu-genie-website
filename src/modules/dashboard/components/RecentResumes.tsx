@@ -172,7 +172,7 @@ export function RecentResumes() {
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0"
-                      onClick={() => navigate(`/dashboard/generate?resumeId=${resume.id}`)}
+                      onClick={() => navigate(`/dashboard/resume/${resume.id}`)}
                       title="Edit"
                     >
                       <Edit3 className="h-4 w-4" />
