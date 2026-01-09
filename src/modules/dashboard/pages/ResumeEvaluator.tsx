@@ -115,7 +115,7 @@ export function ResumeEvaluator() {
   };
 
   return (
-    <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} data-tour-id="evaluator-page">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button 
@@ -152,7 +152,7 @@ export function ResumeEvaluator() {
               value={selectedResumeId === null ? 'profile' : selectedResumeId} 
               onValueChange={(value) => setSelectedResumeId(value === 'profile' ? null : value)}
             >
-              <SelectTrigger>
+              <SelectTrigger data-tour-id="select-resume-evaluator">
                 <SelectValue placeholder="Select a resume or profile" />
               </SelectTrigger>
               <SelectContent>
@@ -176,6 +176,7 @@ export function ResumeEvaluator() {
               size="lg" 
               disabled={evaluateUnified.isPending} 
               onClick={handleEvaluate}
+              data-tour-id="evaluate-button"
             >
               {evaluateUnified.isPending ? (
                 <>
@@ -234,7 +235,7 @@ export function ResumeEvaluator() {
             <CardContent className="space-y-6">
               {/* Overall Score */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg border bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20" data-tour-id="overall-score">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="text-purple-600">
                       <Wand2 className="h-5 w-5" />
@@ -247,7 +248,7 @@ export function ResumeEvaluator() {
                   <Progress value={currentEvaluation.score * 10} className="mt-2 h-2" />
                 </div>
 
-                <div className="p-4 rounded-lg border bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20">
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20" data-tour-id="evaluation-status">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="text-blue-600">
                       <FileText className="h-5 w-5" />
@@ -280,7 +281,7 @@ export function ResumeEvaluator() {
 
               {/* Mistakes and Issues */}
               {currentEvaluation.mistakes_issues.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-4" data-tour-id="issues-recommendations">
                   <h3 className="font-medium">Issues & Recommendations</h3>
                   <div className="space-y-3">
                     {currentEvaluation.mistakes_issues.map((issue, index) => (
@@ -307,7 +308,7 @@ export function ResumeEvaluator() {
 
               {/* Suggestions */}
               {currentEvaluation.suggestions.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-4" data-tour-id="general-suggestions">
                   <h3 className="font-medium">General Suggestions</h3>
                   <div className="space-y-2">
                     {currentEvaluation.suggestions.map((suggestion, index) => (

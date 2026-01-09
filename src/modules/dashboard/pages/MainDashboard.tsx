@@ -9,8 +9,6 @@ import { useGetProfileCompletionData } from "@/services/profile_completion/hook"
 import { useGetDashboardStats } from "@/services/dashboard/hook";
 import { ProfileCompletionWidget } from "../components/ProfileCompletionWidget";
 import { RecentResumes } from "../components/RecentResumes";
-import { useTour } from "@/modules/tour/TourProvider";
-import { getDashboardSteps } from "@/modules/tour/steps";
 import { 
   FilePlus2, 
   FileText, 
@@ -29,19 +27,10 @@ import {
 export function MainDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { startTour, enabled, language } = useTour();
 
   // Single API call for all profile completion data
   const { data: profileData, isLoading } = useGetProfileCompletionData();
   const { data: dashboardStats, isLoading: isLoadingStats } = useGetDashboardStats();
-
-  // Start dashboard tour on component mount
-  useEffect(() => {
-    if (enabled && profileData) {
-      const steps = getDashboardSteps(language);
-      startTour({ tourKey: 'dashboard', steps, autoRun: true });
-    }
-  }, [enabled, language, profileData, startTour]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -159,7 +148,7 @@ export function MainDashboard() {
     >
       {/* Welcome Header */}
       <motion.div variants={itemVariants}>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4" data-tour-id="dashboard-welcome">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold">
               Welcome back, {user?.first_name}! 👋
@@ -172,6 +161,7 @@ export function MainDashboard() {
             size="lg" 
             className="text-base"
             onClick={() => navigate('/dashboard/generate')}
+            data-tour-id="quick-actions"
           >
             <FilePlus2 className="mr-2 h-4 w-4" />
             Generate Resume
@@ -182,7 +172,7 @@ export function MainDashboard() {
       {/* Profile Overview */}
       {profileData.data.completion_percentage < 100 && (
         <motion.div variants={itemVariants}>
-          <div data-tour="profile-widget">
+          <div data-tour-id="profile-widget">
             <ProfileCompletionWidget 
               data={profileData.data} 
               variant="detailed" 
@@ -192,7 +182,7 @@ export function MainDashboard() {
       )}
 
       {/* Recent Resumes */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} data-tour-id="recent-activity">
         <RecentResumes />
       </motion.div>
 
@@ -262,7 +252,7 @@ export function MainDashboard() {
         </Card>
 
         {/* Platform Features */}
-        <Card data-tour="platform-features">
+        <Card data-tour-id="platform-features">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Rocket className="h-5 w-5 text-green-600" />

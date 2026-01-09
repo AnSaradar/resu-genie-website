@@ -126,7 +126,7 @@ export default function CoverLetterPage() {
 
   return (
     <motion.div className="space-y-8" initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      animate={{ opacity: 1 }} transition={{ duration: 0.5 }} data-tour-id="cover-letter-page">
       
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -154,7 +154,7 @@ export default function CoverLetterPage() {
             <CardTitle>Job Information</CardTitle>
             <CardDescription>Provide details about the position you're applying for</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4" data-tour-id="job-information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input 
                 placeholder="Job Title (e.g., Software Engineer)" 
@@ -193,7 +193,7 @@ export default function CoverLetterPage() {
                 value={selectedResumeId === null ? "account-data" : selectedResumeId} 
                 onValueChange={(v) => setSelectedResumeId(v === "account-data" ? null : v)}
               >
-                <SelectTrigger>
+                <SelectTrigger data-tour-id="select-resume-cover">
                   <SelectValue placeholder="Use account data" />
                 </SelectTrigger>
                 <SelectContent>
@@ -208,7 +208,7 @@ export default function CoverLetterPage() {
               </p>
             </div>
 
-            <div>
+            <div data-tour-id="tone-selection">
               <label className="text-sm font-medium mb-2 block">Tone</label>
               <Select value={tone} onValueChange={(v: CoverLetterTone) => setTone(v)}>
                 <SelectTrigger>
@@ -230,6 +230,7 @@ export default function CoverLetterPage() {
               size="lg" 
               disabled={createCoverLetter.isPending || !jobDescription.trim()} 
               onClick={handleGenerate}
+              data-tour-id="generate-button"
             >
               {createCoverLetter.isPending ? (
                 <>
@@ -255,7 +256,7 @@ export default function CoverLetterPage() {
           transition={{ duration: 0.5 }}
           className="space-y-4"
         >
-          <Card>
+          <Card data-tour-id="generated-letter">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -327,6 +328,7 @@ export default function CoverLetterPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-4"
+          data-tour-id="letter-history"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Recent Cover Letters</h2>

@@ -251,7 +251,7 @@ export default function MyResumes() {
   const resumes = filteredAndSortedResumes();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour-id="my-resumes-page">
       {/* Enhanced Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -266,6 +266,7 @@ export default function MyResumes() {
         <Button 
           onClick={() => navigate('/dashboard/generate')}
           className="gap-2"
+          data-tour-id="create-resume-button"
         >
           <Plus className="h-4 w-4" />
           Create Resume
@@ -374,12 +375,15 @@ export default function MyResumes() {
           </div>
         </div>
       ) : (
-        <div className={cn(
-          "gap-6",
-          viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" 
-            : "space-y-4"
-        )}>
+        <div 
+          className={cn(
+            "gap-6",
+            viewMode === 'grid' 
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" 
+              : "space-y-4"
+          )}
+          data-tour-id="resume-list"
+        >
           {resumes.map((resume: ResumeListItem) => {
             const status = getResumeStatus(resume);
             const wordCount = getResumeWordCount(resume);
@@ -405,7 +409,7 @@ export default function MyResumes() {
                 </div>
 
                 {/* Actions Menu */}
-                <div className="absolute top-3 right-3 z-20">
+                <div className="absolute top-3 right-3 z-20" data-tour-id="resume-actions">
                   <DropdownMenu modal={true}>
                     <DropdownMenuTrigger 
                       className="inline-flex items-center justify-center h-8 w-8 p-0 rounded-md transition-opacity opacity-30 group-hover:opacity-100 data-[state=open]:opacity-100 focus:opacity-100 hover:bg-accent hover:text-accent-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"

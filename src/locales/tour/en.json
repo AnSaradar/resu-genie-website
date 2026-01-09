@@ -1,0 +1,162 @@
+{
+  "dashboard_main": {
+    "steps": [
+      {
+        "title": "Welcome to ResuGenie Dashboard",
+        "content": "This is your main dashboard where you can access all features. Let's take a quick tour to help you get started!"
+      },
+      {
+        "title": "Profile Completion Widget",
+        "content": "This widget shows your profile completion progress. Complete your profile to auto-fill your resumes with your information."
+      },
+      {
+        "title": "Platform Features",
+        "content": "Here you can access all main features: Build Resume, Resume Evaluator, Job Matcher, and Cover Letter Generator."
+      },
+      {
+        "title": "Quick Actions",
+        "content": "Quick actions help you get started quickly with essential tasks like creating a new resume or completing your profile."
+      },
+      {
+        "title": "Recent Activity",
+        "content": "Here you can see your recent resumes and evaluations. This helps you track your work and continue where you left off."
+      }
+    ]
+  },
+  "navbar": {
+    "steps": [
+      {
+        "title": "Navigation Bar",
+        "content": "Use the navigation bar to quickly access different sections of the dashboard. The active page is highlighted."
+      },
+      {
+        "title": "Token Balance",
+        "content": "Your token balance is displayed here. Tokens are used for AI-powered features like resume evaluation and cover letter generation."
+      },
+      {
+        "title": "Theme Switcher",
+        "content": "Switch between light and dark themes to customize your experience."
+      },
+      {
+        "title": "Profile Menu",
+        "content": "Access your profile, account settings, and logout from here. You can also view your token usage statistics."
+      }
+    ]
+  },
+  "my_resumes": {
+    "steps": [
+      {
+        "title": "My Resumes Page",
+        "content": "This is where you manage all your resumes. You can view, edit, delete, and export your resumes from here."
+      },
+      {
+        "title": "Create New Resume",
+        "content": "Click this button to create a brand new resume from scratch with our guided builder."
+      },
+      {
+        "title": "Resume List",
+        "content": "All your resumes are displayed here. You can switch between grid and list view, and filter or search your resumes."
+      },
+      {
+        "title": "Resume Actions",
+        "content": "For each resume, you can preview, edit, export as PDF, rename, or delete it using the action menu."
+      }
+    ]
+  },
+  "job_matcher": {
+    "steps": [
+      {
+        "title": "Job Matcher",
+        "content": "Match your resume against job postings to see how well you fit. Get AI-powered match scores and improvement suggestions."
+      },
+      {
+        "title": "Select Resume",
+        "content": "Choose which resume you want to match against job postings. You can select from your saved resumes."
+      },
+      {
+        "title": "Job Details",
+        "content": "Enter the job title and full job description here. The more details you provide, the better the match analysis."
+      },
+      {
+        "title": "Match Now",
+        "content": "Click this button to analyze how well your resume matches the job posting. You'll get a detailed match score and recommendations."
+      },
+      {
+        "title": "Match Results",
+        "content": "View your match score, strengths, weaknesses, and AI-generated suggestions to improve your resume for this specific job."
+      },
+      {
+        "title": "Match History",
+        "content": "See all your previous job matches here. You can review past analyses and track your improvement over time."
+      }
+    ]
+  },
+  "cover_letter": {
+    "steps": [
+      {
+        "title": "Cover Letter Generator",
+        "content": "Generate professional, tailored cover letters for specific job applications using AI. Your cover letters will be customized based on your resume and the job description."
+      },
+      {
+        "title": "Select Resume",
+        "content": "Choose the resume you want to use as the basis for your cover letter. The cover letter will reference your experience and skills from this resume."
+      },
+      {
+        "title": "Job Information",
+        "content": "Enter the job title, company name, job description, and hiring manager's name (optional) to personalize your cover letter."
+      },
+      {
+        "title": "Tone Selection",
+        "content": "Choose the tone for your cover letter: Professional, Friendly, or Formal. Each tone creates a different style of communication."
+      },
+      {
+        "title": "Generate Cover Letter",
+        "content": "Click this button to generate your personalized cover letter. The AI will create a tailored letter based on your resume and job details."
+      },
+      {
+        "title": "Generated Cover Letter",
+        "content": "Your AI-generated cover letter appears here. You can copy, download, or regenerate it with different settings."
+      },
+      {
+        "title": "Cover Letter History",
+        "content": "View all your previously generated cover letters here. You can access, copy, or regenerate any past cover letter."
+      }
+    ]
+  },
+  "evaluator": {
+    "steps": [
+      {
+        "title": "Resume Evaluator",
+        "content": "Get AI-powered feedback and suggestions to improve your resume. The evaluator analyzes your resume and provides actionable recommendations."
+      },
+      {
+        "title": "Select Resume or Profile",
+        "content": "Choose which resume to evaluate, or select 'Current Profile' to evaluate your account data. This determines what will be analyzed."
+      },
+      {
+        "title": "Evaluate Button",
+        "content": "Click this button to start the evaluation. The AI will analyze your resume and provide a comprehensive score with detailed feedback."
+      },
+      {
+        "title": "Overall Score",
+        "content": "Your overall resume score out of 10 is displayed here. This gives you a quick overview of your resume's quality."
+      },
+      {
+        "title": "Evaluation Status",
+        "content": "The status shows whether your resume is excellent, good, or needs improvement based on the AI analysis."
+      },
+      {
+        "title": "Issues & Recommendations",
+        "content": "Detailed issues found in your resume are listed here with priority levels. Each issue includes specific recommendations for improvement."
+      },
+      {
+        "title": "General Suggestions",
+        "content": "AI-generated suggestions to improve your resume overall. These are actionable tips to enhance your resume's effectiveness."
+      }
+    ]
+  }
+}
+
+
+
+

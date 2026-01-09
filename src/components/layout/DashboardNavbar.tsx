@@ -59,7 +59,7 @@ export function DashboardNavbar() {
         </div>
 
         {/* Center Navigation */}
-        <nav className="hidden md:flex flex-1 justify-center items-center space-x-8 text-sm font-medium">
+        <nav className="hidden md:flex flex-1 justify-center items-center space-x-8 text-sm font-medium" data-tour-id="navbar-navigation">
             <Link
             to="/dashboard"
               className={`transition-colors hover:text-foreground/80 ${
@@ -115,7 +115,7 @@ export function DashboardNavbar() {
         {/* Token Balance, Theme Switcher and Profile Dropdown */}
         <div className="flex items-center gap-4">
           {/* Token Balance Display */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border" data-tour-id="token-balance">
             <Coins className="h-4 w-4 text-muted-foreground" />
             {isLoadingTokens ? (
               <span className="text-sm text-muted-foreground">Loading...</span>
@@ -128,7 +128,7 @@ export function DashboardNavbar() {
 
           {/* Theme Switcher */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9">
+            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9" data-tour-id="theme-switcher">
                 <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                 <span className="sr-only">Toggle theme</span>
@@ -148,7 +148,7 @@ export function DashboardNavbar() {
 
           {/* Profile Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 relative">
+            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 relative" data-tour-id="profile-menu">
                 <Avatar>
                   <AvatarImage src="" alt="avatar" />
                   <AvatarFallback>{initials}</AvatarFallback>

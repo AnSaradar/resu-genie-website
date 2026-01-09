@@ -77,7 +77,7 @@ export default function JobMatcher() {
   };
 
   return (
-    <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-tour-id="job-matcher-page">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
@@ -105,7 +105,7 @@ export default function JobMatcher() {
             <CardTitle>Job Posting</CardTitle>
             <CardDescription>Paste the full text for best results</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4" data-tour-id="job-details">
             <Input placeholder="Optional: Job Title (e.g., Senior Backend Engineer)" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
             <Textarea placeholder="Paste the job description, responsibilities, and requirements here..." value={jobOfferText} onChange={(e) => setJobOfferText(e.target.value)} className="min-h-[240px]" />
           </CardContent>
@@ -121,7 +121,7 @@ export default function JobMatcher() {
               value={selectedResumeId || undefined} 
               onValueChange={(v) => setSelectedResumeId(v)}
             >
-              <SelectTrigger>
+              <SelectTrigger data-tour-id="select-resume">
                 <SelectValue placeholder="Select a resume" />
               </SelectTrigger>
               <SelectContent>
@@ -131,7 +131,7 @@ export default function JobMatcher() {
               </SelectContent>
             </Select>
 
-            <Button className="w-full" size="lg" disabled={createJobMatch.isPending || !selectedResumeId || !jobOfferText.trim()} onClick={handleMatch}>
+            <Button className="w-full" size="lg" disabled={createJobMatch.isPending || !selectedResumeId || !jobOfferText.trim()} onClick={handleMatch} data-tour-id="match-button">
               {createJobMatch.isPending ? (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -155,7 +155,7 @@ export default function JobMatcher() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20">
+          <Card className="border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20" data-tour-id="match-results">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -332,7 +332,7 @@ export default function JobMatcher() {
       )}
 
       {/* History */}
-      <Card>
+      <Card data-tour-id="match-history">
         <CardHeader>
           <CardTitle>Recent Matches</CardTitle>
           <CardDescription>See latest scores and recommendations</CardDescription>
