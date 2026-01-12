@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Lock, Sparkles } from "lucide-react";
+import { useAppTranslation } from "@/i18n/hooks";
+import { Trans } from "react-i18next";
 
 
 const containerVariants = {
@@ -27,40 +29,32 @@ const itemVariants = {
   },
 };
 
-const plans = [
-  {
-    name: "Starter",
-    price: "$0 / mo",
-    highlight: "Perfect for your first AI‑powered resume",
-    features: [
-      "Generate ATS‑friendly resumes with guided prompts",
-      "Create tailored cover letters for each application",
-      "Get instant resume feedback & improvement suggestions",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "$9 / mo",
-    highlight: "For power job hunters who live on LinkedIn",
-    features: [
-      "Everything in Starter, plus deeper resume insights",
-      "AI job‑match scoring for every posting you paste in",
-      "Keep multiple role/market‑specific resume versions",
-    ],
-  },
-  {
-    name: "Company Bundle",
-    price: "$49 / mo",
-    highlight: "For teams who shortlist candidates at scale",
-    features: [
-      "Upload role descriptions for open positions",
-      "Get an AI‑curated shortlist of suitable candidates",
-      "Share structured feedback with hiring managers",
-    ],
-  },
-];
-
 export function Pricing() {
+  const { t } = useAppTranslation('landing');
+  
+  const plans = [
+    {
+      id: 'starter',
+      name: t('pricing.plans.starter.name'),
+      price: t('pricing.plans.starter.price'),
+      highlight: t('pricing.plans.starter.highlight'),
+      features: t('pricing.plans.starter.features', { returnObjects: true }) as string[],
+    },
+    {
+      id: 'pro',
+      name: t('pricing.plans.pro.name'),
+      price: t('pricing.plans.pro.price'),
+      highlight: t('pricing.plans.pro.highlight'),
+      features: t('pricing.plans.pro.features', { returnObjects: true }) as string[],
+    },
+    {
+      id: 'company',
+      name: t('pricing.plans.company.name'),
+      price: t('pricing.plans.company.price'),
+      highlight: t('pricing.plans.company.highlight'),
+      features: t('pricing.plans.company.features', { returnObjects: true }) as string[],
+    },
+  ];
   return (
     <section
       id="pricing"
@@ -85,29 +79,27 @@ export function Pricing() {
             className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1 text-xs font-medium uppercase tracking-[0.18em] text-emerald-100 mb-4"
           >
             <Sparkles className="h-3.5 w-3.5 text-emerald-300" />
-            100% Free – All Genies Unleashed
+            {t('pricing.badge')}
           </motion.div>
 
           <motion.h2
             variants={itemVariants}
             className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3"
           >
-            No paywall. No trial.{" "}
-            <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent">
-              Just magic.
-            </span>
+            <Trans
+              i18nKey="pricing.title"
+              ns="landing"
+              components={{
+                gradient: <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-sky-300 bg-clip-text text-transparent" />
+              }}
+            />
           </motion.h2>
 
           <motion.p
             variants={itemVariants}
             className="text-sm md:text-base lg:text-lg text-slate-300"
           >
-            Every feature – Cover Letter, Job Matcher, Resume Evaluator – is{" "}
-            <span className="font-semibold text-emerald-200">
-              fully unlocked
-            </span>{" "}
-            while we&apos;re in early access. Use it like a premium tool, pay
-            exactly <span className="font-semibold text-emerald-300">$0</span>.
+            {t('pricing.subtitle')}
           </motion.p>
         </motion.div>
 
@@ -187,7 +179,7 @@ export function Pricing() {
                 )}
                 <div className="mt-4">
                   <p className="inline-flex items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-300">
-                    Coming later – when the magic graduates
+                    {t('pricing.plans_disabled')}
                   </p>
                 </div>
               </div>
@@ -209,14 +201,7 @@ export function Pricing() {
             variants={itemVariants}
             className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-xs md:text-sm text-emerald-100"
           >
-            <span>
-              All future subscription bundles are{" "}
-              <span className="font-semibold text-emerald-300">disabled</span>{" "}
-              for now.
-            </span>
-            <span className="font-semibold text-emerald-200">
-              You get the premium experience for free.
-            </span>
+            {t('pricing.all_free')}
           </motion.p>
         </motion.div>
       </div>

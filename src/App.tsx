@@ -30,6 +30,9 @@ import AdminLayout from './modules/admin/layout/AdminLayout';
 import AdminUsersPage from './modules/admin/pages/AdminUsersPage';
 import AdminUserDetailPage from './modules/admin/pages/AdminUserDetailPage';
 import AdminStatsPage from './modules/admin/pages/AdminStatsPage';
+import '@/i18n';
+import { DirectionProvider } from '@/components/providers/DirectionProvider';
+import { ScrollToTop } from '@/components/layout/ScrollToTop';
 
 // Protected route component that uses auth context
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -206,6 +209,9 @@ const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 function AppContent() {
   return (
     <>
+      {/* Scroll to top on route change */}
+      <ScrollToTop />
+      
       {/* Toast notifications */}
       <Toaster
         position="top-right"
@@ -333,9 +339,11 @@ function App() {
   return (
     <Router>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <DirectionProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </DirectionProvider>
       </ThemeProvider>
     </Router>
   );

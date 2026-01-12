@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/services/auth/hook";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { useAppTranslation } from "@/i18n/hooks";
 
 export function Navbar() {
   const { setTheme, theme } = useTheme();
@@ -18,6 +20,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, logout } = useAuth();
+  const { t } = useAppTranslation('common');
 
   const handleLogout = async () => {
     await logout();
@@ -81,7 +84,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Cover Letter
+            {t('nav.cover_letter')}
           </motion.a>
           <motion.a
             href="#job-matcher"
@@ -90,7 +93,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Job Matcher
+            {t('nav.job_matcher')}
           </motion.a>
           <motion.a
             href="#resume-evaluator"
@@ -99,7 +102,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Resume Evaluator
+            {t('nav.resume_evaluator')}
           </motion.a>
           <motion.a
             href="#templates"
@@ -108,7 +111,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            ATS-Templates
+            {t('nav.templates')}
           </motion.a>
           {isAuthenticated && (
             <motion.div
@@ -123,28 +126,32 @@ export function Navbar() {
                     : ''
                 }`}
               >
-                Dashboard
+                {t('nav.dashboard')}
               </Link>
             </motion.div>
           )}
         </nav>
 
         <div className="flex items-center gap-4">
+          {/* Language Switcher */}
+          <LanguageSwitcher variant="dropdown" />
+
+          {/* Theme Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9">
                 <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
+                <span className="sr-only">{t('theme.toggle_label')}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTheme("light")}>
-                Light
+                {t('theme.light')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("dark")}>
-                Dark
+                {t('theme.dark')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("system")}>
-                System
+                {t('theme.system')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -152,17 +159,12 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             {isAuthenticated ? (
               <Button variant="outline" onClick={handleLogout}>
-                Log out
+                {t('nav.logout')}
               </Button>
             ) : (
-              <>
-                <Button variant="outline" onClick={() => navigate('/login')}>
-                  Log in
-                </Button>
-                <Button onClick={() => navigate('/register')}>
-                  Sign up
-                </Button>
-              </>
+              <Button onClick={() => navigate('/register')}>
+                {t('nav.signup')}
+              </Button>
             )}
           </div>
 
@@ -224,28 +226,28 @@ export function Navbar() {
             onClick={(e) => handleSmoothScroll(e, "cover-letter")}
             className="block text-sm font-medium cursor-pointer"
           >
-            Cover Letter
+            {t('nav.cover_letter')}
           </a>
           <a
             href="#job-matcher"
             onClick={(e) => handleSmoothScroll(e, "job-matcher")}
             className="block text-sm font-medium cursor-pointer"
           >
-            Job Matcher
+            {t('nav.job_matcher')}
           </a>
           <a
             href="#resume-evaluator"
             onClick={(e) => handleSmoothScroll(e, "resume-evaluator")}
             className="block text-sm font-medium cursor-pointer"
           >
-            Resume Evaluator
+            {t('nav.resume_evaluator')}
           </a>
           <a
             href="#templates"
             onClick={(e) => handleSmoothScroll(e, "templates")}
             className="block text-sm font-medium cursor-pointer"
           >
-            ATS-Templates
+            {t('nav.templates')}
           </a>
           {isAuthenticated && (
             <Link 
@@ -256,23 +258,23 @@ export function Navbar() {
                   : ''
               }`}
             >
-              Dashboard
+              {t('nav.dashboard')}
             </Link>
           )}
           <div className="flex flex-col gap-2 pt-4 border-t">
+            {/* Language Switcher in Mobile Menu */}
+            <div className="flex items-center justify-between pb-2">
+              <span className="text-sm text-muted-foreground">{t('nav.language')}</span>
+              <LanguageSwitcher variant="toggle" />
+            </div>
             {isAuthenticated ? (
               <Button variant="outline" onClick={handleLogout}>
-                Log out
+                {t('nav.logout')}
               </Button>
             ) : (
-              <>
-                <Button variant="outline" onClick={() => navigate('/login')}>
-                  Log in
-                </Button>
-                <Button onClick={() => navigate('/register')}>
-                  Sign up
-                </Button>
-              </>
+              <Button onClick={() => navigate('/register')}>
+                {t('nav.signup')}
+              </Button>
             )}
           </div>
         </div>

@@ -1,0 +1,93 @@
+{
+  "hero": {
+    "title": "ResuGenie",
+    "typewriter": "Build an ATS-optimized resume in minutes",
+    "description": "Our AI-powered platform helps you craft the perfect resume tailored to your industry, experience, and target job. Stand out from the competition with ATS-optimized resumes.",
+    "cta": {
+      "primary": "Get Started for Free",
+      "secondary": "Sign In"
+    },
+    "badges": {
+      "ats": "ATS-Optimized",
+      "ai": "AI-Powered Content",
+      "templates": "Professional Templates",
+      "download": "Instant Download"
+    }
+  },
+  "features": {
+    "title": "Your AI Toolkit for <gradient>Smarter Applications</gradient>",
+    "subtitle": "Three focused tools that work together to write stronger cover letters, target roles more effectively, and continuously improve your resume.",
+    "items": {
+      "cover_letter": {
+        "title": "Cover Letter",
+        "description": "Generate tailored cover letters that mirror the job description and your experience so you can apply in minutes, not hours."
+      },
+      "job_matcher": {
+        "title": "Job Matcher",
+        "description": "Paste any job description and instantly see how well you match, with concrete suggestions to tweak your resume for a better fit."
+      },
+      "resume_evaluator": {
+        "title": "Resume Evaluator",
+        "description": "Get an instant, AI-powered score and actionable feedback on your resume's clarity, impact, and ATS readiness."
+      }
+    },
+    "coming_soon": {
+      "title": "Coming soon",
+      "description": "This area will showcase an animated {{feature}} demo with real interactions and live previews."
+    }
+  },
+  "templates": {
+    "title": "Professional <gradient>Resume Templates</gradient>",
+    "subtitle": "Choose from our collection of ATS-optimized templates designed to impress employers and highlight your skills.",
+    "use_template": "Use This Template",
+    "preview_title_suffix": "Template"
+  },
+  "pricing": {
+    "badge": "100% Free – All Genies Unleashed",
+    "title": "No paywall. No trial. <gradient>Just magic.</gradient>",
+    "subtitle": "Every feature – Cover Letter, Job Matcher, Resume Evaluator – is fully unlocked while we’re in early access. Use it like a premium tool, pay exactly $0.",
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "$0 / mo",
+        "highlight": "Perfect for your first AI‑powered resume",
+        "features": [
+          "Generate ATS‑friendly resumes with guided prompts",
+          "Create tailored cover letters for each application",
+          "Get instant resume feedback & improvement suggestions"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$9 / mo",
+        "highlight": "For power job hunters who live on LinkedIn",
+        "features": [
+          "Everything in Starter, plus deeper resume insights",
+          "AI job‑match scoring for every posting you paste in",
+          "Keep multiple role/market‑specific resume versions"
+        ]
+      },
+      "company": {
+        "name": "Company Bundle",
+        "price": "$49 / mo",
+        "highlight": "For teams who shortlist candidates at scale",
+        "features": [
+          "Upload role descriptions for open positions",
+          "Get an AI‑curated shortlist of suitable candidates",
+          "Share structured feedback with hiring managers"
+        ]
+      }
+    },
+    "plans_disabled": "Coming later – when the magic graduates",
+    "all_free": "All future subscription bundles are disabled for now. You get the premium experience for free."
+  },
+  "cta": {
+    "title": "Ready to Create Your <gradient>Perfect Resume?</gradient>",
+    "description": "Join thousands of job seekers who have used ResuGenie to land their dream jobs. Start building your professional resume today.",
+    "primary": "Get Started for Free",
+    "view_templates": "View Templates"
+  }
+}
+
+
+

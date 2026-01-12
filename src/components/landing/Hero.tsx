@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useAppTranslation } from "@/i18n/hooks";
 
 interface HeroProps {
   onLoginClick?: () => void;
@@ -8,8 +9,9 @@ interface HeroProps {
 }
 
 export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
+  const { t } = useAppTranslation("landing");
   const [typedText, setTypedText] = useState("");
-  const fullText = "Build an ATS-optimized resume in minutes";
+  const fullText = t("hero.typewriter");
   const typingSpeed = 80;
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
           >
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                ResuGenie
+                {t("hero.title")}
               </span>
             </h1>
             <div className="min-h-[3rem] md:min-h-[4rem] lg:min-h-[5rem] flex items-center justify-center px-4">
@@ -108,9 +110,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
             className="text-base md:text-lg lg:text-xl text-muted-foreground mt-6 md:mt-8 px-4"
             variants={itemVariants}
           >
-            Our AI-powered platform helps you craft the perfect resume tailored
-            to your industry, experience, and target job. Stand out from the
-            competition with ATS-optimized resumes.
+            {t("hero.description")}
           </motion.p>
 
           <motion.div
@@ -122,7 +122,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
               className="text-sm md:text-base h-11 md:h-12 w-full sm:w-auto"
               onClick={onRegisterClick}
             >
-              Get Started for Free
+              {t("hero.cta.primary")}
             </Button>
             <Button 
               size="lg" 
@@ -130,7 +130,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
               className="text-sm md:text-base h-11 md:h-12 w-full sm:w-auto"
               onClick={onLoginClick}
             >
-              Sign In
+              {t("hero.cta.secondary")}
             </Button>
           </motion.div>
 
@@ -193,7 +193,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              <span className="text-xs md:text-sm">ATS-Optimized</span>
+              <span className="text-xs md:text-sm">{t("hero.badges.ats")}</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -211,7 +211,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              <span className="text-xs md:text-sm">AI-Powered Content</span>
+              <span className="text-xs md:text-sm">{t("hero.badges.ai")}</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -229,7 +229,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              <span className="text-xs md:text-sm">Professional Templates</span>
+              <span className="text-xs md:text-sm">{t("hero.badges.templates")}</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -247,7 +247,7 @@ export function Hero({ onLoginClick, onRegisterClick }: HeroProps) {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              <span className="text-xs md:text-sm">Instant Download</span>
+              <span className="text-xs md:text-sm">{t("hero.badges.download")}</span>
             </div>
           </motion.div>
         </motion.div>

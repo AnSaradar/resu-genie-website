@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "react-hot-toast";
 import { getMessage } from "@/utils/messages";
+import { useAppTranslation } from "@/i18n/hooks";
+import { Trans } from "react-i18next";
 import simpleTemplate from "@/assets/images/simple_template.jpg";
 import jobscanTemplate from "@/assets/images/jobscan_template.jpg";
 import moeyTemplate from "@/assets/images/moey_template.jpg";
@@ -26,6 +28,7 @@ interface TemplatesProps {
 }
 
 export function Templates({ onRegisterClick }: TemplatesProps) {
+  const { t } = useAppTranslation('landing');
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
 
   const templates = [
@@ -60,10 +63,13 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            Professional{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-              Resume Templates
-            </span>
+            <Trans
+              i18nKey="templates.title"
+              ns="landing"
+              components={{
+                gradient: <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent" />
+              }}
+            />
           </motion.h2>
           <motion.p
             className="text-base md:text-lg lg:text-xl text-muted-foreground px-4"
@@ -72,8 +78,7 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Choose from our collection of ATS-optimized templates designed to
-            impress employers and highlight your skills.
+            {t('templates.subtitle')}
           </motion.p>
         </div>
 
@@ -125,7 +130,7 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
                             }
                           }}
                         >
-                          Use This Template
+                          {t('templates.use_template')}
                         </Button>
                       </div>
                     </motion.div>
@@ -146,7 +151,7 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
             {selectedTemplate !== null && (
               <>
                 <DialogHeader>
-                  <DialogTitle>{templates[selectedTemplate].name} Template</DialogTitle>
+                  <DialogTitle>{templates[selectedTemplate].name} {t('templates.preview_title_suffix')}</DialogTitle>
                   <DialogDescription className="text-base">
                     {templates[selectedTemplate].description}
                   </DialogDescription>
@@ -172,7 +177,7 @@ export function Templates({ onRegisterClick }: TemplatesProps) {
                       }
                     }}
                   >
-                    Use This Template
+                    {t('templates.use_template')}
                   </Button>
                 </div>
               </>

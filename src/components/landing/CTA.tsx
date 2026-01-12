@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useAppTranslation } from "@/i18n/hooks";
+import { Trans } from "react-i18next";
 
 interface CTAProps {
   onRegisterClick?: () => void;
 }
 
 export function CTA({ onRegisterClick }: CTAProps) {
+  const { t } = useAppTranslation('landing');
   return (
     <section className="py-12 md:py-20 lg:py-24 relative overflow-hidden">
       {/* Background gradient */}
@@ -57,10 +60,13 @@ export function CTA({ onRegisterClick }: CTAProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              Ready to Create Your{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                Perfect Resume?
-              </span>
+              <Trans
+                i18nKey="cta.title"
+                ns="landing"
+                components={{
+                  gradient: <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent" />
+                }}
+              />
             </motion.h2>
             <motion.p
               className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 md:mb-8"
@@ -69,8 +75,7 @@ export function CTA({ onRegisterClick }: CTAProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Join thousands of job seekers who have used ResuGenie to land
-              their dream jobs. Start building your professional resume today.
+              {t('cta.description')}
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center"
@@ -84,14 +89,14 @@ export function CTA({ onRegisterClick }: CTAProps) {
                 className="text-sm md:text-base h-11 md:h-12 w-full sm:w-auto"
                 onClick={onRegisterClick}
               >
-                Get Started for Free
+                {t('cta.primary')}
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
                 className="text-sm md:text-base h-11 md:h-12 w-full sm:w-auto"
               >
-                View Templates
+                {t('cta.view_templates')}
               </Button>
             </motion.div>
           </motion.div>

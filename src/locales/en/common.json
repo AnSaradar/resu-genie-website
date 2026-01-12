@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "ResuGenie"
+  },
+  "nav": {
+    "cover_letter": "Cover Letter",
+    "job_matcher": "Job Matcher",
+    "resume_evaluator": "Resume Evaluator",
+    "templates": "ATS-Templates",
+    "dashboard": "Dashboard",
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Log out",
+    "language": "Language"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle_label": "Toggle theme"
+  },
+  "footer": {
+    "description": "AI-powered resume builder that helps you create professional, ATS-compliant resumes in minutes.",
+    "product": "Product",
+    "resources": "Resources",
+    "company": "Company",
+    "features": "Features",
+    "templates": "Templates",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "guides": "Resume Guides",
+    "examples": "Examples",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "social_coming_soon": "Coming Soon",
+    "copyright": "© {{year}} ResuGenie. All rights reserved."
+  }
+}
+
+
+

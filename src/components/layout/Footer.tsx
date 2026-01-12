@@ -1,16 +1,33 @@
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { useAppTranslation } from "@/i18n/hooks";
 
 export function Footer() {
+  const { t } = useAppTranslation('common');
   const currentYear = new Date().getFullYear();
 
   const handleSocialMediaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    toast("Coming Soon", {
+    toast(t('footer.social_coming_soon'), {
       duration: 3000,
       icon: "ℹ️",
     });
+  };
+
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    const element = document.getElementById(targetId);
+    if (element) {
+      const headerOffset = 80; // Account for sticky navbar height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
   };
 
   return (
@@ -24,84 +41,104 @@ export function Footer() {
               whileTap={{ scale: 0.95 }}
             >
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                ResuGenie
+                {t('app.name')}
               </span>
             </motion.div>
-            <p className="text-sm text-muted-foreground">
-              AI-powered resume builder that helps you create professional,
-              ATS-compliant resumes in minutes.
-            </p>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Product</h3>
+            <h3 className="text-sm font-medium">{t('footer.product')}</h3>
             <ul className="space-y-2">
               <li>
                 <a
                   href="#features"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={(e) => handleSmoothScroll(e, 'features')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  Features
+                  {t('footer.features')}
                 </a>
               </li>
               <li>
                 <a
                   href="#templates"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={(e) => handleSmoothScroll(e, 'templates')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  Templates
+                  {t('footer.templates')}
                 </a>
               </li>
               <li>
                 <a
                   href="#pricing"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={(e) => handleSmoothScroll(e, 'pricing')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  Pricing
+                  {t('footer.pricing')}
                 </a>
               </li>
             </ul>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Resources</h3>
+            <h3 className="text-sm font-medium">{t('footer.resources')}</h3>
             <ul className="space-y-2">
               <li>
                 <a
                   href="#blog"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast(t('footer.social_coming_soon'), {
+                      duration: 3000,
+                      icon: "ℹ️",
+                    });
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  Blog
+                  {t('footer.blog')}
                 </a>
               </li>
               <li>
                 <a
                   href="#guides"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast(t('footer.social_coming_soon'), {
+                      duration: 3000,
+                      icon: "ℹ️",
+                    });
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  Resume Guides
+                  {t('footer.guides')}
                 </a>
               </li>
               <li>
                 <a
                   href="#examples"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast(t('footer.social_coming_soon'), {
+                      duration: 3000,
+                      icon: "ℹ️",
+                    });
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  Examples
+                  {t('footer.examples')}
                 </a>
               </li>
             </ul>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Company</h3>
+            <h3 className="text-sm font-medium">{t('footer.company')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   to="/about"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  About
+                  {t('footer.about')}
                 </Link>
               </li>
               <li>
@@ -109,7 +146,7 @@ export function Footer() {
                   to="/about#contact"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Contact
+                  {t('footer.contact')}
                 </Link>
               </li>
               <li>
@@ -117,7 +154,7 @@ export function Footer() {
                   to="/policy#policy"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Privacy Policy
+                  {t('footer.privacy')}
                 </Link>
               </li>
               <li>
@@ -125,7 +162,7 @@ export function Footer() {
                   to="/policy#terms"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Terms of Service
+                  {t('footer.terms')}
                 </Link>
               </li>
             </ul>
@@ -134,7 +171,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} ResuGenie. All rights reserved.
+            {t('footer.copyright', { year: currentYear })}
           </p>
           <div className="flex items-center gap-4">
             <a

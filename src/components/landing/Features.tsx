@@ -1,28 +1,29 @@
 import { motion } from "framer-motion";
 import { FileText, SearchCheck, ClipboardList } from "lucide-react";
+import { useAppTranslation } from "@/i18n/hooks";
+import { Trans } from "react-i18next";
 
 export function Features() {
+  const { t } = useAppTranslation('landing');
+  
   const features = [
     {
       id: "cover-letter",
       icon: FileText,
-      title: "Cover Letter",
-      description:
-        "Generate tailored cover letters that mirror the job description and your experience so you can apply in minutes, not hours.",
+      title: t('features.items.cover_letter.title'),
+      description: t('features.items.cover_letter.description'),
     },
     {
       id: "job-matcher",
       icon: SearchCheck,
-      title: "Job Matcher",
-      description:
-        "Paste any job description and instantly see how well you match, with concrete suggestions to tweak your resume for a better fit.",
+      title: t('features.items.job_matcher.title'),
+      description: t('features.items.job_matcher.description'),
     },
     {
       id: "resume-evaluator",
       icon: ClipboardList,
-      title: "Resume Evaluator",
-      description:
-        "Get an instant, AI-powered score and actionable feedback on your resume’s clarity, impact, and ATS readiness.",
+      title: t('features.items.resume_evaluator.title'),
+      description: t('features.items.resume_evaluator.description'),
     },
   ];
 
@@ -66,10 +67,13 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            Your AI Toolkit for{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-              Smarter Applications
-            </span>
+            <Trans
+              i18nKey="features.title"
+              ns="landing"
+              components={{
+                gradient: <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent" />
+              }}
+            />
           </motion.h2>
           <motion.p
             className="text-base md:text-lg lg:text-xl text-muted-foreground px-4"
@@ -78,8 +82,7 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Three focused tools that work together to write stronger cover letters,
-            target roles more effectively, and continuously improve your resume.
+            {t('features.subtitle')}
           </motion.p>
         </div>
 
@@ -147,11 +150,10 @@ export function Features() {
                       transition={{ duration: 0.4, delay: 0.15 }}
                     >
                       <span className="text-xs md:text-sm font-medium text-blue-900/80 dark:text-blue-100/90">
-                        Coming soon
+                        {t('features.coming_soon.title')}
                       </span>
                       <p className="text-xs md:text-sm text-blue-900/70 dark:text-blue-100/80 max-w-xs">
-                        This area will showcase an animated {feature.title.toLowerCase()} demo
-                        with real interactions and live previews.
+                        {t('features.coming_soon.description', { feature: feature.title })}
                       </p>
                     </motion.div>
                   </motion.div>
