@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast";
 import PhoneInput from "react-phone-number-input";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
 import "react-phone-number-input/style.css";
+import { useAppTranslation } from "@/i18n/hooks";
 
 // LocalStorage keys for form data persistence
 const REGISTER_FORM_CACHE_KEY = "resu-genie-register-form-cache";
@@ -25,6 +26,9 @@ interface RegisterFormCache {
 }
 
 export function Register() {
+  const { t } = useAppTranslation('auth');
+  const { t: tCommon } = useAppTranslation('common');
+  
   // Load cached form data on mount
   const loadCachedFormData = (): RegisterFormCache => {
     try {
@@ -113,7 +117,7 @@ export function Register() {
     const isValid = emailRegex.test(email);
     
     if (!isValid && email.length > 0) {
-      setEmailError("Please enter a valid email address");
+      setEmailError(tCommon('validation.email_invalid'));
     } else {
       setEmailError(null);
     }
@@ -125,7 +129,7 @@ export function Register() {
   const validatePhone = (phone: string | undefined): boolean => {
     // Phone is now required
     if (!phone) {
-      setPhoneError("Phone number is required");
+      setPhoneError(tCommon('validation.phone_required'));
       return false;
     }
     
@@ -134,7 +138,7 @@ export function Register() {
       const phoneNumber = parsePhoneNumber(phone);
       
       if (!phoneNumber || !isValidPhoneNumber(phone)) {
-        setPhoneError("Please enter a valid phone number");
+        setPhoneError(tCommon('validation.phone_invalid'));
         return false;
       }
       
@@ -143,14 +147,14 @@ export function Register() {
       
       // Validate that national number is exactly 9 digits
       if (nationalNumber.length !== 9) {
-        setPhoneError("Phone number must contain exactly 9 digits");
+        setPhoneError(tCommon('validation.phone_exact_digits'));
         return false;
       }
       
       setPhoneError(null);
       return true;
     } catch (error) {
-      setPhoneError("Please enter a valid phone number");
+      setPhoneError(tCommon('validation.phone_invalid'));
       return false;
     }
   };
@@ -158,12 +162,12 @@ export function Register() {
   // Password validation
   const validatePassword = (password: string): boolean => {
     if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
+      setPasswordError(tCommon('validation.password_too_short'));
       return false;
     }
     
     if (!/\d/.test(password)) {
-      setPasswordError("Password must contain at least one number");
+      setPasswordError(tCommon('validation.password_requires_number'));
       return false;
     }
     
@@ -176,7 +180,7 @@ export function Register() {
     const isValid = password === confirmPassword;
     
     if (!isValid && confirmPassword.length > 0) {
-      setConfirmPasswordError("Passwords do not match");
+      setConfirmPasswordError(tCommon('validation.password_mismatch'));
     } else {
       setConfirmPasswordError(null);
     }
@@ -235,18 +239,18 @@ export function Register() {
     
     // Check required fields
     if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
-      toast.error("Please fill in all required fields");
+      toast.error(t('toast.fill_required_fields'));
       return;
     }
     
     // Check validations
     if (!isEmailValid || !isPhoneValid || !isPasswordValid || !isConfirmPasswordValid) {
-      toast.error("Please fix the validation errors");
+      toast.error(t('toast.fix_validation_errors'));
       return;
     }
     
     if (!agreeTerms) {
-      toast.error("You must agree to the Terms of Service and Privacy Policy");
+      toast.error(t('toast.agree_terms_required'));
       return;
     }
     
@@ -268,7 +272,7 @@ export function Register() {
       
       // Check if registration requires email verification
       if (response && response.requires_verification) {
-        toast.success("Registration successful! Please check your email for verification code.");
+        toast.success(t('toast.registration_success'));
         navigate('/verify-otp', { 
           state: { 
             email: email,
@@ -277,7 +281,7 @@ export function Register() {
           } 
         });
       } else {
-      toast.success("Registration successful! Please log in.");
+      toast.success(t('toast.registration_success_no_verify'));
       navigate('/login');
       }
       
@@ -285,7 +289,7 @@ export function Register() {
       console.error("Registration error:", err);
       
       // Extract error message from the error object
-      let errorMessage = "Registration failed. Please try again.";
+      let errorMessage = t('errors.registration_failed');
       if (err && typeof err === 'object' && 'message' in err) {
         errorMessage = err.message as string;
       }
@@ -349,11 +353,11 @@ export function Register() {
               <motion.div className="text-center" variants={itemVariants}>
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
                   <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                    Create Account
+                    {t('forms.register.title')}
                   </span>
                 </h1>
                 <p className="mt-2 text-sm md:text-base text-muted-foreground">
-                  Join ResuGenie and start building your professional resume
+                  {t('forms.register.subtitle')}
                 </p>
               </motion.div>
 
@@ -373,11 +377,11 @@ export function Register() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-sm md:text-base">First Name</Label>
+                    <Label htmlFor="firstName" className="text-sm md:text-base">{t('forms.register.first_name_label')}</Label>
                     <Input
                       id="firstName"
                       type="text"
-                      placeholder="John"
+                      placeholder={t('forms.register.first_name_placeholder')}
                       value={firstName}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
                       className="h-10 md:h-11 text-sm md:text-base"
@@ -386,11 +390,11 @@ export function Register() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-sm md:text-base">Last Name</Label>
+                    <Label htmlFor="lastName" className="text-sm md:text-base">{t('forms.register.last_name_label')}</Label>
                     <Input
                       id="lastName"
                       type="text"
-                      placeholder="Doe"
+                      placeholder={t('forms.register.last_name_placeholder')}
                       value={lastName}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
                       className="h-10 md:h-11 text-sm md:text-base"
@@ -400,11 +404,11 @@ export function Register() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm md:text-base">Email</Label>
+                  <Label htmlFor="email" className="text-sm md:text-base">{t('forms.register.email_label')}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('forms.register.email_placeholder')}
                     value={email}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     className={`h-10 md:h-11 text-sm md:text-base ${emailError ? "border-red-500" : ""}`}
@@ -416,7 +420,7 @@ export function Register() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm md:text-base">Phone *</Label>
+                  <Label htmlFor="phone" className="text-sm md:text-base">{t('forms.register.phone_label')}</Label>
                   <div className={`flex h-10 md:h-11 w-full rounded-md border ${
                     phoneError ? "border-red-500" : "border-input"
                   } bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2`}>
@@ -436,15 +440,15 @@ export function Register() {
                     <p className="text-red-500 text-xs md:text-sm mt-1">{phoneError}</p>
                   )}
                   <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    Phone number must contain exactly 9 digits (excluding country code)
+                    {t('forms.register.phone_hint')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm md:text-base">Password</Label>
+                  <Label htmlFor="password" className="text-sm md:text-base">{t('forms.register.password_label')}</Label>
                   <PasswordInput
                     id="password"
-                    placeholder="••••••••"
+                    placeholder={t('forms.register.password_placeholder')}
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                     className={`h-10 md:h-11 text-sm md:text-base ${passwordError ? "border-red-500" : ""}`}
@@ -456,15 +460,15 @@ export function Register() {
                     <p className="text-red-500 text-xs md:text-sm mt-1">{passwordError}</p>
                   )}
                   <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    Password must be at least 8 characters and contain at least one number
+                    {t('forms.register.password_hint')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm md:text-base">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm md:text-base">{t('forms.register.confirm_password_label')}</Label>
                   <PasswordInput
                     id="confirmPassword"
-                    placeholder="••••••••"
+                    placeholder={t('forms.register.confirm_password_placeholder')}
                     value={confirmPassword}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                     className={`h-10 md:h-11 text-sm md:text-base ${confirmPasswordError ? "border-red-500" : ""}`}
@@ -477,36 +481,34 @@ export function Register() {
                   )}
                 </div>
 
-                <div className="flex items-start space-x-2 md:space-x-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <Checkbox
                     id="terms"
                     checked={agreeTerms}
                     onCheckedChange={(checked: boolean) => 
                       setAgreeTerms(checked)
                     }
-                    className="h-4 w-4 md:h-5 md:w-5 mt-1 flex-shrink-0"
+                    className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0"
                     required
                   />
                   <Label
                     htmlFor="terms"
-                    className="text-xs md:text-sm font-normal cursor-pointer flex items-start py-2"
+                    className="text-xs md:text-sm font-normal cursor-pointer leading-relaxed"
                   >
-                    <span className="leading-relaxed">
-                      I agree to the{" "}
-                      <Link
-                        to="/terms"
-                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline"
-                      >
-                        Terms of Service
-                      </Link>{" "}
-                      and{" "}
-                      <Link
-                        to="/privacy"
-                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline"
-                      >
-                        Privacy Policy
-                      </Link>
-                    </span>
+                    {t('forms.register.agree_terms')}{" "}
+                    <Link
+                      to="/terms"
+                      className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline"
+                    >
+                      {t('forms.register.terms_of_service')}
+                    </Link>{" "}
+                    {t('forms.register.and')}{" "}
+                    <Link
+                      to="/privacy"
+                      className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline"
+                    >
+                      {t('forms.register.privacy_policy')}
+                    </Link>
                   </Label>
                 </div>
 
@@ -515,7 +517,7 @@ export function Register() {
                   className="w-full h-10 md:h-11 text-sm md:text-base font-medium"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Creating Account..." : "Create Account"}
+                  {isSubmitting ? t('forms.register.submitting') : t('forms.register.submit')}
                 </Button>
               </motion.form>
 
@@ -524,12 +526,12 @@ export function Register() {
                 variants={itemVariants}
               >
                 <p className="text-muted-foreground">
-                  Already have an account?{" "}
+                  {t('forms.register.has_account')}{" "}
                   <Link
                     to="/login"
                     className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors duration-200 min-h-[44px] inline-flex items-center"
                   >
-                    Sign in
+                    {t('forms.register.sign_in')}
                   </Link>
                 </p>
               </motion.div>

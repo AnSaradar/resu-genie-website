@@ -8,8 +8,10 @@ import { AuthService } from "@/services/auth/service";
 import { PasswordResetRequest } from "@/services/auth/types";
 import { toast } from "react-hot-toast";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import { useAppTranslation } from "@/i18n/hooks";
 
 export function ForgotPassword() {
+  const { t } = useAppTranslation('auth');
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -42,7 +44,7 @@ export function ForgotPassword() {
     e.preventDefault();
     
     if (!email) {
-      toast.error("Please enter your email address");
+      toast.error(t('toast.fill_required_fields'));
       return;
     }
     
@@ -56,11 +58,11 @@ export function ForgotPassword() {
       await AuthService.requestPasswordReset(resetData);
       
       setEmailSent(true);
-      toast.success("Password reset code sent to your email!");
+      toast.success(t('toast.password_reset_code_sent'));
       
     } catch (err: any) {
       console.error("Password reset request error:", err);
-      toast.error(err.message || "Failed to send password reset code. Please try again.");
+      toast.error(err.message || t('errors.password_reset_request_failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -75,11 +77,11 @@ export function ForgotPassword() {
       };
       
       await AuthService.requestPasswordReset(resetData);
-      toast.success("New password reset code sent!");
+      toast.success(t('toast.password_reset_code_resent'));
       
     } catch (err: any) {
       console.error("Resend code error:", err);
-      toast.error(err.message || "Failed to resend code. Please try again.");
+      toast.error(err.message || t('errors.password_reset_request_failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -149,11 +151,11 @@ export function ForgotPassword() {
                   </div>
                   <h1 className="text-3xl font-bold">
                     <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
-                      Check Your Email
+                      {t('forms.forgot_password.email_sent_title')}
                     </span>
                   </h1>
                   <p className="mt-2 text-muted-foreground">
-                    We've sent a password reset code to <strong>{email}</strong>
+                    {t('forms.forgot_password.email_sent_message')} <strong>{email}</strong>
                   </p>
                 </motion.div>
 
@@ -164,11 +166,11 @@ export function ForgotPassword() {
                   <div className="flex items-start gap-3">
                     <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-blue-800 dark:text-blue-200">
-                      <p className="font-medium mb-1">Important:</p>
+                      <p className="font-medium mb-1">{t('forms.forgot_password.important')}</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• The code will expire in 10 minutes</li>
-                        <li>• Check your spam folder if you don't see it</li>
-                        <li>• Never share this code with anyone</li>
+                        <li>• {t('forms.forgot_password.code_expires')}</li>
+                        <li>• {t('forms.forgot_password.check_spam')}</li>
+                        <li>• {t('forms.forgot_password.never_share')}</li>
                       </ul>
                     </div>
                   </div>
@@ -179,7 +181,7 @@ export function ForgotPassword() {
                     onClick={handleContinueToReset}
                     className="w-full"
                   >
-                    Enter Reset Code
+                    {t('forms.forgot_password.enter_reset_code')}
                   </Button>
                   
                   <Button 
@@ -188,7 +190,7 @@ export function ForgotPassword() {
                     disabled={isSubmitting}
                     className="w-full"
                   >
-                    {isSubmitting ? "Sending..." : "Resend Code"}
+                    {isSubmitting ? t('forms.otp.resending') : t('forms.forgot_password.resend_code')}
                   </Button>
                 </motion.div>
 
@@ -197,12 +199,12 @@ export function ForgotPassword() {
                   variants={itemVariants}
                 >
                   <p className="text-muted-foreground">
-                    Remember your password?{" "}
+                    {t('forms.forgot_password.remember_password')}{" "}
                     <Link
                       to="/login"
                       className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                     >
-                      Sign in
+                      {t('forms.forgot_password.sign_in')}
                     </Link>
                   </p>
                 </motion.div>
@@ -266,11 +268,11 @@ export function ForgotPassword() {
               <motion.div className="text-center" variants={itemVariants}>
                 <h1 className="text-3xl font-bold">
                   <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                    Forgot Password?
+                    {t('forms.forgot_password.title')}
                   </span>
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                  No worries! Enter your email and we'll send you a reset code.
+                  {t('forms.forgot_password.subtitle')}
                 </p>
               </motion.div>
 
@@ -280,11 +282,11 @@ export function ForgotPassword() {
                 variants={itemVariants}
               >
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">{t('forms.forgot_password.email_label')}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('forms.forgot_password.email_placeholder')}
                     value={email}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     required
@@ -296,7 +298,7 @@ export function ForgotPassword() {
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Sending Code..." : "Send Reset Code"}
+                  {isSubmitting ? t('forms.forgot_password.submitting') : t('forms.forgot_password.submit')}
                 </Button>
               </motion.form>
 
@@ -305,12 +307,12 @@ export function ForgotPassword() {
                 variants={itemVariants}
               >
                 <p className="text-muted-foreground">
-                  Remember your password?{" "}
+                  {t('forms.forgot_password.remember_password')}{" "}
                   <Link
                     to="/login"
                     className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                   >
-                    Sign in
+                    {t('forms.forgot_password.sign_in')}
                   </Link>
                 </p>
               </motion.div>
@@ -333,7 +335,7 @@ export function ForgotPassword() {
                   className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Back to Sign In
+                  {t('forms.forgot_password.back_to_sign_in')}
                 </Link>
               </motion.div>
             </motion.div>

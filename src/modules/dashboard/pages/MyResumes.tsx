@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGetMyResumes, useRenameResume, useExportResumePdf } from '@/services/resume/hook';
 import { ResumeListItem } from '@/services/resume/types';
+import { useAppTranslation } from '@/i18n/hooks';
 import { 
   FileText, 
   Download, 
@@ -43,6 +44,8 @@ import { toast } from 'react-hot-toast';
 
 export default function MyResumes() {
   const navigate = useNavigate();
+  const { t } = useAppTranslation('dashboard');
+  const { t: tCommon } = useAppTranslation('common');
   const { data, isLoading, error, refetch } = useGetMyResumes();
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -117,7 +120,7 @@ export default function MyResumes() {
 
   const handleRenameResume = async () => {
     if (!renamingId || !newName.trim()) {
-      setRenameError('Please enter a valid name');
+      setRenameError(t('my_resumes.rename_error'));
       return;
     }
 
@@ -183,7 +186,7 @@ export default function MyResumes() {
       // Close dialog
       setDownloadDialogOpen(false);
       setDownloadingResumeId(null);
-      toast.success('Resume downloaded successfully!');
+      toast.success(t('my_resumes.download_success'));
     } catch (error: any) {
       // Error is handled by the hook's onError callback
       console.error('Error downloading resume:', error);
@@ -257,10 +260,10 @@ export default function MyResumes() {
         <div>
           <h2 className="text-3xl font-bold flex items-center gap-2">
             <FileText className="h-8 w-8 text-blue-600" />
-            My Resumes
+            {t('my_resumes.title')}
           </h2>
           <p className="text-muted-foreground mt-1">
-            {resumes.length} resume{resumes.length !== 1 ? 's' : ''} • Manage and export your resumes
+            {t('my_resumes.subtitle', { count: resumes.length, plural: resumes.length !== 1 ? 's' : '' })}
           </p>
         </div>
         <Button 
@@ -269,7 +272,7 @@ export default function MyResumes() {
           data-tour-id="create-resume-button"
         >
           <Plus className="h-4 w-4" />
-          Create Resume
+          {t('my_resumes.create_resume')}
         </Button>
       </div>
 
@@ -278,7 +281,7 @@ export default function MyResumes() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search resumes..."
+            placeholder={t('my_resumes.search_placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -292,7 +295,7 @@ export default function MyResumes() {
               onClick={handleSelectAll}
               className="gap-2"
             >
-              {selectedResumes.length === resumes.length ? 'Deselect All' : 'Select All'}
+              {selectedResumes.length === resumes.length ? t('my_resumes.deselect_all') : t('my_resumes.select_all')}
             </Button>
           )}
           
@@ -300,18 +303,18 @@ export default function MyResumes() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <Filter className="h-4 w-4" />
-                Sort by {sortBy}
+                {t('my_resumes.sort_by', { sort: sortBy })}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={() => setSortBy('modified')}>
-                Last Modified
+                {t('my_resumes.last_modified')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('date')}>
-                Created Date
+                {t('my_resumes.created_date')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('name')}>
-                Name
+                {t('my_resumes.name')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -343,12 +346,12 @@ export default function MyResumes() {
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-blue-600" />
             <span className="font-medium text-blue-800 dark:text-blue-300">
-              {selectedResumes.length} resume{selectedResumes.length !== 1 ? 's' : ''} selected
+              {t('my_resumes.selected_count', { count: selectedResumes.length, plural: selectedResumes.length !== 1 ? 's' : '' })}
             </span>
           </div>
           <div className="flex gap-2">
             <Button variant="destructive" size="sm">
-              Delete Selected
+              {t('my_resumes.delete_selected')}
             </Button>
           </div>
         </div>
@@ -360,17 +363,17 @@ export default function MyResumes() {
           <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
             <FilePlus className="h-12 w-12 text-gray-400" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">No resumes yet</h3>
+          <h3 className="text-xl font-semibold mb-2">{t('my_resumes.no_resumes')}</h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Create your first professional resume in minutes. Choose from our templates and start building your career.
+            {t('my_resumes.no_resumes_description')}
           </p>
           <div className="flex gap-3 justify-center">
             <Button onClick={() => navigate('/dashboard/generate')} className="gap-2">
               <Sparkles className="h-4 w-4" />
-              Create Resume
+              {t('my_resumes.create_resume')}
             </Button>
             <Button variant="outline" onClick={() => navigate('/dashboard/generate')}>
-              Start from Template
+              {t('my_resumes.start_from_template')}
             </Button>
           </div>
         </div>
@@ -500,7 +503,7 @@ export default function MyResumes() {
                     }}
                   >
                     <Eye className="h-4 w-4" />
-                    Preview
+                    {t('my_resumes.preview')}
                   </Button>
                   <Button
                     size="sm"
@@ -508,7 +511,7 @@ export default function MyResumes() {
                     onClick={() => openDownloadDialog(resume.id)}
                   >
                     <Download className="h-4 w-4" />
-                    Download
+                    {t('my_resumes.download')}
                   </Button>
                 </div>
               </CardContent>
@@ -526,7 +529,7 @@ export default function MyResumes() {
                           variant={status === 'complete' ? 'default' : 'secondary'}
                           className="text-xs"
                         >
-                          {status === 'complete' ? 'Complete' : 'Draft'}
+                          {status === 'complete' ? t('my_resumes.complete') : t('my_resumes.draft')}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
@@ -544,14 +547,14 @@ export default function MyResumes() {
                         }}
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        Preview
+                        {t('my_resumes.preview')}
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => openDownloadDialog(resume.id)}
                       >
                         <Download className="h-4 w-4 mr-1" />
-                        Download
+                        {t('my_resumes.download')}
                       </Button>
                     </div>
                   </div>
@@ -639,20 +642,20 @@ export default function MyResumes() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit3 className="h-5 w-5" />
-              Rename Resume
+              {t('my_resumes.rename_dialog_title')}
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <div className="space-y-4">
               <div>
                 <label htmlFor="resume-name" className="block text-sm font-medium mb-2">
-                  Resume Name
+                  {t('my_resumes.rename_dialog_title')}
                 </label>
                 <Input
                   id="resume-name"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Enter new resume name"
+                  placeholder={t('my_resumes.rename_placeholder')}
                   maxLength={100}
                   className={renameError ? 'border-red-500' : ''}
                 />
@@ -665,9 +668,7 @@ export default function MyResumes() {
               </div>
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Note:</strong> If a resume with this name already exists, a number will be automatically added (e.g., "My Resume (1)").
-                </p>
+                <p className="text-sm text-blue-800 dark:text-blue-200" dangerouslySetInnerHTML={{ __html: t('my_resumes.rename_note') }} />
               </div>
             </div>
           </div>
@@ -681,13 +682,13 @@ export default function MyResumes() {
               }}
               disabled={renameResumeMutation.isPending}
             >
-              Cancel
+              {tCommon('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={handleRenameResume}
               disabled={renameResumeMutation.isPending || !newName.trim()}
             >
-              {renameResumeMutation.isPending ? 'Renaming...' : 'Rename'}
+              {renameResumeMutation.isPending ? t('my_resumes.renaming') : t('my_resumes.rename')}
             </Button>
           </div>
         </DialogContent>
@@ -759,10 +760,10 @@ export default function MyResumes() {
         }}
         onExport={handleDownloadResume}
         isExporting={exportResumeMutation.isPending}
-        title="Download Resume"
-        description="Select a template to download your resume as PDF."
-        buttonText="Download Resume"
-        selectionMessage="Click Download to generate your resume PDF."
+        title={t('my_resumes.download_dialog_title')}
+        description={t('my_resumes.download_dialog_description')}
+        buttonText={t('my_resumes.download_button')}
+        selectionMessage={t('my_resumes.download_selection_message')}
       />
     </div>
   );

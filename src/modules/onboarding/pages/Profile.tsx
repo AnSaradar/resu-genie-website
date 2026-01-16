@@ -16,35 +16,50 @@ import { useCreateUserProfile, useGetWorkFields, useGetCountries } from "@/servi
 import { UserProfileData, SeniorityLevel, WorkField } from "@/services/user_profile/types";
 import { toast } from "react-hot-toast";
 import { ArrowLeft, ArrowRight, UserCircle, Briefcase } from "lucide-react";
+import { useAppTranslation } from "@/i18n/hooks";
 
-// Form validation schema
-const profileFormSchema = z.object({
-  // Step 1: Personal Information
-  birth_date: z.string().min(1, "Birth date is required"),
-  linkedin_url: z.string().url("Invalid LinkedIn URL").optional().or(z.literal("")),
-  website_url: z.string().url("Invalid website URL").optional().or(z.literal("")),
-  profile_summary: z.string().max(500, "Profile summary must be under 500 characters").optional(),
-  
-  // Address information
-  city: z.string().optional(),
-  country: z.string().min(1, "Country is required"),
-  country_of_residence: z.string().optional(),
-  
-  // Step 2: Professional Information
-  current_position: z.string().optional(),
-  current_seniority_level: z.nativeEnum(SeniorityLevel).optional(),
-  work_field: z.nativeEnum(WorkField).optional(),
-  years_of_experience: z.coerce.number().min(0, "Years of experience cannot be negative").max(50, "Years of experience cannot exceed 50").optional(),
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type ProfileFormValues = {
+  birth_date: string;
+  linkedin_url?: string;
+  website_url?: string;
+  profile_summary?: string;
+  city?: string;
+  country: string;
+  country_of_residence?: string;
+  current_position?: string;
+  current_seniority_level?: SeniorityLevel;
+  work_field?: WorkField;
+  years_of_experience?: number;
+};
 
 export function Profile() {
+  const { t } = useAppTranslation('onboarding');
+  const { t: tCommon } = useAppTranslation('common');
   const [currentStep, setCurrentStep] = useState(1);
   const navigate = useNavigate();
   const createProfileMutation = useCreateUserProfile();
   const { data: workFields, isLoading: workFieldsLoading } = useGetWorkFields();
   const { data: countries, isLoading: countriesLoading } = useGetCountries();
+
+  // Create validation schema with translations
+  const profileFormSchema = z.object({
+    // Step 1: Personal Information
+    birth_date: z.string().min(1, t('profile.validation.birth_date_required')),
+    linkedin_url: z.string().url(t('profile.validation.linkedin_invalid')).optional().or(z.literal("")),
+    website_url: z.string().url(t('profile.validation.website_invalid')).optional().or(z.literal("")),
+    profile_summary: z.string().max(500, t('profile.validation.summary_max')).optional(),
+    
+    // Address information
+    city: z.string().optional(),
+    country: z.string().min(1, t('profile.validation.country_required')),
+    country_of_residence: z.string().optional(),
+    
+    // Step 2: Professional Information
+    current_position: z.string().optional(),
+    current_seniority_level: z.nativeEnum(SeniorityLevel).optional(),
+    work_field: z.nativeEnum(WorkField).optional(),
+    years_of_experience: z.coerce.number().min(0, t('profile.validation.years_negative')).max(50, t('profile.validation.years_max')).optional(),
+  });
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -88,7 +103,7 @@ export function Profile() {
 
     createProfileMutation.mutate(profileData, {
       onSuccess: () => {
-        toast.success("Profile created successfully! Redirecting to dashboard...");
+        toast.success(t('profile.toast.profile_created'));
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
@@ -133,9 +148,9 @@ export function Profile() {
           className="text-center mb-8"
         >
           <h1 className="text-3xl font-bold mb-2">
-            Complete Your <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Profile</span>
+            {t('profile.title')} <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Profile</span>
           </h1>
-          <p className="text-muted-foreground">Help us create the perfect resume for you</p>
+          <p className="text-muted-foreground">{t('profile.subtitle')}</p>
         </motion.div>
 
         {/* Progress */}
@@ -145,8 +160,8 @@ export function Profile() {
           className="mb-8"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
-            <span className="text-sm text-muted-foreground">{Math.round(progress)}% Complete</span>
+            <span className="text-sm font-medium">{t('profile.step', { current: currentStep, total: totalSteps })}</span>
+            <span className="text-sm text-muted-foreground">{t('profile.progress', { progress: Math.round(progress) })}</span>
           </div>
           <Progress value={progress} className="h-2" />
         </motion.div>
@@ -174,12 +189,12 @@ export function Profile() {
                 )}
                 <div>
                   <CardTitle className="text-xl">
-                    {currentStep === 1 ? "Personal Information" : "Professional Background"}
+                    {currentStep === 1 ? t('profile.step1.title') : t('profile.step2.title')}
                   </CardTitle>
                   <CardDescription>
                     {currentStep === 1 
-                      ? "Tell us about yourself and where you're located"
-                      : "Share your professional experience and career goals"
+                      ? t('profile.step1.description')
+                      : t('profile.step2.description')
                     }
                   </CardDescription>
                 </div>
@@ -203,7 +218,7 @@ export function Profile() {
                           name="birth_date"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Date of Birth *</FormLabel>
+                              <FormLabel>{t('profile.step1.birth_date_label')}</FormLabel>
                               <FormControl>
                                 <Input type="date" {...field} />
                               </FormControl>
@@ -217,19 +232,19 @@ export function Profile() {
                           name="country"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Country *</FormLabel>
+                              <FormLabel>{t('profile.step1.country_label')}</FormLabel>
                               <Select
                                 onValueChange={field.onChange}
                                 value={field.value || "Syria"}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select your country" />
+                                    <SelectValue placeholder={t('profile.step1.country_placeholder')} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                   {countriesLoading ? (
-                                    <SelectItem value="loading" disabled>Loading countries...</SelectItem>
+                                    <SelectItem value="loading" disabled>{t('profile.toast.loading_countries')}</SelectItem>
                                   ) : countries && countries.length > 0 ? (
                                     countries.map((country) => (
                                       <SelectItem key={country} value={country}>
@@ -237,7 +252,7 @@ export function Profile() {
                                       </SelectItem>
                                     ))
                                   ) : (
-                                    <SelectItem value="error" disabled>Failed to load countries</SelectItem>
+                                    <SelectItem value="error" disabled>{t('profile.toast.failed_load_countries')}</SelectItem>
                                   )}
                                 </SelectContent>
                               </Select>
@@ -253,9 +268,9 @@ export function Profile() {
                           name="city"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>City</FormLabel>
+                              <FormLabel>{t('profile.step1.city_label')}</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., New York" {...field} />
+                                <Input placeholder={t('profile.step1.city_placeholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -267,19 +282,19 @@ export function Profile() {
                           name="country_of_residence"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Country of Residence</FormLabel>
+                              <FormLabel>{t('profile.step1.country_of_residence_label')}</FormLabel>
                               <Select
                                 onValueChange={field.onChange}
                                 value={field.value || "Syria"}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="If different from above" />
+                                    <SelectValue placeholder={t('profile.step1.country_of_residence_placeholder')} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                   {countriesLoading ? (
-                                    <SelectItem value="loading" disabled>Loading countries...</SelectItem>
+                                    <SelectItem value="loading" disabled>{t('profile.toast.loading_countries')}</SelectItem>
                                   ) : countries && countries.length > 0 ? (
                                     countries.map((country) => (
                                       <SelectItem key={country} value={country}>
@@ -287,7 +302,7 @@ export function Profile() {
                                       </SelectItem>
                                     ))
                                   ) : (
-                                    <SelectItem value="error" disabled>Failed to load countries</SelectItem>
+                                    <SelectItem value="error" disabled>{t('profile.toast.failed_load_countries')}</SelectItem>
                                   )}
                                 </SelectContent>
                               </Select>
@@ -303,9 +318,9 @@ export function Profile() {
                           name="linkedin_url"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>LinkedIn Profile</FormLabel>
+                              <FormLabel>{t('profile.step1.linkedin_label')}</FormLabel>
                               <FormControl>
-                                <Input placeholder="https://linkedin.com/in/yourprofile" {...field} />
+                                <Input placeholder={t('profile.step1.linkedin_placeholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -317,9 +332,9 @@ export function Profile() {
                           name="website_url"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Personal Website</FormLabel>
+                              <FormLabel>{t('profile.step1.website_label')}</FormLabel>
                               <FormControl>
-                                <Input placeholder="https://yourwebsite.com" {...field} />
+                                <Input placeholder={t('profile.step1.website_placeholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -332,10 +347,10 @@ export function Profile() {
                         name="profile_summary"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Profile Summary</FormLabel>
+                            <FormLabel>{t('profile.step1.summary_label')}</FormLabel>
                             <FormControl>
                               <Textarea 
-                                placeholder="Briefly describe yourself, your background, and career goals..."
+                                placeholder={t('profile.step1.summary_placeholder')}
                                 className="min-h-[100px]"
                                 {...field} 
                               />
@@ -362,9 +377,9 @@ export function Profile() {
                           name="current_position"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Current Position</FormLabel>
+                              <FormLabel>{t('profile.step2.current_position_label')}</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., Software Engineer, Student" {...field} />
+                                <Input placeholder={t('profile.step2.current_position_placeholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -376,11 +391,11 @@ export function Profile() {
                           name="current_seniority_level"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Seniority Level</FormLabel>
+                              <FormLabel>{t('profile.step2.seniority_level_label')}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select your level" />
+                                    <SelectValue placeholder={t('profile.step2.seniority_level_placeholder')} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -403,11 +418,11 @@ export function Profile() {
                           name="work_field"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Work Field / Industry</FormLabel>
+                              <FormLabel>{t('profile.step2.work_field_label')}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select your field" />
+                                    <SelectValue placeholder={t('profile.step2.work_field_placeholder')} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -428,11 +443,11 @@ export function Profile() {
                           name="years_of_experience"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Years of Experience</FormLabel>
+                              <FormLabel>{t('profile.step2.years_experience_label')}</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  placeholder="0" 
+                                  placeholder={t('profile.step2.years_experience_placeholder')} 
                                   min="0" 
                                   max="50"
                                   {...field} 
@@ -465,7 +480,7 @@ export function Profile() {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            {currentStep === 1 ? "Back to Welcome" : "Previous"}
+            {currentStep === 1 ? t('profile.navigation.back_to_welcome') : t('profile.navigation.previous')}
           </Button>
 
           <Button
@@ -474,10 +489,10 @@ export function Profile() {
             disabled={createProfileMutation.isPending}
           >
             {currentStep === totalSteps ? (
-              createProfileMutation.isPending ? "Creating Profile..." : "Complete Profile"
+              createProfileMutation.isPending ? t('profile.navigation.creating') : t('profile.navigation.complete')
             ) : (
               <>
-                Next
+                {t('profile.navigation.next')}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}

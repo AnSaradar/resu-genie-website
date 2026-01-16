@@ -15,11 +15,14 @@ import { getProfileSteps } from '@/modules/tour/steps';
 import { useExportResumeFromAccount } from '@/services/resume/hook';
 import { Button } from '@/components/ui/button';
 import { Download, Upload } from 'lucide-react';
+import { useAppTranslation, useLanguage } from '@/i18n/hooks';
 
 
 export default function Account() {
-  const { startTour, enabled, language } = useTour();
+  const { startTour, enabled } = useTour();
+  const language = useLanguage() as 'en' | 'ar';
   const queryClient = useQueryClient();
+  const { t } = useAppTranslation('dashboard');
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isFillAccountDataDialogOpen, setIsFillAccountDataDialogOpen] = useState(false);
   const exportResumeMutation = useExportResumeFromAccount();
@@ -46,7 +49,7 @@ export default function Account() {
   return (
     <div className="w-full space-y-8 py-8" data-tour="profile-nav">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">My Account Data</h1>
+        <h1 className="text-3xl font-bold">{t('account.title')}</h1>
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setIsFillAccountDataDialogOpen(true)}
@@ -54,14 +57,14 @@ export default function Account() {
             className="flex items-center gap-2"
           >
             <Upload className="h-4 w-4" />
-            Fill from CV
+            {t('account.fill_from_cv')}
           </Button>
           <Button
             onClick={() => setIsExportDialogOpen(true)}
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            Export Resume / CV
+            {t('account.export_resume')}
           </Button>
         </div>
       </div>

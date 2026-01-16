@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/services/auth/hook";
 import { LoginRequest } from "@/services/auth/types";
 import { toast } from "react-hot-toast";
+import { useAppTranslation } from "@/i18n/hooks";
 
 // LocalStorage keys for form data persistence
 const LOGIN_FORM_CACHE_KEY = "resu-genie-login-form-cache";
@@ -19,6 +20,9 @@ interface LoginFormCache {
 }
 
 export function Login() {
+  const { t } = useAppTranslation('auth');
+  const { t: tCommon } = useAppTranslation('common');
+  
   // Load cached form data on mount
   const loadCachedFormData = (): LoginFormCache => {
     try {
@@ -104,7 +108,7 @@ export function Login() {
     e.preventDefault();
     
     if (!email || !password) {
-      toast.error("Please fill in all required fields");
+      toast.error(t('toast.fill_required_fields'));
       return;
     }
     
@@ -124,14 +128,14 @@ export function Login() {
       // If remember me is checked, we could set a longer expiration for the token
       // This would typically be handled on the backend
       
-      toast.success("Login successful!");
+      toast.success(t('toast.login_success'));
       
     } catch (err: any) {
       console.error("Login error:", err);
       
       // The error message is already extracted and formatted by the auth hook
       // using extractApiErrorMessage, so it should be user-friendly
-      const errorMessage = error || err.message || "Login failed. Please try again.";
+      const errorMessage = error || err.message || t('errors.login_failed');
       
       // Check if the error is due to unverified email
       if (errorMessage.toLowerCase().includes("verify") || 
@@ -205,11 +209,11 @@ export function Login() {
               <motion.div className="text-center" variants={itemVariants}>
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
                   <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                    Welcome Back
+                    {t('forms.login.title')}
                   </span>
                 </h1>
                 <p className="mt-2 text-sm md:text-base text-muted-foreground">
-                  Sign in to continue building your resume
+                  {t('forms.login.subtitle')}
                 </p>
               </motion.div>
 
@@ -228,11 +232,11 @@ export function Login() {
                 variants={itemVariants}
               >
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm md:text-base">Email</Label>
+                  <Label htmlFor="email" className="text-sm md:text-base">{t('forms.login.email_label')}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('forms.login.email_placeholder')}
                     value={email}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     className="h-10 md:h-11 text-sm md:text-base"
@@ -242,17 +246,17 @@ export function Login() {
 
                 <div className="space-y-2">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <Label htmlFor="password" className="text-sm md:text-base">Password</Label>
+                    <Label htmlFor="password" className="text-sm md:text-base">{t('forms.login.password_label')}</Label>
                     <Link
                       to="/forgot-password"
                       className="text-xs md:text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 min-h-[44px] flex items-center justify-start sm:justify-end"
                     >
-                      Forgot password?
+                      {t('forms.login.forgot_password')}
                     </Link>
                   </div>
                   <PasswordInput
                     id="password"
-                    placeholder="••••••••"
+                    placeholder={t('forms.login.password_placeholder')}
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                     showPassword={showPassword}
@@ -275,7 +279,7 @@ export function Login() {
                     htmlFor="remember"
                     className="text-sm md:text-base font-normal cursor-pointer flex items-center py-2"
                   >
-                    Remember me
+                    {t('forms.login.remember_me')}
                   </Label>
                 </div>
 
@@ -284,7 +288,7 @@ export function Login() {
                   className="w-full h-10 md:h-11 text-sm md:text-base font-medium"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Signing in..." : "Sign In"}
+                  {isSubmitting ? t('forms.login.submitting') : t('forms.login.submit')}
                 </Button>
               </motion.form>
 
@@ -293,12 +297,12 @@ export function Login() {
                 variants={itemVariants}
               >
                 <p className="text-muted-foreground">
-                  Don't have an account?{" "}
+                  {t('forms.login.no_account')}{" "}
                   <Link
                     to="/register"
                     className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors duration-200 min-h-[44px] inline-flex items-center"
                   >
-                    Sign up
+                    {t('forms.login.sign_up')}
                   </Link>
                 </p>
               </motion.div>

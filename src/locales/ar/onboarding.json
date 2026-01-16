@@ -1,0 +1,66 @@
+{
+  "welcome": {
+    "title": "مرحباً، {{name}}!",
+    "title_fallback": "مرحباً!",
+    "description": "نحن متحمسون لمساعدتك في إنشاء سيرة ذاتية رائعة تبرز بين الآخرين.",
+    "description_line2": "لنبدأ ببناء ملفك الشخصي.",
+    "get_started": "لنبدأ"
+  },
+  "profile": {
+    "title": "أكمل ملفك الشخصي",
+    "subtitle": "ساعدنا في إنشاء السيرة الذاتية المثالية لك",
+    "step": "الخطوة {{current}} من {{total}}",
+    "progress": "{{progress}}% مكتمل",
+    "step1": {
+      "title": "المعلومات الشخصية",
+      "description": "أخبرنا عن نفسك وأين تقيم",
+      "birth_date_label": "تاريخ الميلاد *",
+      "country_label": "الدولة *",
+      "country_placeholder": "اختر دولتك",
+      "city_label": "المدينة",
+      "city_placeholder": "مثال: دمشق",
+      "country_of_residence_label": "دولة الإقامة",
+      "country_of_residence_placeholder": "إذا كانت مختلفة عن أعلاه",
+      "linkedin_label": "ملف لينكدإن",
+      "linkedin_placeholder": "https://linkedin.com/in/yourprofile",
+      "website_label": "الموقع الشخصي",
+      "website_placeholder": "https://yourwebsite.com",
+      "summary_label": "ملخص الملف الشخصي",
+      "summary_placeholder": "اوصف نفسك بإيجاز، خلفيتك، وأهدافك المهنية..."
+    },
+    "step2": {
+      "title": "الخلفية المهنية",
+      "description": "شاركنا خبرتك المهنية وأهدافك المهنية",
+      "current_position_label": "المنصب الحالي",
+      "current_position_placeholder": "مثال: مهندس برمجيات، طالب",
+      "seniority_level_label": "مستوى الخبرة",
+      "seniority_level_placeholder": "اختر مستواك",
+      "work_field_label": "مجال العمل / الصناعة",
+      "work_field_placeholder": "اختر مجالك",
+      "years_experience_label": "سنوات الخبرة",
+      "years_experience_placeholder": "0"
+    },
+    "navigation": {
+      "back_to_welcome": "العودة إلى الترحيب",
+      "previous": "السابق",
+      "next": "التالي",
+      "complete": "إكمال الملف الشخصي",
+      "creating": "جاري إنشاء الملف الشخصي..."
+    },
+    "toast": {
+      "profile_created": "تم إنشاء الملف الشخصي بنجاح! جاري التوجيه إلى لوحة التحكم...",
+      "loading_countries": "جاري تحميل الدول...",
+      "failed_load_countries": "فشل تحميل الدول"
+    },
+    "validation": {
+      "birth_date_required": "تاريخ الميلاد مطلوب",
+      "country_required": "الدولة مطلوبة",
+      "linkedin_invalid": "رابط لينكدإن غير صحيح",
+      "website_invalid": "رابط الموقع غير صحيح",
+      "summary_max": "يجب أن يكون ملخص الملف الشخصي أقل من 500 حرف",
+      "years_negative": "لا يمكن أن تكون سنوات الخبرة سالبة",
+      "years_max": "لا يمكن أن تتجاوز سنوات الخبرة 50"
+    }
+  }
+}
+

@@ -36,6 +36,73 @@
     "terms": "Terms of Service",
     "social_coming_soon": "Coming Soon",
     "copyright": "© {{year}} ResuGenie. All rights reserved."
+  },
+  "toast": {
+    "register_required": "Please register to create a resume and choose a template",
+    "register_required_description": "You need to be registered to create a resume and choose a template"
+  },
+  "validation": {
+    "field_required": "This field is required",
+    "field_invalid": "Invalid value for this field",
+    "email_invalid": "Please enter a valid email address",
+    "password_too_short": "Password must be at least 8 characters",
+    "password_mismatch": "Passwords do not match",
+    "password_requires_number": "Password must contain at least one number",
+    "phone_invalid": "Please enter a valid phone number",
+    "phone_required": "Phone number is required",
+    "phone_exact_digits": "Phone number must contain exactly 9 digits",
+    "otp_required": "OTP code is required",
+    "otp_invalid_length": "OTP must be 6 digits",
+    "otp_expired": "OTP code has expired. Please request a new one.",
+    "date_invalid": "Please enter a valid date",
+    "date_range_invalid": "End date must be after start date",
+    "number_invalid": "Please enter a valid number",
+    "url_invalid": "Please enter a valid URL",
+    "min_length": "This field must be at least {{min}} characters",
+    "max_length": "This field must be no more than {{max}} characters",
+    "min_value": "Value must be at least {{min}}",
+    "max_value": "Value must be no more than {{max}}",
+    "multiple_errors": "Please fix the following validation errors"
+  },
+  "errors": {
+    "general": {
+      "unexpected_error": "An unexpected error occurred. Please try again.",
+      "network_error": "Network error. Please check your connection and try again.",
+      "server_error": "Server error. Please try again later.",
+      "not_found": "The requested resource was not found",
+      "bad_request": "Invalid request. Please check your input.",
+      "timeout": "Request timed out. Please try again.",
+      "unknown_error": "An unknown error occurred",
+      "token_limit": "You don't have enough tokens to use this feature. Please check your token balance."
+    },
+    "api": {
+      "create_failed": "Failed to create {{resource}}. Please try again.",
+      "update_failed": "Failed to update {{resource}}. Please try again.",
+      "delete_failed": "Failed to delete {{resource}}. Please try again.",
+      "fetch_failed": "Failed to retrieve {{resource}}. Please try again.",
+      "save_failed": "Failed to save {{resource}}. Please try again.",
+      "operation_failed": "Operation failed. Please try again.",
+      "validation_errors": "Please fix the validation errors before continuing"
+    },
+    "resources": {
+      "education": "education",
+      "educations": "education entries",
+      "experience": "experience",
+      "experiences": "experiences",
+      "certification": "certification",
+      "certifications": "certifications",
+      "project": "project",
+      "projects": "projects",
+      "skill": "skill",
+      "skills": "skills",
+      "language": "language",
+      "languages": "languages",
+      "profile": "profile",
+      "resume": "resume",
+      "resumes": "resumes",
+      "user": "user",
+      "data": "data"
+    }
   }
 }
 

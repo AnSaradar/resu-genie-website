@@ -1,74 +1,43 @@
 /**
  * Error message utility for i18n support
- * Maps API errors to user-friendly messages stored in JSON
+ * Maps API errors to user-friendly messages using i18next
  */
 
-import errorMessages from '@/locales/errors.json';
-
-type Locale = 'en' | 'ar';
-type ErrorCategory = 'auth' | 'validation' | 'general' | 'api' | 'resources';
-
-// Default locale
-const DEFAULT_LOCALE: Locale = 'en';
+import i18n from '@/i18n';
 
 /**
- * Get the current locale from localStorage or default to 'en'
- */
-function getCurrentLocale(): Locale {
-  try {
-    const stored = localStorage.getItem('locale');
-    if (stored === 'ar' || stored === 'en') {
-      return stored;
-    }
-  } catch {
-    // Ignore localStorage errors
-  }
-  return DEFAULT_LOCALE;
-}
-
-/**
- * Get an error message by key path
- * @param keyPath - Dot-separated path like "auth.invalid_credentials"
- * @param locale - Optional locale (defaults to current locale)
+ * Get an error message by key path using i18next
+ * @param keyPath - Dot-separated path like "errors.invalid_credentials" or "validation.field_required"
+ * @param namespace - Optional namespace (defaults to 'common' for validation/general, 'auth' for auth errors)
  * @param params - Optional parameters for message interpolation
  * @returns The error message or the key path if not found
  */
 export function getErrorMessage(
   keyPath: string,
-  locale?: Locale,
+  namespace?: 'auth' | 'common',
   params?: Record<string, string | number>
 ): string {
-  const currentLocale = locale || getCurrentLocale();
-  const keys = keyPath.split('.');
+  // Determine namespace based on key path if not provided
+  let ns: 'auth' | 'common' = namespace || 'common';
   
-  // Navigate through the error messages object
-  let message: any = errorMessages[currentLocale] || errorMessages[DEFAULT_LOCALE];
-  
-  for (const key of keys) {
-    if (message && typeof message === 'object' && key in message) {
-      message = message[key];
-    } else {
-      // Fallback to English if key not found in current locale
-      message = errorMessages[DEFAULT_LOCALE];
-      for (const fallbackKey of keys) {
-        if (message && typeof message === 'object' && fallbackKey in message) {
-          message = message[fallbackKey];
-        } else {
-          return keyPath; // Return key path if message not found
-        }
-      }
-      break;
+  // Auto-detect namespace from key path
+  if (!namespace) {
+    if (keyPath.startsWith('errors.') && !keyPath.startsWith('errors.general.') && !keyPath.startsWith('errors.api.') && !keyPath.startsWith('errors.resources.')) {
+      ns = 'auth';
+    } else if (keyPath.startsWith('validation.')) {
+      ns = 'common';
+    } else if (keyPath.startsWith('errors.general.') || keyPath.startsWith('errors.api.') || keyPath.startsWith('errors.resources.')) {
+      ns = 'common';
     }
   }
   
-  // If message is a string, interpolate params if provided
-  if (typeof message === 'string' && params) {
-    return message.replace(/\{(\w+)\}/g, (match, key) => {
-      return params[key]?.toString() || match;
-    });
+  // Use i18next to get the translation
+  try {
+    return i18n.t(keyPath, { ns, ...params });
+  } catch (error) {
+    // Fallback to key path if translation fails
+    return keyPath;
   }
-  
-  return typeof message === 'string' ? message : keyPath;
 }
 
 /**
@@ -76,7 +45,7 @@ export function getErrorMessage(
  */
 function getResourceName(resource?: string): string {
   if (!resource) return 'data';
-  return getErrorMessage(`resources.${resource}`, undefined, {}) || resource;
+  return getErrorMessage(`errors.resources.${resource}`, 'common', {}) || resource;
 }
 
 /**
@@ -94,14 +63,14 @@ export function mapAuthError(error: any): string {
       if (message.toLowerCase().includes('invalid') || 
           message.toLowerCase().includes('incorrect') ||
           message.toLowerCase().includes('email or password')) {
-        return getErrorMessage('auth.invalid_credentials');
+        return getErrorMessage('errors.invalid_credentials', 'auth');
       }
       if (message.toLowerCase().includes('expired') || 
           message.toLowerCase().includes('session')) {
-        return getErrorMessage('auth.session_expired');
+        return getErrorMessage('errors.session_expired', 'auth');
       }
     }
-    return getErrorMessage('auth.invalid_credentials');
+    return getErrorMessage('errors.invalid_credentials', 'auth');
   }
   
   // Handle 403 Forbidden
@@ -109,9 +78,9 @@ export function mapAuthError(error: any): string {
     if (typeof message === 'string' && 
         (message.toLowerCase().includes('verify') || 
          message.toLowerCase().includes('verification'))) {
-      return getErrorMessage('auth.email_not_verified');
+      return getErrorMessage('errors.email_not_verified', 'auth');
     }
-    return getErrorMessage('auth.forbidden');
+    return getErrorMessage('errors.forbidden', 'auth');
   }
   
   // Handle specific error messages from backend
@@ -120,35 +89,35 @@ export function mapAuthError(error: any): string {
     
     if (lowerMessage.includes('email already registered') || 
         lowerMessage.includes('email address is already registered')) {
-      return getErrorMessage('auth.email_already_registered');
+      return getErrorMessage('errors.email_already_registered', 'auth');
     }
     
     if (lowerMessage.includes('phone already registered') || 
         lowerMessage.includes('phone number is already registered')) {
-      return getErrorMessage('auth.phone_already_registered');
+      return getErrorMessage('errors.phone_already_registered', 'auth');
     }
     
     if (lowerMessage.includes('email verification required') ||
         lowerMessage.includes('verify your email')) {
-      return getErrorMessage('auth.email_verification_required');
+      return getErrorMessage('errors.email_verification_required', 'auth');
     }
     
     if (lowerMessage.includes('otp') && 
         (lowerMessage.includes('expired') || lowerMessage.includes('invalid'))) {
-      return getErrorMessage('auth.otp_invalid');
+      return getErrorMessage('errors.otp_invalid', 'auth');
     }
     
     if (lowerMessage.includes('too many attempts')) {
-      return getErrorMessage('auth.otp_too_many_attempts');
+      return getErrorMessage('errors.otp_too_many_attempts', 'auth');
     }
     
     if (lowerMessage.includes('password reset')) {
-      return getErrorMessage('auth.password_reset_failed');
+      return getErrorMessage('errors.password_reset_failed', 'auth');
     }
   }
   
   // Default auth error
-  return getErrorMessage('auth.login_failed');
+  return getErrorMessage('errors.login_failed', 'auth');
 }
 
 /**
@@ -208,7 +177,7 @@ export function mapValidationError(error: any): string[] {
           .replace(/\b\w/g, (l: string) => l.toUpperCase());
         
         // Get the message
-        const message = getErrorMessage(messageKey, undefined, params);
+        const message = getErrorMessage(messageKey, 'common', params);
         
         // Combine field name and message
         errors.push(`${displayFieldName}: ${message}`);
@@ -237,20 +206,20 @@ export function mapApiError(error: any, resource?: string): string {
   
   // Handle specific status codes
   if (status === 404) {
-    return getErrorMessage('general.not_found');
+    return getErrorMessage('errors.general.not_found', 'common');
   }
   
   if (status === 400) {
-    return getErrorMessage('general.bad_request');
+    return getErrorMessage('errors.general.bad_request', 'common');
   }
   
   if (status === 500) {
-    return getErrorMessage('general.server_error');
+    return getErrorMessage('errors.general.server_error', 'common');
   }
   
   if (status === 422) {
     // Validation errors are handled separately
-    return getErrorMessage('api.validation_errors');
+    return getErrorMessage('errors.api.validation_errors', 'common');
   }
   
   // Check for specific error messages
@@ -259,38 +228,28 @@ export function mapApiError(error: any, resource?: string): string {
     const lowerMessage = message.toLowerCase();
     
     if (lowerMessage.includes('create') || lowerMessage.includes('created')) {
-      return getErrorMessage('api.create_failed', undefined, { resource: resourceName });
+      return getErrorMessage('errors.api.create_failed', 'common', { resource: resourceName });
     }
     
     if (lowerMessage.includes('update') || lowerMessage.includes('updated')) {
-      return getErrorMessage('api.update_failed', undefined, { resource: resourceName });
+      return getErrorMessage('errors.api.update_failed', 'common', { resource: resourceName });
     }
     
     if (lowerMessage.includes('delete') || lowerMessage.includes('deleted')) {
-      return getErrorMessage('api.delete_failed', undefined, { resource: resourceName });
+      return getErrorMessage('errors.api.delete_failed', 'common', { resource: resourceName });
     }
     
     if (lowerMessage.includes('fetch') || lowerMessage.includes('get') || lowerMessage.includes('retrieve')) {
-      return getErrorMessage('api.fetch_failed', undefined, { resource: resourceName });
+      return getErrorMessage('errors.api.fetch_failed', 'common', { resource: resourceName });
     }
     
     if (lowerMessage.includes('save')) {
-      return getErrorMessage('api.save_failed', undefined, { resource: resourceName });
+      return getErrorMessage('errors.api.save_failed', 'common', { resource: resourceName });
     }
   }
   
   // Default API error
-  return getErrorMessage('api.operation_failed');
+  return getErrorMessage('errors.api.operation_failed', 'common');
 }
 
-/**
- * Set the current locale
- */
-export function setLocale(locale: Locale): void {
-  try {
-    localStorage.setItem('locale', locale);
-  } catch {
-    // Ignore localStorage errors
-  }
-}
 

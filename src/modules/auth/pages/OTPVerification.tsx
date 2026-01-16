@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthService } from '@/services/auth/service';
 import toast from 'react-hot-toast';
+import { useAppTranslation } from '@/i18n/hooks';
 
 interface OTPVerificationProps {
   email?: string;
@@ -14,6 +15,8 @@ interface OTPVerificationProps {
 }
 
 export function OTPVerification() {
+  const { t } = useAppTranslation('auth');
+  const { t: tCommon } = useAppTranslation('common');
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -63,15 +66,15 @@ export function OTPVerification() {
     const newErrors: Record<string, string> = {};
     
     if (!email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = tCommon('validation.field_required');
     } else if (!validateEmail(email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = tCommon('validation.email_invalid');
     }
 
     if (!otpCode.trim()) {
-      newErrors.otpCode = 'OTP code is required';
+      newErrors.otpCode = tCommon('validation.otp_required');
     } else if (!validateOTP(otpCode)) {
-      newErrors.otpCode = 'OTP must be 6 digits';
+      newErrors.otpCode = tCommon('validation.otp_invalid_length');
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -85,35 +88,35 @@ export function OTPVerification() {
       const response = await AuthService.verifyOTP(email, otpCode, 'verification');
       
       if (response.signal === 'Email verified successfully') {
-        toast.success('Email verified successfully! You can now login.');
+        toast.success(t('toast.email_verified'));
         
         // Redirect to login or original destination
         if (location.state?.fromLogin) {
           navigate('/login', { 
             state: { 
               email, 
-              message: 'Email verified successfully. Please login to continue.' 
+              message: t('toast.email_verified')
             } 
           });
         } else {
           navigate('/login');
         }
       } else {
-        toast.success(response.message || 'OTP verified successfully!');
+        toast.success(response.message || t('toast.otp_verified'));
         navigate(redirectTo);
       }
     } catch (error: any) {
       console.error('OTP verification error:', error);
       
       if (error.message?.includes('Invalid or expired OTP')) {
-        setErrors({ otpCode: 'Invalid or expired OTP code' });
-        toast.error('Invalid or expired OTP code');
+        setErrors({ otpCode: t('errors.otp_invalid') });
+        toast.error(t('errors.otp_invalid'));
       } else if (error.message?.includes('Too many attempts')) {
-        setErrors({ otpCode: 'Too many attempts. Please request a new OTP.' });
-        toast.error('Too many attempts. Please request a new OTP.');
+        setErrors({ otpCode: t('errors.otp_too_many_attempts') });
+        toast.error(t('errors.otp_too_many_attempts'));
         setOtpCode('');
       } else {
-        toast.error(error.message || 'Failed to verify OTP');
+        toast.error(error.message || t('errors.otp_verify_error'));
       }
     } finally {
       setIsVerifying(false);
@@ -122,12 +125,12 @@ export function OTPVerification() {
 
   const handleResendOTP = async () => {
     if (!email.trim()) {
-      setErrors({ email: 'Please enter your email address first' });
+      setErrors({ email: tCommon('validation.field_required') });
       return;
     }
 
     if (!validateEmail(email)) {
-      setErrors({ email: 'Please enter a valid email address' });
+      setErrors({ email: tCommon('validation.email_invalid') });
       return;
     }
 
@@ -136,19 +139,19 @@ export function OTPVerification() {
 
     try {
       await AuthService.resendVerificationOTP(email);
-      toast.success('Verification code sent to your email!');
+      toast.success(t('toast.otp_sent'));
       setCooldownTime(60); // Start 60-second cooldown
       setOtpCode(''); // Clear previous OTP
     } catch (error: any) {
       console.error('Resend OTP error:', error);
       
       if (error.message?.includes('Please wait before requesting')) {
-        toast.error('Please wait before requesting another OTP');
+        toast.error(t('errors.otp_resend_cooldown'));
       } else if (error.message?.includes('already verified')) {
-        toast.error('Email is already verified');
+        toast.error(t('errors.user_already_verified'));
         navigate('/login');
       } else {
-        toast.error(error.message || 'Failed to resend OTP');
+        toast.error(error.message || t('errors.otp_resend_error'));
       }
     } finally {
       setIsResending(false);
@@ -169,19 +172,19 @@ export function OTPVerification() {
       >
         <Card className="shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t('forms.otp.title')}</CardTitle>
             <CardDescription>
-              Enter the 6-digit verification code sent to your email address
+              {t('forms.otp.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t('forms.otp.email_label')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('forms.otp.email_placeholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={errors.email ? 'border-red-500' : ''}
@@ -193,11 +196,11 @@ export function OTPVerification() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="otp">Verification Code</Label>
+                <Label htmlFor="otp">{t('forms.otp.otp_label')}</Label>
                 <Input
                   id="otp"
                   type="text"
-                  placeholder="Enter 6-digit code"
+                  placeholder={t('forms.otp.otp_placeholder')}
                   value={otpCode}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, '').slice(0, 6);
@@ -216,13 +219,13 @@ export function OTPVerification() {
                 className="w-full"
                 disabled={isVerifying || !otpCode || otpCode.length !== 6}
               >
-                {isVerifying ? 'Verifying...' : 'Verify Email'}
+                {isVerifying ? t('forms.otp.verifying') : t('forms.otp.verify')}
               </Button>
             </form>
 
             <div className="text-center space-y-3">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Didn't receive the code?
+                {t('forms.otp.didnt_receive')}
               </p>
               
               <Button
@@ -231,9 +234,9 @@ export function OTPVerification() {
                 disabled={isResending || cooldownTime > 0}
                 className="w-full"
               >
-                {isResending ? 'Sending...' : 
-                 cooldownTime > 0 ? `Resend in ${cooldownTime}s` : 
-                 'Resend Code'}
+                {isResending ? t('forms.otp.resending') : 
+                 cooldownTime > 0 ? t('forms.otp.resend_cooldown', { seconds: cooldownTime }) : 
+                 t('forms.otp.resend')}
               </Button>
 
               <Button
@@ -241,7 +244,7 @@ export function OTPVerification() {
                 onClick={handleBackToLogin}
                 className="w-full text-sm"
               >
-                Back to Login
+                {t('forms.otp.back_to_login')}
               </Button>
             </div>
           </CardContent>

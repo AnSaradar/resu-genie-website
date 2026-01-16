@@ -50,12 +50,12 @@ export function extractApiErrorMessage(
   
   // Handle token limit errors first (403 with token limit message)
   if (isTokenLimitError(error)) {
-    return "You don't have enough tokens to use this feature. Please check your token balance.";
+    return getErrorMessage('errors.general.token_limit', 'common');
   }
   
   // Handle 500 server errors immediately - return generic message without exposing error details
   if (status === 500) {
-    return getErrorMessage('general.server_error');
+    return getErrorMessage('errors.general.server_error', 'common');
   }
   
   // Handle authentication errors (401, 403)
@@ -72,7 +72,7 @@ export function extractApiErrorMessage(
         return validationErrors[0];
       }
       // For multiple errors, return formatted message
-      return getErrorMessage('validation.multiple_errors') + ': ' + validationErrors.join('; ');
+      return getErrorMessage('validation.multiple_errors', 'common') + ': ' + validationErrors.join('; ');
     }
     // Fallback if validation mapping didn't work
     const detail = error?.response?.data?.detail;
@@ -119,12 +119,16 @@ export function extractApiErrorMessage(
   if (fallback) {
     // If fallback is a key path, get the message
     if (fallback.includes('.')) {
-      return getErrorMessage(fallback);
+      // Determine namespace from fallback path
+      const ns = fallback.startsWith('errors.') && !fallback.startsWith('errors.general.') && !fallback.startsWith('errors.api.') && !fallback.startsWith('errors.resources.') 
+        ? 'auth' 
+        : 'common';
+      return getErrorMessage(fallback, ns);
     }
     return fallback;
   }
   
-  return getErrorMessage('general.unexpected_error');
+  return getErrorMessage('errors.general.unexpected_error', 'common');
 }
 
 /**

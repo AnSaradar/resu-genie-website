@@ -58,7 +58,7 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      className="py-16 md:py-24 bg-slate-950 relative overflow-hidden"
+      className="py-16 md:py-24 xl:py-32 2xl:py-40 bg-slate-950 relative overflow-hidden"
     >
       {/* Funky background glow */}
       <div className="pointer-events-none absolute inset-0">
@@ -66,9 +66,9 @@ export function Pricing() {
         <div className="absolute bottom-[-6rem] right-[-4rem] h-48 w-48 rounded-full bg-gradient-to-tr from-red-500/25 via-rose-500/20 to-orange-400/15 blur-3xl" />
       </div>
 
-      <div className="container relative px-4 md:px-6 lg:px-8">
+      <div className="container relative px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12">
         <motion.div
-          className="text-center max-w-3xl mx-auto mb-10 md:mb-14"
+          className="text-center max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mb-10 md:mb-14 xl:mb-18 2xl:mb-20"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -76,15 +76,15 @@ export function Pricing() {
         >
           <motion.div
             variants={itemVariants}
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1 text-xs font-medium uppercase tracking-[0.18em] text-emerald-100 mb-4"
+            className="inline-flex items-center gap-2 xl:gap-3 2xl:gap-4 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1 xl:px-5 xl:py-1.5 2xl:px-6 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-[0.18em] text-emerald-100 mb-4 xl:mb-5 2xl:mb-6"
           >
-            <Sparkles className="h-3.5 w-3.5 text-emerald-300" />
+            <Sparkles className="h-3.5 w-3.5 xl:h-4 xl:w-4 2xl:h-5 2xl:w-5 text-emerald-300" />
             {t('pricing.badge')}
           </motion.div>
 
           <motion.h2
             variants={itemVariants}
-            className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3"
+            className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-3 xl:mb-4 2xl:mb-5 leading-tight"
           >
             <Trans
               i18nKey="pricing.title"
@@ -97,7 +97,7 @@ export function Pricing() {
 
           <motion.p
             variants={itemVariants}
-            className="text-sm md:text-base lg:text-lg text-slate-300"
+            className="text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-slate-300 leading-relaxed"
           >
             {t('pricing.subtitle')}
           </motion.p>
@@ -105,7 +105,7 @@ export function Pricing() {
 
         {/* Disabled mock plans */}
         <motion.div
-          className="grid gap-6 md:gap-8 md:grid-cols-3 items-stretch"
+          className="grid gap-6 md:gap-8 xl:gap-10 2xl:gap-12 md:grid-cols-3 items-stretch"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -115,7 +115,7 @@ export function Pricing() {
             <motion.div
               key={plan.name}
               variants={itemVariants}
-              className="relative flex flex-col h-full rounded-2xl border border-slate-700/90 bg-slate-900/70 px-5 py-6 md:px-6 md:py-8 overflow-hidden group"
+              className="relative flex flex-col h-full rounded-2xl xl:rounded-3xl 2xl:rounded-[2rem] border border-slate-700/90 bg-slate-900/70 px-5 py-6 md:px-6 md:py-8 xl:px-8 xl:py-10 2xl:px-10 2xl:py-12 overflow-hidden group"
             >
               {/* Disabled overlay & big X */}
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -124,7 +124,7 @@ export function Pricing() {
                   <svg
                     viewBox="0 0 100 100"
                     aria-hidden="true"
-                    className="h-32 w-32 md:h-40 md:w-40 text-red-500/45 drop-shadow-[0_0_18px_rgba(248,113,113,0.55)]"
+                    className="h-32 w-32 md:h-40 md:w-40 xl:h-48 xl:w-48 2xl:h-56 2xl:w-56 text-red-500/45 drop-shadow-[0_0_18px_rgba(248,113,113,0.55)]"
                   >
                     <line
                       x1="15"
@@ -149,36 +149,36 @@ export function Pricing() {
               </div>
 
               {/* Card content (dimmed) */}
-              <div className="relative flex flex-col gap-4 flex-1 opacity-40 group-hover:opacity-60 transition-opacity duration-300">
-                <div className="flex items-center justify-between gap-3">
+              <div className="relative flex flex-col gap-4 xl:gap-5 2xl:gap-6 flex-1 opacity-40 group-hover:opacity-60 transition-opacity duration-300">
+                <div className="flex items-center justify-between gap-3 xl:gap-4 2xl:gap-5">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    <p className="text-xs xl:text-sm 2xl:text-base font-semibold uppercase tracking-[0.18em] text-slate-400">
                       {plan.name}
                     </p>
-                    <p className="mt-1 text-lg md:text-xl font-semibold text-white">
+                    <p className="mt-1 text-lg md:text-xl xl:text-2xl 2xl:text-3xl font-semibold text-white">
                       {plan.price}
                     </p>
                   </div>
-                  <Lock className="h-5 w-5 text-slate-500" />
+                  <Lock className="h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 text-slate-500" />
                 </div>
-                <p className="text-xs md:text-sm text-slate-400">
+                <p className="text-xs md:text-sm xl:text-base 2xl:text-lg text-slate-400 leading-relaxed">
                   {plan.highlight}
                 </p>
                 {plan.features && (
-                  <ul className="mt-3 space-y-2 text-xs md:text-sm text-slate-300">
+                  <ul className="mt-3 xl:mt-4 2xl:mt-5 space-y-2 xl:space-y-3 2xl:space-y-4 text-xs md:text-sm xl:text-base 2xl:text-lg text-slate-300">
                     {plan.features.map((feature) => (
                       <li
                         key={feature}
-                        className="flex items-start gap-2"
+                        className="flex items-start gap-2 xl:gap-3 2xl:gap-4 leading-relaxed"
                       >
-                        <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        <span className="mt-[5px] h-1.5 w-1.5 xl:h-2 xl:w-2 2xl:h-2.5 2xl:w-2.5 rounded-full bg-emerald-400" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
                 )}
-                <div className="mt-4">
-                  <p className="inline-flex items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-300">
+                <div className="mt-4 xl:mt-5 2xl:mt-6">
+                  <p className="inline-flex items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1 xl:px-4 xl:py-1.5 2xl:px-5 2xl:py-2 text-[11px] xl:text-xs 2xl:text-sm font-medium uppercase tracking-[0.16em] text-slate-300">
                     {t('pricing.plans_disabled')}
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export function Pricing() {
 
         {/* Explicit free message */}
         <motion.div
-          className="mt-10 md:mt-12 text-center"
+          className="mt-10 md:mt-12 xl:mt-16 2xl:mt-20 text-center"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -199,7 +199,7 @@ export function Pricing() {
         >
           <motion.p
             variants={itemVariants}
-            className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-xs md:text-sm text-emerald-100"
+            className="inline-flex flex-wrap items-center justify-center gap-2 xl:gap-3 2xl:gap-4 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 xl:px-5 xl:py-2.5 2xl:px-6 2xl:py-3 text-xs md:text-sm xl:text-base 2xl:text-lg text-emerald-100"
           >
             {t('pricing.all_free')}
           </motion.p>

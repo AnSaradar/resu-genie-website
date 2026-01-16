@@ -9,8 +9,11 @@ import { AuthService } from "@/services/auth/service";
 import { PasswordResetComplete } from "@/services/auth/types";
 import { toast } from "react-hot-toast";
 import { ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { useAppTranslation } from "@/i18n/hooks";
 
 export function ResetPassword() {
+  const { t } = useAppTranslation('auth');
+  const { t: tCommon } = useAppTranslation('common');
   const [otpCode, setOtpCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -73,7 +76,7 @@ export function ResetPassword() {
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
-      return "Password must be at least 8 characters long";
+      return tCommon('validation.password_too_short');
     }
     return null;
   };
@@ -82,12 +85,12 @@ export function ResetPassword() {
     e.preventDefault();
     
     if (!otpCode || !newPassword || !confirmPassword) {
-      toast.error("Please fill in all fields");
+      toast.error(t('toast.fill_required_fields'));
       return;
     }
 
     if (otpCode.length !== 6) {
-      toast.error("OTP code must be 6 digits");
+      toast.error(tCommon('validation.otp_invalid_length'));
       return;
     }
 
@@ -98,12 +101,12 @@ export function ResetPassword() {
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(tCommon('validation.password_mismatch'));
       return;
     }
 
     if (timeLeft <= 0) {
-      toast.error("OTP code has expired. Please request a new one.");
+      toast.error(t('errors.otp_expired'));
       return;
     }
     
@@ -119,20 +122,20 @@ export function ResetPassword() {
       await AuthService.completePasswordReset(resetData);
       
       setPasswordReset(true);
-      toast.success("Password reset successfully!");
+      toast.success(t('toast.password_reset_success'));
       
     } catch (err: any) {
       console.error("Password reset error:", err);
       
       // Handle specific error cases
       if (err.message && err.message.includes("expired")) {
-        toast.error("OTP code has expired. Please request a new one.");
+        toast.error(t('errors.otp_expired'));
       } else if (err.message && err.message.includes("Invalid")) {
-        toast.error("Invalid OTP code. Please check and try again.");
+        toast.error(t('errors.otp_invalid'));
       } else if (err.message && err.message.includes("attempts")) {
-        toast.error("Too many attempts. Please request a new OTP code.");
+        toast.error(t('errors.otp_too_many_attempts'));
       } else {
-        toast.error(err.message || "Failed to reset password. Please try again.");
+        toast.error(err.message || t('errors.password_reset_failed'));
       }
     } finally {
       setIsSubmitting(false);
@@ -145,11 +148,11 @@ export function ResetPassword() {
       
       await AuthService.requestPasswordReset({ email });
       setTimeLeft(600); // Reset timer
-      toast.success("New password reset code sent!");
+      toast.success(t('toast.password_reset_code_resent'));
       
     } catch (err: any) {
       console.error("Resend code error:", err);
-      toast.error(err.message || "Failed to resend code. Please try again.");
+      toast.error(err.message || t('errors.password_reset_request_failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -215,11 +218,11 @@ export function ResetPassword() {
                   </div>
                   <h1 className="text-3xl font-bold">
                     <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
-                      Password Reset!
+                      {t('forms.reset_password.success_title')}
                     </span>
                   </h1>
                   <p className="mt-2 text-muted-foreground">
-                    Your password has been successfully reset. You can now sign in with your new password.
+                    {t('forms.reset_password.success_message')}
                   </p>
                 </motion.div>
 
@@ -228,7 +231,7 @@ export function ResetPassword() {
                     onClick={handleBackToLogin}
                     className="w-full"
                   >
-                    Continue to Sign In
+                    {t('forms.reset_password.continue_to_sign_in')}
                   </Button>
                 </motion.div>
 
@@ -237,12 +240,12 @@ export function ResetPassword() {
                   variants={itemVariants}
                 >
                   <p className="text-muted-foreground">
-                    Need help?{" "}
+                    {t('forms.reset_password.need_help')}{" "}
                     <Link
                       to="/contact"
                       className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                     >
-                      Contact Support
+                      {t('forms.reset_password.contact_support')}
                     </Link>
                   </p>
                 </motion.div>
@@ -306,11 +309,11 @@ export function ResetPassword() {
               <motion.div className="text-center" variants={itemVariants}>
                 <h1 className="text-3xl font-bold">
                   <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                    Reset Password
+                    {t('forms.reset_password.title')}
                   </span>
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                  Enter the code sent to <strong>{email}</strong> and your new password
+                  {t('forms.reset_password.subtitle')} <strong>{email}</strong> {t('forms.reset_password.and_new_password')}
                 </p>
               </motion.div>
 
@@ -321,7 +324,7 @@ export function ResetPassword() {
                 }`}
                 variants={itemVariants}
               >
-                Code expires in: {formatTime(timeLeft)}
+                {t('forms.reset_password.code_expires_in')} {formatTime(timeLeft)}
               </motion.div>
 
               <motion.form
@@ -330,11 +333,11 @@ export function ResetPassword() {
                 variants={itemVariants}
               >
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
+                  <Label htmlFor="otp">{t('forms.reset_password.otp_label')}</Label>
                   <Input
                     id="otp"
                     type="text"
-                    placeholder="123456"
+                    placeholder={t('forms.reset_password.otp_placeholder')}
                     value={otpCode}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 6);
@@ -345,15 +348,15 @@ export function ResetPassword() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Enter the 6-digit code from your email
+                    {t('forms.reset_password.otp_hint')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword">{t('forms.reset_password.new_password_label')}</Label>
                   <PasswordInput
                     id="newPassword"
-                    placeholder="••••••••"
+                    placeholder={t('forms.reset_password.new_password_placeholder')}
                     value={newPassword}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
                     showPassword={showPassword}
@@ -361,15 +364,15 @@ export function ResetPassword() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Must be at least 8 characters long
+                    {t('forms.reset_password.new_password_hint')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword">{t('forms.reset_password.confirm_password_label')}</Label>
                   <PasswordInput
                     id="confirmPassword"
-                    placeholder="••••••••"
+                    placeholder={t('forms.reset_password.confirm_password_placeholder')}
                     value={confirmPassword}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                     showPassword={showConfirmPassword}
@@ -383,7 +386,7 @@ export function ResetPassword() {
                   className="w-full"
                   disabled={isSubmitting || timeLeft <= 0}
                 >
-                  {isSubmitting ? "Resetting Password..." : "Reset Password"}
+                  {isSubmitting ? t('forms.reset_password.submitting') : t('forms.reset_password.submit')}
                 </Button>
               </motion.form>
 
@@ -394,7 +397,7 @@ export function ResetPassword() {
                   disabled={isSubmitting}
                   className="w-full"
                 >
-                  {isSubmitting ? "Sending..." : "Resend Code"}
+                  {isSubmitting ? t('forms.otp.resending') : t('forms.reset_password.resend_code')}
                 </Button>
               </motion.div>
 
@@ -403,12 +406,12 @@ export function ResetPassword() {
                 variants={itemVariants}
               >
                 <p className="text-muted-foreground">
-                  Remember your password?{" "}
+                  {t('forms.reset_password.remember_password')}{" "}
                   <Link
                     to="/login"
                     className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                   >
-                    Sign in
+                    {t('forms.reset_password.sign_in')}
                   </Link>
                 </p>
               </motion.div>
@@ -431,7 +434,7 @@ export function ResetPassword() {
                   className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Back to Email Step
+                  {t('forms.reset_password.back_to_email_step')}
                 </Link>
               </motion.div>
             </motion.div>

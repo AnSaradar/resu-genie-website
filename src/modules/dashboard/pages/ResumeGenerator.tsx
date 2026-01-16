@@ -25,6 +25,7 @@ import { updateResume } from '@/services/resume/service';
 import { toast } from 'react-hot-toast';
 import { useTour } from '@/modules/tour/TourProvider';
 import { getResumeSteps } from '@/modules/tour/steps';
+import { useLanguage } from '@/i18n/hooks';
 
 // Step components (we'll create these)
 import { PersonalInfoStep } from '../components/resume-generator/PersonalInfoStep';
@@ -185,7 +186,8 @@ export function ResumeGenerator() {
   } | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [isApiLoading, setIsApiLoading] = useState(false);
-  const { startTour, enabled, language } = useTour();
+  const { startTour, enabled } = useTour();
+  const language = useLanguage() as 'en' | 'ar';
 
   // Load CV extracted data if available (for new resumes only)
   useEffect(() => {

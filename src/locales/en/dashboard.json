@@ -1,0 +1,105 @@
+{
+  "navbar": {
+    "dashboard": "Dashboard",
+    "ai_features": "AI Features",
+    "resume_evaluator": "Resume Evaluator",
+    "job_matcher": "Job Matcher",
+    "cover_letter": "Cover Letter",
+    "my_resumes": "My Resumes",
+    "account": "My Account Data",
+    "tokens": "tokens",
+    "loading": "Loading...",
+    "toggle_theme": "Toggle theme",
+    "settings_coming_soon": "Settings (coming soon)",
+    "logout": "Logout",
+    "tokens_remaining": "Tokens Remaining:",
+    "total_used": "Total Used:",
+    "guest": "Guest"
+  },
+  "main_dashboard": {
+    "welcome": "Welcome back, {{name}}! 👋",
+    "subtitle": "Ready to take your career to the next level? Let's build something amazing.",
+    "generate_resume": "Generate Resume",
+    "loading_dashboard": "Loading Dashboard",
+    "loading_data": "Please wait while we load your data...",
+    "error_loading": "Error Loading Data",
+    "error_message": "Failed to load dashboard data. Please try again.",
+    "data_overview": "Your Data Overview",
+    "platform_features": "Platform Features",
+    "resumes": "Resumes",
+    "job_matches": "Job Matches",
+    "cover_letters": "Cover Letters",
+    "experience": "Experience",
+    "education": "Education",
+    "skills": "Skills",
+    "certifications": "Certifications",
+    "features": {
+      "templates": {
+        "title": "Resume Templates",
+        "description": "Choose from professional, ATS-optimized templates designed for various industries",
+        "action": "Browse Templates"
+      },
+      "builder": {
+        "title": "Build a Resume",
+        "description": "Create a completely new resume step-by-step with guided assistance",
+        "action": "Start Building"
+      },
+      "evaluator": {
+        "title": "Resume Evaluator",
+        "description": "Get AI-powered feedback and suggestions to improve your resume",
+        "action": "Evaluate Resume"
+      },
+      "job_matcher": {
+        "title": "Job Matcher",
+        "description": "Compare your resume against job postings and get match scores",
+        "action": "Match Jobs"
+      },
+      "cover_letter": {
+        "title": "Cover Letter Generator",
+        "description": "Generate tailored cover letters using AI for specific job applications",
+        "action": "Generate Letter"
+      }
+    },
+    "soon": "Soon"
+  },
+  "account": {
+    "title": "My Account Data",
+    "fill_from_cv": "Fill from CV",
+    "export_resume": "Export Resume / CV"
+  },
+  "my_resumes": {
+    "title": "My Resumes",
+    "subtitle": "{{count}} resume{{plural}} • Manage and export your resumes",
+    "create_resume": "Create Resume",
+    "search_placeholder": "Search resumes...",
+    "select_all": "Select All",
+    "deselect_all": "Deselect All",
+    "sort_by": "Sort by {{sort}}",
+    "last_modified": "Last Modified",
+    "created_date": "Created Date",
+    "name": "Name",
+    "selected_count": "{{count}} resume{{plural}} selected",
+    "delete_selected": "Delete Selected",
+    "no_resumes": "No resumes yet",
+    "no_resumes_description": "Create your first professional resume in minutes. Choose from our templates and start building your career.",
+    "start_from_template": "Start from Template",
+    "complete": "Complete",
+    "draft": "Draft",
+    "rename": "Rename",
+    "preview": "Preview",
+    "download": "Download",
+    "delete": "Delete",
+    "rename_dialog_title": "Rename Resume",
+    "rename_dialog_description": "Enter a new name for this resume.",
+    "rename_placeholder": "Enter new resume name",
+    "rename_note": "<strong>Note:</strong> If a resume with this name already exists, a number will be automatically added (e.g., \"My Resume (1)\").",
+    "renaming": "Renaming...",
+    "rename_error": "Please enter a valid name",
+    "download_dialog_title": "Download Resume",
+    "download_dialog_description": "Select a template to download your resume as PDF.",
+    "download_button": "Download Resume",
+    "download_selection_message": "Click Download to generate your resume PDF.",
+    "download_success": "Resume downloaded successfully!"
+  }
+}
+

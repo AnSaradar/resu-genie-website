@@ -3,6 +3,18 @@ import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { useUserTourPreferences } from '@/services/user_tour_preferences/hook';
 import { LanguageCode } from '@/services/user_tour_preferences/types';
 import { DashboardTourTooltip } from '@/modules/dashboard/components/DashboardTourTooltip';
+import { useLanguage } from '@/i18n/hooks';
+import {
+	getDashboardMainSteps,
+	getNavbarSteps,
+	getMyResumesSteps,
+	getJobMatcherSteps,
+	getCoverLetterSteps,
+	getEvaluatorSteps,
+	getDashboardSteps,
+	getResumeSteps,
+	getProfileSteps,
+} from './steps';
 
 export type StartTourOptions = {
 	tourKey: string;
@@ -31,8 +43,22 @@ export function useTour() {
 
 const TOUR_DEFAULT_VERSION = 'v1';
 
+// Mapping from tour key to step generator function
+const TOUR_STEP_GENERATORS: Record<string, (language: 'en' | 'ar') => Step[]> = {
+	dashboard_main: getDashboardMainSteps,
+	navbar: getNavbarSteps,
+	my_resumes: getMyResumesSteps,
+	job_matcher: getJobMatcherSteps,
+	cover_letter: getCoverLetterSteps,
+	evaluator: getEvaluatorSteps,
+	dashboard: getDashboardSteps,
+	resume: getResumeSteps,
+	profile: getProfileSteps,
+};
+
 export function TourProvider({ children }: { children: React.ReactNode }) {
-	const { prefs, loading, setEnabled: setEnabledSrv, setLanguage: setLanguageSrv, setTour } = useUserTourPreferences();
+	const { prefs, loading, setEnabled: setEnabledSrv, setTour } = useUserTourPreferences();
+	const currentLanguage = useLanguage() as 'en' | 'ar';
 	const [steps, setSteps] = useState<Step[]>([]);
 	const [running, setRunning] = useState<boolean>(false);
 	const [activeTourKey, setActiveTourKey] = useState<string | null>(null);
@@ -180,16 +206,24 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 	}, [setEnabledSrv]);
 
 	const setLanguage = useCallback(async (language: LanguageCode) => {
-		// Force language to always be English
-		await setLanguageSrv('en');
-	}, [setLanguageSrv]);
+		// No-op: Tour language now follows i18n language
+		// Keep for API compatibility but don't update tour preferences
+	}, []);
 
-	// Ensure language is always English when preferences load
+	// Regenerate steps when language changes during an active tour
 	useEffect(() => {
-		if (!loading && prefs && prefs.language !== 'en') {
-			setLanguageSrv('en');
+		if (running && activeTourKey) {
+			const stepGenerator = TOUR_STEP_GENERATORS[activeTourKey];
+			if (stepGenerator) {
+				const newSteps = stepGenerator(currentLanguage);
+				console.log(`[TourProvider] Regenerating steps for ${activeTourKey} in ${currentLanguage}`, {
+					oldStepsCount: steps.length,
+					newStepsCount: newSteps.length,
+				});
+				setSteps(newSteps);
+			}
 		}
-	}, [loading, prefs, setLanguageSrv]);
+	}, [currentLanguage, running, activeTourKey]);
 
 	const value = useMemo<TourContextType>(() => ({
 		startTour,
@@ -197,9 +231,9 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 		setEnabled,
 		setLanguage,
 		enabled: !!prefs?.enabled,
-		language: 'en' as LanguageCode, // Always English
+		language: currentLanguage as LanguageCode,
 		running,
-	}), [prefs, running, setEnabled, setLanguage, startTour, stopTour]);
+	}), [prefs, running, setEnabled, setLanguage, startTour, stopTour, currentLanguage]);
 
 	// Debug logging
 	useEffect(() => {
@@ -215,21 +249,22 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
 	// Custom tooltip component
 	const renderTooltip = useCallback((data: any) => {
+		const language = currentLanguage;
 		return (
 			<DashboardTourTooltip
 				{...data}
 				locale={{
-					back: value.language === 'ar' ? 'السابق' : 'Back',
-					close: value.language === 'ar' ? 'إغلاق' : 'Close',
-					last: value.language === 'ar' ? 'إنهاء' : 'Finish',
-					next: value.language === 'ar' ? 'التالي' : 'Next',
-					skip: value.language === 'ar' ? 'تخطّي' : 'Skip',
+					back: language === 'ar' ? 'السابق' : 'Back',
+					close: language === 'ar' ? 'إغلاق' : 'Close',
+					last: language === 'ar' ? 'إنهاء' : 'Finish',
+					next: language === 'ar' ? 'التالي' : 'Next',
+					skip: language === 'ar' ? 'تخطّي' : 'Skip',
 				}}
-				language={value.language}
+				language={language}
 				onDontShowAgain={handleDontShowAgain}
 			/>
 		);
-	}, [value.language, handleDontShowAgain]);
+	}, [currentLanguage, handleDontShowAgain]);
 
 	return (
 		<TourContext.Provider value={value}>

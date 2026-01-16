@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTour } from '@/modules/tour/TourProvider';
 import { useUserTourPreferences } from '@/services/user_tour_preferences/hook';
+import { useLanguage } from '@/i18n/hooks';
 import {
   getDashboardMainSteps,
   getNavbarSteps,
@@ -13,7 +14,8 @@ import {
 
 export function useAutoStartTour() {
   const location = useLocation();
-  const { startTour, enabled, language } = useTour();
+  const { startTour, enabled } = useTour();
+  const language = useLanguage() as 'en' | 'ar';
   const { prefs, loading } = useUserTourPreferences();
 
   useEffect(() => {

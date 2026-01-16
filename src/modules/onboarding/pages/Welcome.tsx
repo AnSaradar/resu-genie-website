@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/services/auth/hook";
+import { useAppTranslation } from "@/i18n/hooks";
 
 export function Welcome() {
+  const { t } = useAppTranslation('onboarding');
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -161,7 +163,9 @@ export function Welcome() {
             className="text-5xl md:text-6xl font-bold mb-6"
           >
             <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-              Welcome, {user?.first_name || "there"}!
+              {user?.first_name 
+                ? t('welcome.title', { name: user.first_name })
+                : t('welcome.title_fallback')}
             </span>
           </motion.h1>
           
@@ -169,9 +173,9 @@ export function Welcome() {
             variants={itemVariants} 
             className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed"
           >
-            We're excited to help you create an amazing resume that stands out.
+            {t('welcome.description')}
             <br />
-            Let's start by building your personal profile.
+            {t('welcome.description_line2')}
           </motion.p>
           
           <motion.div
@@ -188,7 +192,7 @@ export function Welcome() {
                 size="lg"
                 className="w-full text-lg py-6 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                Let's Get Started
+                {t('welcome.get_started')}
               </Button>
             </motion.div>
           </motion.div>

@@ -1,0 +1,66 @@
+{
+  "welcome": {
+    "title": "Welcome, {{name}}!",
+    "title_fallback": "Welcome, there!",
+    "description": "We're excited to help you create an amazing resume that stands out.",
+    "description_line2": "Let's start by building your personal profile.",
+    "get_started": "Let's Get Started"
+  },
+  "profile": {
+    "title": "Complete Your Profile",
+    "subtitle": "Help us create the perfect resume for you",
+    "step": "Step {{current}} of {{total}}",
+    "progress": "{{progress}}% Complete",
+    "step1": {
+      "title": "Personal Information",
+      "description": "Tell us about yourself and where you're located",
+      "birth_date_label": "Date of Birth *",
+      "country_label": "Country *",
+      "country_placeholder": "Select your country",
+      "city_label": "City",
+      "city_placeholder": "e.g., New York",
+      "country_of_residence_label": "Country of Residence",
+      "country_of_residence_placeholder": "If different from above",
+      "linkedin_label": "LinkedIn Profile",
+      "linkedin_placeholder": "https://linkedin.com/in/yourprofile",
+      "website_label": "Personal Website",
+      "website_placeholder": "https://yourwebsite.com",
+      "summary_label": "Profile Summary",
+      "summary_placeholder": "Briefly describe yourself, your background, and career goals..."
+    },
+    "step2": {
+      "title": "Professional Background",
+      "description": "Share your professional experience and career goals",
+      "current_position_label": "Current Position",
+      "current_position_placeholder": "e.g., Software Engineer, Student",
+      "seniority_level_label": "Seniority Level",
+      "seniority_level_placeholder": "Select your level",
+      "work_field_label": "Work Field / Industry",
+      "work_field_placeholder": "Select your field",
+      "years_experience_label": "Years of Experience",
+      "years_experience_placeholder": "0"
+    },
+    "navigation": {
+      "back_to_welcome": "Back to Welcome",
+      "previous": "Previous",
+      "next": "Next",
+      "complete": "Complete Profile",
+      "creating": "Creating Profile..."
+    },
+    "toast": {
+      "profile_created": "Profile created successfully! Redirecting to dashboard...",
+      "loading_countries": "Loading countries...",
+      "failed_load_countries": "Failed to load countries"
+    },
+    "validation": {
+      "birth_date_required": "Birth date is required",
+      "country_required": "Country is required",
+      "linkedin_invalid": "Invalid LinkedIn URL",
+      "website_invalid": "Invalid website URL",
+      "summary_max": "Profile summary must be under 500 characters",
+      "years_negative": "Years of experience cannot be negative",
+      "years_max": "Years of experience cannot exceed 50"
+    }
+  }
+}
+
