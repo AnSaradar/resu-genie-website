@@ -25,11 +25,16 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { useAppTranslation } from '@/i18n/hooks';
+import { useFormatRelativeTime, useFormatDate } from '@/utils/date-i18n';
 
 export function RecentResumes() {
   const navigate = useNavigate();
+  const { t } = useAppTranslation('dashboard');
   const { data, isLoading } = useGetMyResumes(4);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const formatRelativeTime = useFormatRelativeTime();
+  const formatDate = useFormatDate();
   
   const {
     data: previewData,
@@ -44,38 +49,13 @@ export function RecentResumes() {
     return 'complete';
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatRelativeTime = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
-    return `${Math.floor(diffInDays / 365)} years ago`;
-  };
-
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-600" />
-            <CardTitle>Recent Resumes</CardTitle>
+            <CardTitle>{t('recent_resumes.title')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -96,7 +76,7 @@ export function RecentResumes() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-blue-600" />
-              <CardTitle>Recent Resumes</CardTitle>
+              <CardTitle>{t('recent_resumes.title')}</CardTitle>
             </div>
           </div>
         </CardHeader>
@@ -119,7 +99,7 @@ export function RecentResumes() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-600" />
-            <CardTitle>Recent Resumes</CardTitle>
+            <CardTitle>{t('recent_resumes.title')}</CardTitle>
           </div>
           <Link to="/dashboard/resumes">
             <Button variant="ghost" size="sm" className="text-xs">
@@ -151,13 +131,13 @@ export function RecentResumes() {
                         variant={status === 'complete' ? 'default' : 'secondary'}
                         className="text-xs"
                       >
-                        {status === 'complete' ? 'Complete' : 'Draft'}
+                        {status === 'complete' ? t('recent_resumes.complete') : t('recent_resumes.draft')}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        <span>Modified {formatRelativeTime(resume.updated_at || resume.created_at)}</span>
+                        <span>{t('recent_resumes.modified')} {formatRelativeTime(resume.updated_at || resume.created_at)}</span>
                       </div>
                       {resume.updated_at && (
                         <div className="flex items-center gap-1">

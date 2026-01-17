@@ -67,6 +67,18 @@
     "fill_from_cv": "ملء من السيرة الذاتية",
     "export_resume": "تصدير السيرة الذاتية / السيرة الذاتية"
   },
+  "recent_resumes": {
+    "title": "السير الذاتية الأخيرة",
+    "modified": "تم التعديل",
+    "complete": "مكتمل",
+    "draft": "مسودة",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "days_ago": "منذ {{count}} أيام",
+    "weeks_ago": "منذ {{count}} أسابيع",
+    "months_ago": "منذ {{count}} أشهر",
+    "years_ago": "منذ {{count}} سنوات"
+  },
   "my_resumes": {
     "title": "سيرتي الذاتية",
     "subtitle": "{{count}} سيرة ذاتية • إدارة وتصدير سيرك الذاتية",

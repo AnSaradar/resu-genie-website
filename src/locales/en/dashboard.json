@@ -67,6 +67,18 @@
     "fill_from_cv": "Fill from CV",
     "export_resume": "Export Resume / CV"
   },
+  "recent_resumes": {
+    "title": "Recent Resumes",
+    "modified": "Modified",
+    "complete": "Complete",
+    "draft": "Draft",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "days_ago": "{{count}} days ago",
+    "weeks_ago": "{{count}} weeks ago",
+    "months_ago": "{{count}} months ago",
+    "years_ago": "{{count}} years ago"
+  },
   "my_resumes": {
     "title": "My Resumes",
     "subtitle": "{{count}} resume{{plural}} • Manage and export your resumes",
